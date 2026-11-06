@@ -14,3 +14,6 @@ Dodao sam predmete, nedeljni raspored i pitanje „idem / ne idem / ponekad" za 
 
 ## Faza 4 — Planer
 `planWeek()` u `lib/planner.ts` je algoritam sa pravilima: raspoređuje učenje pre kolokvijuma (teži ispit počinje ranije), čuva pauze i bar jedan lakši dan, skraćuje trening dan pred ispit i nudi igru kao nagradu. Radi sa „intervalima slobodnog vremena": od dana oduzmeš zauzeto i ostane slobodno. Ima 33 testa jer je deterministička čista funkcija. Predlozi imaju isprekidanu ivicu dok ih ne prihvatiš.
+
+## Faza 5 — Trening i ishrana
+Unosiš vežbe kao serije × ponavljanja × kilaža, a aplikacija pamti najveću kilažu po vežbi i javlja 🎉 kad je pobediš (`newRecords`). Prvi put kad radiš neku vežbu to nije rekord, jer nema šta da se pobedi. Grafikon (Recharts) crta napredak kilaže kroz vreme. Za ishranu postoji traka napretka do dnevnog cilja proteina. Naučio si šta je `Map`/rečnik po ključu i kako se isti podaci prikazuju na više načina.

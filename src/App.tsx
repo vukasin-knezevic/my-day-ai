@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import Onboarding from './pages/Onboarding'
 import Placeholder from './pages/Placeholder'
 import Planner from './pages/Planner'
+import Workout from './pages/Workout'
 import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
@@ -32,7 +33,7 @@ export default function App() {
           <Route index element={<Today />} />
           <Route path="faks" element={<Study />} />
           <Route path="planer" element={<Planner />} />
-          <Route path="trening" element={<Placeholder title="🏋️ Trening" phase="fazi 5" />} />
+          <Route path="trening" element={<Workout />} />
           <Route path="zivot" element={<Placeholder title="💰 Život" phase="fazi 6" />} />
           <Route path="pregled" element={<Placeholder title="📊 Pregled" phase="fazi 9" />} />
           <Route path="ai" element={<Placeholder title="🤖 AI" phase="fazi 8" />} />
