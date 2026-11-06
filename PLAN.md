@@ -6,7 +6,7 @@
 - [x] Faza 1 — Osnova i model podataka (tipovi, store, onboarding)
 - [x] Faza 2 — Ekran „Danas" + brzi unos (quickParse, 25+ testova)
 - [x] Faza 3 — Faks (predmeti, raspored, kolokvijumi, prijave, poeni)
-- [ ] Faza 4 — Planer bez AI-ja (planWeek, 20+ testova)
+- [x] Faza 4 — Planer bez AI-ja (planWeek, 20+ testova)
 - [ ] Faza 5 — Trening i ishrana
 - [ ] Faza 6 — San, novac, navike (+ docs/HUAWEI.md)
 - [ ] Faza 7 — Motivacija (XP, nivoi, nizovi, PS5 vreme)

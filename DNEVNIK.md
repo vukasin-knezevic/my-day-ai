@@ -11,3 +11,6 @@ Parser `quickParse.ts` pretvara rečenicu poput „sutra učenje mata 2h" u stru
 
 ## Faza 3 — Faks
 Dodao sam predmete, nedeljni raspored i pitanje „idem / ne idem / ponekad" za svaki termin. Termini „ne idem" postaju slobodno vreme koje planer kasnije koristi. Kolokvijumi imaju odbrojavanje u boji, čeklistu prijava i pregled „Novembar: prijave". Računanje ocene (`gradeFor`) je obična funkcija sa tabelom testova, slično kao `pytest.mark.parametrize` u Pythonu.
+
+## Faza 4 — Planer
+`planWeek()` u `lib/planner.ts` je algoritam sa pravilima: raspoređuje učenje pre kolokvijuma (teži ispit počinje ranije), čuva pauze i bar jedan lakši dan, skraćuje trening dan pred ispit i nudi igru kao nagradu. Radi sa „intervalima slobodnog vremena": od dana oduzmeš zauzeto i ostane slobodno. Ima 33 testa jer je deterministička čista funkcija. Predlozi imaju isprekidanu ivicu dok ih ne prihvatiš.
