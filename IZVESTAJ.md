@@ -19,13 +19,13 @@ Datum završetka: 2026-11-06. Repozitorijum: https://github.com/vukasin-knezevic
 
 ## Šta je urađeno (faze 0–12)
 Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `PLAN.md`):
-0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + Huawei istraživanje, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
+0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi API pozivi nisu testirani.** AI sloj je testiran samo sa lažnim (mock) odgovorima, kako zadatak traži. Nikad nisam poslao zahtev sa pravim ključem. Pri prvom pravom pozivu proveri da radi; poruka o grešci će reći šta je pogrešno.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) potvrđuju samo nezvanični izvori (Simon Willison, DEV članci); nije na zvaničnoj stranici API pregleda. Vrednost `anthropic-version: 2026-10-21` je iz zvanične stranice. Ako Anthropic odbije poziv iz pregledača (CORS), aplikacija javlja „offline / blokirano" i nudi ručni režim.
 3. **Nazivi modela** (`claude-haiku-5-5`, `claude-sonnet-5-5`) su iz referentne tabele koju koristi Claude Code, a ne iz javne dokumentacije koju sam otvorio. Menjaju se u Podešavanja → AI. Cene u proceni potrošnje (Haiku 5.5 $0.10/$0.50, Sonnet 5.5 $2/$10 po milion tokena) su iz iste tabele; za druge modele nema procene u dolarima. Procena računa sve tokene po ceni jačeg modela (gornja granica).
-4. **Huawei sat:** nema uvoza fajla jer nisam mogao da potvrdim format izvoza ni da Health Kit radi bez servera (vidi `docs/HUAWEI.md`). San se unosi ručno.
+4. **Huawei sat:** nema uvoza fajla jer nisam mogao da potvrdim format izvoza ni da Health Kit radi bez servera (vidi `docs/SMARTWATCH.md`). San se unosi ručno.
 5. **GitHub Actions workflow-i nikad nisu pokrenuti** (nisam smeo da menjam podešavanja repozitorijuma). `ci.yml` pokreće lint, typecheck, testove i e2e; `deploy.yml` objavljuje na Pages tek kad jednom uključiš: **Settings → Pages → Source: GitHub Actions**. Moguće je da CI traži sitne ispravke pri prvom pokretanju.
 6. **Notifikacije nisu probane na telefonu.** Logika (`dueReminders`) je testirana, ali prikaz notifikacija zavisi od pregledača. `.ics` izvoz je pouzdaniji.
 7. **Ograničenja funkcija:**

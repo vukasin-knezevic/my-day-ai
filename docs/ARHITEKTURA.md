@@ -12,6 +12,8 @@ flowchart LR
     S -->|selectData| P
     P -->|poziva| L[lib/ čista logika]
     L -->|rezultat: predlozi, upozorenja, XP| P
+    P -->|t ključ| I[i18n: locales/*.ts]
+    L -->|t ključ| I
 
     subgraph lib
       QP[quickParse] --- PL[planner]
@@ -38,11 +40,21 @@ flowchart LR
 | Sloj | Fajlovi | Uloga |
 |---|---|---|
 | Tipovi | `src/types.ts` | jedan izvor istine za sve podatke |
+| Jezici | `src/i18n/` | `t('ključ')`, fajlovi prevoda u `locales/`, izbor jezika; srpska ćirilica se izvodi iz latinice |
 | Stanje | `src/store.ts`, `lib/storage.ts` | Zustand; `persist` u IndexedDB; sve u try/catch |
 | Logika | `src/lib/*.ts` | čiste funkcije: parser, planer, ocene, XP, ics, podsetnici |
 | AI | `src/lib/ai/*` | prompt → (API ili ručno) → izvlačenje JSON-a → `zod` → predlog |
-| UI | `src/pages`, `src/components` | React ekrani i zajednički elementi |
+| UI | `src/pages`, `src/components` | React ekrani i zajednički elementi (`NumberInput` za sva brojčana polja, `KeyScope` za Enter/Esc) |
 | Testovi | `*.test.ts(x)`, `e2e/` | Vitest (unit, komponente), Playwright + axe (e2e) |
+
+## Jezici (i18n)
+- **Jedan fajl = jedan jezik.** `src/i18n/locales/*.ts` se otkrivaju automatski (`import.meta.glob`); fajl izvozi `code`, `name`, `dateLocale` (date-fns) i `messages`. Spisak ključeva je `sr-Latn.ts`; TypeScript i test (`i18n.test.ts`) padaju ako drugom jeziku neki ključ ili `{parametar}` fali.
+- **`t(ključ, parametri)`** radi i van Reacta, pa čista logika u `lib/` (upozorenja, planer, prompt) vraća tekst na izabranom jeziku. `useT()` ponovo iscrtava ekran kad se jezik promeni. Množina: ključevi `.one/.few/.other` preko `Intl.PluralRules`.
+- **Unutrašnji ID-evi se ne prevode.** Kategorije, tipovi i statusi u podacima ostaju isti (`'kolokvijum'`, `'ne-idem'`...), a prevode se samo oznake (`lib/labels.ts`). Zato promena jezika ne menja sačuvane podatke.
+- **Podrazumevane vrednosti zavise od jezika.** Prazno ime nagrade i valute znače „podrazumevano za izabrani jezik".
+
+## Migracija podataka
+Sačuvani podaci imaju verziju (`DATA_VERSION`). `migrateData()` u `lib/defaults.ts` pretvara stari oblik u novi (npr. `ps5EarnedMin` → `rewardEarnedMin`). Pokreće se pri učitavanju iz IndexedDB-a i pri uvozu JSON-a, čista je funkcija i bezbedno se pokreće više puta.
 
 ## Zašto ovako
 - **Dva AI režima, jedan kod.** Ručni i API režim dele `buildPrompt`, `parseAiResponse` i prikaz. Razlika je samo u tome ko šalje prompt (ja kopiranjem, ili `fetch`).
@@ -50,6 +62,7 @@ flowchart LR
 - **Validacija na granici.** Sve što dolazi spolja (AI odgovor, uvezeni JSON) prolazi proveru pre nego što dodirne store.
 - **Idempotentan XP.** Svaki događaj ima `id`; isti `id` nikad ne daje XP dvaput (`progress.awarded`).
 - **Offline.** `vite-plugin-pwa` kešira aplikaciju; podaci su u IndexedDB; samo AI poziv traži internet.
+- **Tastatura svuda.** `KeyScope` daje Enter (potvrdi) i Esc (otkaži) koraku, formi ili dijalogu; u višeredom polju Enter pravi novi red (potvrda je Ctrl+Enter).
 - **Bez servera.** Zato su notifikacije ograničene (vidi README), a `.ics` izvoz je rezerva.
 
 ## Planer (`lib/planner.ts`)

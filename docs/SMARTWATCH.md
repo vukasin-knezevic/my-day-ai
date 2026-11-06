@@ -1,4 +1,6 @@
-# Huawei Watch GT 6 Pro i podaci o snu — šta je realno moguće
+# Podaci o snu sa pametnog sata — šta je realno moguće
+
+_Primer: Huawei Health i Huawei satovi. Isti zaključci važe za većinu proizvođača: bez zvaničnog, potvrđenog formata izvoza uvoz bi bio izmišljanje._
 
 > Status istraživanja: **delimično potvrđeno**. Tamo gde nisam našao pouzdan izvor, piše „nepotvrđeno". Nijedan format fajla nije izmišljen.
 

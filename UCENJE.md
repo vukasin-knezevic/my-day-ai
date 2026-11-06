@@ -71,7 +71,7 @@ Zustand `persist` upisuje stanje u IndexedDB (u try/catch, da aplikacija radi i 
 Tri nivoa: unit testovi čiste logike (Vitest, pokrivenost `lib/` oko 93%), komponentni testovi (Testing Library) i end-to-end u pravom Chromium-u (Playwright), plus automatska provera pristupačnosti (axe). AI je testiran sa lažnim odgovorima, uključujući neispravan JSON. Axe je našao stvarne probleme sa kontrastom koje sam popravio.
 
 **10. Koja su ograničenja i šta bi radio dalje?**
-Nema servera, pa notifikacije na telefonu nisu pouzdane (zato `.ics` izvoz); nema sinhronizacije između uređaja; Huawei san se unosi ručno jer nisam mogao da potvrdim format izvoza. Dalje: sinhronizacija, Google Calendar, push notifikacije preko servera, pametniji planer. I da sam deo koda pisao uz Claude Code, ali da razumem arhitekturu i mogu da objasnim svaku odluku.
+Nema servera, pa notifikacije na telefonu nisu pouzdane (zato `.ics` izvoz); nema sinhronizacije između uređaja; san sa pametnog sata se unosi ručno jer nisam mogao da potvrdim format izvoza (vidi `docs/SMARTWATCH.md`). Dalje: sinhronizacija, Google Calendar, push notifikacije preko servera, pametniji planer. I da sam deo koda pisao uz Claude Code, ali da razumem arhitekturu i mogu da objasnim svaku odluku.
 
 ## 4. Kako da učiš iz ovog projekta
 - Promeni jedno pravilo u `planner.ts` (npr. `MAX_STUDY_BLOCK`), pokreni `npm test` i vidi koji testovi pucaju i zašto.
