@@ -12,8 +12,13 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["vite/client", "vite-plugin-pwa/client", "vitest/globals", "node", "@testing-library/jest-dom"]
+    "types": [
+      "vite/client",
+      "vite-plugin-pwa/client",
+      "vitest/globals",
+      "node",
+      "@testing-library/jest-dom"
+    ]
   },
   "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"]
 }
-
