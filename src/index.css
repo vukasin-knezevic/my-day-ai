@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+/* Dark mode is toggled with a class on <html> (see lib/theme.ts) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-study: #2563eb;
+  --color-workout: #f97316;
+  --color-sleep: #8b5cf6;
+  --color-games: #16a34a;
+  --color-food: #dc2626;
+  --color-money: #eab308;
+  --color-habits: #14b8a6;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
