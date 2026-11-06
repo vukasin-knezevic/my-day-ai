@@ -26,3 +26,6 @@ Urađena obaveza daje XP (učenje 10 XP na 30 min, trening 30, prijava 20, navik
 
 ## Faza 8 — AI (API i ručni režim)
 Postoje dva režima sa istim kodom iza njih (`src/lib/ai/`): u API režimu aplikacija šalje zahtev Anthropic-u iz pregledača običnim `fetch`-om, a u ručnom režimu kopiraš gotov prompt u Claude chat i nalepiš odgovor. Oba puta prolaze kroz isti `parseAiResponse`: pronađe JSON u tekstu pun priče i proveri ga `zod` šemom, kao što u Pythonu proveravaš podatke sa `pydantic`. Model uvek može da vrati loš JSON, zato svaka AI funkcija ima jasnu poruku šta da tražiš i rezervu bez AI-ja. Testovi koriste lažni (mock) `fetch`, pa ne troše pravi novac.
+
+## Faza 9 — Podsetnici i pregled
+Notifikacije pregledača rade samo dok je aplikacija otvorena ili nedavno korišćena, jer nema servera koji bi slao push. Zato postoji i izvoz u `.ics` (standardni format kalendara), pa telefon podseća sam preko kalendara. Odluka „kada se šalje podsetnik" je čista funkcija `dueReminders`, pa je testirana bez pregledača. Pregled nedelje i meseca računa sate po kategoriji, ciljeve, troškove, san, XP i poene, a Recharts crta grafikon.

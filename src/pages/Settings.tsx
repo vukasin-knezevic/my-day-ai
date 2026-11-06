@@ -1,4 +1,7 @@
-import { useStore } from '../store'
+import { useState } from 'react'
+import { selectData, useStore } from '../store'
+import { buildIcs, downloadText } from '../lib/ics'
+import { requestNotifications } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 
@@ -8,6 +11,7 @@ export default function Settings() {
   const loadDemo = useStore((s) => s.loadDemo)
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
+  const [notifMsg, setNotifMsg] = useState('')
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
@@ -95,6 +99,42 @@ export default function Settings() {
               />
             </Field>
           </div>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">🔔 Podsetnici</h2>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-5"
+              checked={settings.reminders}
+              onChange={async (e) => {
+                if (e.target.checked) {
+                  const ok = await requestNotifications()
+                  setNotifMsg(
+                    ok ? '' : 'Pregledač nije dozvolio notifikacije (proveri podešavanja sajta).',
+                  )
+                  setSettings({ reminders: ok })
+                } else setSettings({ reminders: false })
+              }}
+            />
+            Notifikacije pregledača (pre predavanja, rokova, prijava i spavanja)
+          </label>
+          {notifMsg && (
+            <p role="alert" className="text-sm text-red-700">
+              {notifMsg}
+            </p>
+          )}
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Iskreno: bez servera notifikacije na telefonu rade pouzdano samo dok je aplikacija
+            otvorena ili nedavno korišćena. Za pouzdane podsetnike izvezi kalendar (.ics) i uvezi ga
+            u kalendar telefona; kalendar tada podseća sam.
+          </p>
+          <Button
+            variant="soft"
+            onClick={() => downloadText('my-day-ai.ics', buildIcs(selectData(useStore.getState())))}
+          >
+            📅 Izvezi kalendar (.ics)
+          </Button>
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">🤖 AI</h2>

@@ -4,11 +4,12 @@ import { useStore } from './store'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
 import Onboarding from './pages/Onboarding'
-import Placeholder from './pages/Placeholder'
 import Planner from './pages/Planner'
 import Workout from './pages/Workout'
 import Life from './pages/Life'
 import Ai from './pages/Ai'
+import Overview from './pages/Overview'
+import { useReminders } from './lib/useReminders'
 import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
@@ -18,6 +19,8 @@ export default function App() {
   const hydrated = useStore((s) => s.hydrated)
   const onboarded = useStore((s) => s.settings.onboarded)
   const theme = useStore((s) => s.settings.theme)
+
+  useReminders()
 
   useEffect(() => {
     applyTheme(theme)
@@ -37,7 +40,7 @@ export default function App() {
           <Route path="planer" element={<Planner />} />
           <Route path="trening" element={<Workout />} />
           <Route path="zivot" element={<Life />} />
-          <Route path="pregled" element={<Placeholder title="📊 Pregled" phase="fazi 9" />} />
+          <Route path="pregled" element={<Overview />} />
           <Route path="ai" element={<Ai />} />
           <Route path="vise" element={<More />} />
           <Route path="podesavanja" element={<Settings />} />

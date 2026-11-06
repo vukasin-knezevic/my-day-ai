@@ -11,7 +11,7 @@
 - [x] Faza 6 — San, novac, navike (+ docs/HUAWEI.md)
 - [x] Faza 7 — Motivacija (XP, nivoi, nizovi, PS5 vreme)
 - [x] Faza 8 / 8b — AI (API + ručni režim)
-- [ ] Faza 9 — Podsetnici i pregledi
+- [x] Faza 9 — Podsetnici i pregledi
 - [ ] Faza 10 — Podaci i kvalitet (e2e, pokrivenost, pristupačnost)
 - [ ] Faza 11 — Portfolio (README, arhitektura, CI, Pages)
 - [ ] Faza 12 — Završetak (IZVESTAJ, UCENJE, ideje za v2)
