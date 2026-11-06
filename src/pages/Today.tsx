@@ -14,6 +14,9 @@ import {
 } from '../lib/schedule'
 import { parseQuick } from '../lib/quickParse'
 import { applyParsed } from '../lib/apply'
+import { computeStreaks, rewardForDone, streakMessages } from '../lib/xp'
+import { useToast } from '../lib/toast'
+import ProgressCard from '../components/ProgressCard'
 
 const PX_PER_HOUR = 44
 
@@ -104,7 +107,13 @@ export default function Today() {
 
   function mark(o: Occurrence, status: 'done' | 'skipped') {
     const a = data.activities.find((x) => x.id === o.activityId)
-    if (a) store.update('activities', a.id, withStatus(a, today, status))
+    if (!a) return
+    store.update('activities', a.id, withStatus(a, today, status))
+    if (status !== 'done') return
+    const ev = rewardForDone(a, today, data.settings.ps5MinPerStudyHour)
+    if (ev) store.award(ev)
+    const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
+    if (streaks.length) useToast.getState().push([...useToast.getState().messages, ...streaks])
   }
   function accept(o: Occurrence) {
     if (o.activityId) store.update('activities', o.activityId, { suggested: false })
@@ -119,6 +128,8 @@ export default function Today() {
           {daySummary(occ)}
         </p>
       </header>
+
+      <ProgressCard />
 
       {alerts.length > 0 && (
         <Card className="mb-4 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950">

@@ -3,7 +3,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useStore, selectData } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
-import { EXPENSE_CATEGORIES, type ExpenseCategory, type SleepLog } from '../types'
+import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
+import { XP } from '../lib/xp'
 import { addDaysStr, formatShort, monthOf, todayStr } from '../lib/dates'
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
@@ -293,10 +294,29 @@ function Money() {
 }
 
 function Habits() {
-  const { habits, add, update, remove } = useStore(
-    useShallow((s) => ({ habits: s.habits, add: s.add, update: s.update, remove: s.remove })),
+  const { habits, add, update, remove, award } = useStore(
+    useShallow((s) => ({
+      habits: s.habits,
+      add: s.add,
+      update: s.update,
+      remove: s.remove,
+      award: s.award,
+    })),
   )
   const today = todayStr()
+
+  /** Saves today's amount; reaching the goal gives XP once per day. */
+  function setEntry(h: Habit, value: number) {
+    update('habits', h.id, { entries: { ...h.entries, [today]: value } })
+    if (value >= h.goal)
+      award({
+        id: `habit-${h.id}-${today}`,
+        date: today,
+        reason: h.name,
+        xp: XP.habit,
+        category: 'habits',
+      })
+  }
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('💧')
   const [goal, setGoal] = useState(1)
@@ -337,11 +357,7 @@ function Habits() {
                   type="checkbox"
                   className="size-5"
                   checked={v >= 1}
-                  onChange={(e) =>
-                    update('habits', h.id, {
-                      entries: { ...h.entries, [today]: e.target.checked ? 1 : 0 },
-                    })
-                  }
+                  onChange={(e) => setEntry(h, e.target.checked ? 1 : 0)}
                 />
                 Danas urađeno
               </label>
@@ -351,12 +367,7 @@ function Habits() {
                   variant="soft"
                   aria-label={`Manje ${h.name}`}
                   onClick={() =>
-                    update('habits', h.id, {
-                      entries: {
-                        ...h.entries,
-                        [today]: Math.max(0, +(v - (h.goal >= 10 ? 5 : 0.5)).toFixed(1)),
-                      },
-                    })
+                    setEntry(h, Math.max(0, +(v - (h.goal >= 10 ? 5 : 0.5)).toFixed(1)))
                   }
                 >
                   −
@@ -367,14 +378,7 @@ function Habits() {
                 <Button
                   variant="soft"
                   aria-label={`Više ${h.name}`}
-                  onClick={() =>
-                    update('habits', h.id, {
-                      entries: {
-                        ...h.entries,
-                        [today]: +(v + (h.goal >= 10 ? 5 : 0.5)).toFixed(1),
-                      },
-                    })
-                  }
+                  onClick={() => setEntry(h, +(v + (h.goal >= 10 ? 5 : 0.5)).toFixed(1))}
                 >
                   +
                 </Button>

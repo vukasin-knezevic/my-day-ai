@@ -72,6 +72,15 @@ export default function Settings() {
                 onChange={(e) => setSettings({ proteinGoal: num(e.target.value) })}
               />
             </Field>
+            <Field label="PS5 min po satu učenja">
+              <Input
+                type="number"
+                min={0}
+                step={5}
+                value={settings.ps5MinPerStudyHour}
+                onChange={(e) => setSettings({ ps5MinPerStudyHour: num(e.target.value) })}
+              />
+            </Field>
             <Field label="Cilj sna (h)">
               <Input
                 type="number"

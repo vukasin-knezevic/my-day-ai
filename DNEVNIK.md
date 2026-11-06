@@ -20,3 +20,6 @@ Unosiš vežbe kao serije × ponavljanja × kilaža, a aplikacija pamti najveću
 
 ## Faza 6 — San, novac, navike
 San se beleži sa dva klika (Legao / Ustao), a aplikacija računa prosek 7 dana i predlaže vreme spavanja prema sutrašnjoj prvoj obavezi. Novac ima mesečni budžet po kategoriji i upozorenje na 80%. Navike imaju niz dana: niz se ne prekida ako današnja još nije urađena. Za Huawei sat sam istraživao i zapisao u `docs/HUAWEI.md` šta je potvrđeno, a šta ne; format fajla nisam izmišljao. Naučio si da je „ne znam" pošten odgovor kad nešto nije proverljivo.
+
+## Faza 7 — Motivacija
+Urađena obaveza daje XP (učenje 10 XP na 30 min, trening 30, prijava 20, navika 5), a svaki događaj ima jedinstven `id`, pa ista stvar nikad ne plati dvaput. Nivoi idu od Brucoša do Inženjera. Svaki sat učenja zarađuje PS5 minute (podesivo), a aplikacija samo prikazuje stanje, bez zamerki. Nizovi dana se računaju čistom funkcijom `streakOf`, a milestone-ovi (3, 7, 14, 30 dana) javljaju se kratkom porukom. Naučio si ideju idempotentnosti: ponovljen poziv ne menja rezultat.

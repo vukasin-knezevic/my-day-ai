@@ -22,6 +22,7 @@ import {
   totalVolume,
   workoutsInWeek,
 } from '../lib/workout'
+import { XP } from '../lib/xp'
 
 type Tab = 'trening' | 'plan' | 'ishrana'
 
@@ -64,8 +65,9 @@ interface Row {
 const emptyRow = (): Row => ({ name: '', sets: 3, reps: 8, weight: 0 })
 
 function Training() {
-  const { workouts, settings, add, remove } = useStore(
+  const { workouts, settings, add, remove, award } = useStore(
     useShallow((s) => ({
+      award: s.award,
       workouts: s.workouts,
       settings: s.settings,
       add: s.add,
@@ -103,13 +105,29 @@ function Training() {
     e.preventDefault()
     const exercises = toExercises()
     const records = newRecords({ exercises }, workouts)
-    add('workouts', {
+    const id = add('workouts', {
       date: today,
       type,
       durationMin: duration,
       exercises,
       feeling: feeling as WorkoutT['feeling'],
     })
+    award({
+      id: `workout-${id}`,
+      date: today,
+      reason: `Trening: ${type}`,
+      xp: XP.workout,
+      category: 'workout',
+    })
+    records.forEach((r) =>
+      award({
+        id: `pr-${id}-${r.name}`,
+        date: today,
+        reason: `Rekord: ${r.name} ${r.weight} kg`,
+        xp: XP.personalRecord,
+        category: 'workout',
+      }),
+    )
     setMsg(
       records.length
         ? `🎉 Novi rekord: ${records.map((r) => `${r.name} ${r.weight} kg (bilo ${r.before})`).join(', ')}`

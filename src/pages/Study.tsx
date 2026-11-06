@@ -15,6 +15,7 @@ import {
   urgency,
 } from '../lib/exams'
 import { subjectPoints } from '../lib/grades'
+import { XP } from '../lib/xp'
 
 type Tab = 'raspored' | 'ispiti' | 'poeni'
 const MONTHS = [
@@ -311,10 +312,11 @@ function SubjectCard({
 
 /* ---------------- Ispiti ---------------- */
 function Assessments() {
-  const { subjects, assessments, add, update, remove } = useStore(
+  const { subjects, assessments, add, update, remove, award } = useStore(
     useShallow((s) => ({
       subjects: s.subjects,
       assessments: s.assessments,
+      award: s.award,
       add: s.add,
       update: s.update,
       remove: s.remove,
@@ -406,11 +408,19 @@ function Assessments() {
                     type="checkbox"
                     className="size-5"
                     checked={a.registration === 'prijavljen'}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       update('assessments', a.id, {
                         registration: e.target.checked ? 'prijavljen' : 'nije-prijavljen',
                       })
-                    }
+                      if (e.target.checked)
+                        award({
+                          id: `reg-${a.id}`,
+                          date: today,
+                          reason: `Prijavljen: ${a.title}`,
+                          xp: XP.registration,
+                          category: 'study',
+                        })
+                    }}
                   />
                   Da li si prijavio?{' '}
                   {a.registrationDeadline && (

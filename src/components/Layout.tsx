@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useToast } from '../lib/toast'
 
 const MAIN = [
   { to: '/', label: 'Danas', icon: '🌅' },
@@ -22,9 +23,26 @@ function linkCls({ isActive }: { isActive: boolean }) {
   }`
 }
 
+function Toasts() {
+  const messages = useToast((s) => s.messages)
+  if (!messages.length) return null
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-x-4 top-4 z-20 mx-auto max-w-sm space-y-1 rounded-2xl bg-slate-900 p-3 text-sm text-white shadow-lg"
+    >
+      {messages.map((m) => (
+        <p key={m}>{m}</p>
+      ))}
+    </div>
+  )
+}
+
 export default function Layout() {
   return (
     <div className="min-h-screen md:flex">
+      <Toasts />
       <aside className="hidden w-56 shrink-0 border-r border-slate-200 p-3 md:block dark:border-slate-800">
         <div className="mb-4 px-3 text-lg font-bold">🌅 My Day AI</div>
         <nav aria-label="Glavna navigacija" className="space-y-1">

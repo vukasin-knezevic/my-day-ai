@@ -5,6 +5,8 @@ import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { todayStr } from './lib/dates'
+import { award as awardXp, spendPs5 as spendTime, type AwardEvent } from './lib/xp'
+import { useToast } from './lib/toast'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -44,6 +46,10 @@ interface Actions {
   hasDemo: () => boolean
   importAll: (data: Partial<AppData>) => void
   resetAll: () => void
+  /** Gives XP (once per event id) and shows a toast with the result. */
+  award: (e: AwardEvent) => void
+  /** Records PS5 time I spent (no judging). */
+  spendPs5: (min: number, game?: string) => void
 }
 
 export type Store = AppData & Actions
@@ -107,6 +113,17 @@ export const useStore = create<Store>()(
         COLLECTIONS.some((k) => (get()[k] as { demo?: boolean }[]).some((x) => x.demo)),
       importAll: (data) => set({ ...normalizeData(data) }),
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
+      award: (e) => {
+        const r = awardXp(get().progress, e)
+        if (r.progress !== get().progress) set({ progress: r.progress })
+        useToast.getState().push(r.messages)
+      },
+      spendPs5: (min, game = 'PS5') => {
+        set((s) => ({
+          progress: spendTime(s.progress, min),
+          games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
+        }))
+      },
     }),
     {
       name: 'my-day-ai',
