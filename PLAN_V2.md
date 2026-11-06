@@ -6,4 +6,4 @@
 - [x] Deo 2 — Opšta verzija (nagrada umesto PS5, bez ličnih detalja, izbor AI režima u onboardingu)
 - [x] Deo 3 — Više jezika (i18n: sr-Latn, en, sr-Cyrl)
 - [x] Deo 4 — README kao opšti proizvod, screenshot-ovi, arhitektura
-- [ ] Deo 5 — Završetak (IZVESTAJ, UCENJE)
+- [x] Deo 5 — Završetak (IZVESTAJ, UCENJE)

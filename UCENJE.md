@@ -77,3 +77,23 @@ Nema servera, pa notifikacije na telefonu nisu pouzdane (zato `.ics` izvoz); nem
 - Promeni jedno pravilo u `planner.ts` (npr. `MAX_STUDY_BLOCK`), pokreni `npm test` i vidi koji testovi pucaju i zašto.
 - Dodaj jednu rečenicu u `quickParse.test.ts` koja ne radi, pa popravi parser dok ne prođe.
 - Pročitaj `DNEVNIK.md` redom: za svaku fazu piše šta je napravljeno i šta si naučio.
+
+## 5. Novo u verziji 1.1: tri ideje koje vredi razumeti
+
+### Šta je i18n (internacionalizacija)
+**i18n** znači da aplikacija ne drži tekst u kodu, nego u fajlovima prevoda. U Pythonu bi to bio rečnik po jeziku:
+
+```python
+PREVODI = {"en": {"save": "Save"}, "sr-Latn": {"save": "Sačuvaj"}}
+def t(kljuc): return PREVODI[jezik][kljuc]
+```
+Ovde je isto: `t('common.add')` vrati „Dodaj" ili „Add", zavisno od izabranog jezika. Fajlovi su u `src/i18n/locales/`. Novi jezik = novi fajl, bez menjanja koda, jer aplikacija sama pronađe sve fajlove u toj fascikli. Test `i18n.test.ts` proverava da svaki jezik ima **iste ključeve** i iste `{parametre}`, kao `assert set(en) == set(sr)` u pytest-u. Datumi i brojevi se ne prevode ručno nego ih formatiraju `date-fns` locale i `Intl` (ugrađeno u pregledač). Množina („1 dan, 2 dana, 5 dana") ima tri oblika u srpskom, pa ključevi imaju nastavke `.one`, `.few`, `.other`.
+
+### Šta je migracija podataka
+Kad promeniš oblik sačuvanih podataka (npr. polje `ps5EarnedMin` postane `rewardEarnedMin`), ljudi koji već imaju stare podatke ne smeju da ih izgube. **Migracija** je funkcija koja stari oblik pretvori u novi. U projektu je to `migrateData()` u `lib/defaults.ts`: čista funkcija koja premesti polja i može da se pokrene više puta bez štete. Pokreće se pri učitavanju iz IndexedDB-a i pri uvozu JSON-a. Slično je Django migracijama ili `ALTER TABLE` u bazama, samo što su ovde podaci u pregledaču.
+
+### Kako radi zajednička `NumberInput` komponenta
+Običan `<input type="number">` u Reactu pravi grešku: kad obrišeš broj, kod ga pretvori u `0`, pa kad ukucaš `3` dobiješ `03`. `NumberInput` zato **čuva ono što kucaš kao tekst** (`"3"`, ili prazno), a roditelju uvek šalje ispravan broj ograničen na `min`/`max`. Polje sme da bude prazno dok kucaš; kad ga napustiš, tekst se uskladi sa sačuvanom vrednošću. Zato popravka važi svuda gde se komponenta koristi: jedna komponenta umesto petnaest kopija iste greške. Za polja koja smeju da budu prazna (npr. „poeni" koji još nisu uneseni) postoji `onEmpty`, koji sačuva `null`.
+
+U istom duhu je `KeyScope`: mala komponenta koja daje `Enter` (potvrdi) i `Esc` (otkaži) jednom koraku ili dijalogu, pa se tastatura ponaša isto svuda.
+

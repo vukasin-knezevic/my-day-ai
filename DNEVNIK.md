@@ -53,3 +53,6 @@ Aplikacija sada ima i18n (internacionalizaciju): svi tekstovi interfejsa su u fa
 ## Deo 4 — README kao opšti proizvod
 README sada izgleda kao opis proizvoda za bilo kog studenta: na vrhu su „Live demo" dugme i CI značka, kratka lična priča i rečenica da sam aplikaciju osmislio ja, a kod pisao uz Claude Code. Uklonio sam uputstva koja su bila namenjena meni (uključivanje GitHub Pages), jer se stranica objavljuje sama pri svakom push-u. Dodao sam sekcije „Jezici" i „Kako dodati jezik" (tri koraka) i nove screenshot-ove: svetla i tamna tema, telefon i laptop, srpski, engleski i ćirilica. Istraživanje o Huawei satu preimenovano je u opšti `docs/SMARTWATCH.md`, a `docs/ARHITEKTURA.md` opisuje i18n sloj i migraciju podataka.
 
+## Deo 5 — Završetak
+Svi testovi prolaze (271 unit/komponentni i 21 e2e), build je bez upozorenja, a GitHub Pages se sam ažurira posle svakog push-a. `IZVESTAJ.md` sada ima odeljak „Šta je novo u verziji 1.1" i ažuriran spisak onoga što nije urađeno (npr. engleski prevod nije pregledao izvorni govornik). U `UCENJE.md` sam dodao objašnjenja za i18n, migraciju podataka i `NumberInput`. Najvažnija lekcija ove verzije: ono što si napravio za sebe lako postane tuđi problem (fiksan „PS5", srpski tekst u kodu), pa se opšta verzija pravi tako što se sve lično pretvori u podešavanje ili prevod.
+
