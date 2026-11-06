@@ -114,7 +114,7 @@ export default function Today() {
     if (!a) return
     store.update('activities', a.id, withStatus(a, today, status))
     if (status !== 'done') return
-    const ev = rewardForDone(a, today, data.settings.ps5MinPerStudyHour)
+    const ev = rewardForDone(a, today, data.settings.rewardMinPerStudyHour)
     if (ev) store.award(ev)
     const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
     if (streaks.length) useToast.getState().push([...useToast.getState().messages, ...streaks])

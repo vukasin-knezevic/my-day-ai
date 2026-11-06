@@ -5,7 +5,7 @@ import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { todayStr } from './lib/dates'
-import { award as awardXp, spendPs5 as spendTime, type AwardEvent } from './lib/xp'
+import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
 import { useToast } from './lib/toast'
 
 /** Collections where every item has an `id`. */
@@ -49,8 +49,8 @@ interface Actions {
   resetAll: () => void
   /** Gives XP (once per event id) and shows a toast with the result. */
   award: (e: AwardEvent) => void
-  /** Records PS5 time I spent (no judging). */
-  spendPs5: (min: number, game?: string) => void
+  /** Records reward time I used (no judging). */
+  spendReward: (min: number, game?: string) => void
 }
 
 export type Store = AppData & Actions
@@ -115,11 +115,12 @@ export const useStore = create<Store>()(
       importAll: (data) => set({ ...normalizeData(data) }),
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
       award: (e) => {
-        const r = awardXp(get().progress, e)
+        const { rewardName: name, rewardEmoji: emoji } = get().settings
+        const r = awardXp(get().progress, e, { name, emoji })
         if (r.progress !== get().progress) set({ progress: r.progress })
         useToast.getState().push(r.messages)
       },
-      spendPs5: (min, game = 'PS5') => {
+      spendReward: (min, game = get().settings.rewardName) => {
         set((s) => ({
           progress: spendTime(s.progress, min),
           games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],

@@ -1,4 +1,4 @@
-// XP, levels, streaks and PS5 time as a reward. Pure functions.
+// XP, levels, streaks and the user-named reward time. Pure functions.
 import type { Activity, AppData, Category, Progress } from '../types'
 import { addDaysStr, timeToMin } from './dates'
 import { habitDone, sleepHours } from './life'
@@ -63,9 +63,9 @@ export function xpForActivity(category: Category, minutes: number): number {
   }
 }
 
-/** PS5 minutes earned: ps5MinPerStudyHour for every hour of study. */
-export function ps5ForStudy(minutes: number, ps5MinPerStudyHour: number): number {
-  return Math.floor(((minutes / 60) * ps5MinPerStudyHour) / 5) * 5
+/** Reward minutes earned: rewardMinPerStudyHour for every hour of study. */
+export function rewardForStudy(minutes: number, rewardMinPerStudyHour: number): number {
+  return Math.floor(((minutes / 60) * rewardMinPerStudyHour) / 5) * 5
 }
 
 export interface AwardEvent {
@@ -75,16 +75,26 @@ export interface AwardEvent {
   reason: string
   xp: number
   category: Category
-  ps5Min?: number
+  rewardMin?: number
 }
 
-export function award(p: Progress, e: AwardEvent): { progress: Progress; messages: string[] } {
-  if (p.awarded.includes(e.id) || (e.xp <= 0 && !e.ps5Min)) return { progress: p, messages: [] }
+export interface RewardInfo {
+  name: string
+  emoji: string
+}
+const DEFAULT_REWARD: RewardInfo = { name: 'Vreme za zabavu', emoji: '🎮' }
+
+export function award(
+  p: Progress,
+  e: AwardEvent,
+  reward: RewardInfo = DEFAULT_REWARD,
+): { progress: Progress; messages: string[] } {
+  if (p.awarded.includes(e.id) || (e.xp <= 0 && !e.rewardMin)) return { progress: p, messages: [] }
   const before = levelFor(p.xp)
   const progress: Progress = {
     ...p,
     xp: p.xp + e.xp,
-    ps5EarnedMin: p.ps5EarnedMin + (e.ps5Min ?? 0),
+    rewardEarnedMin: p.rewardEarnedMin + (e.rewardMin ?? 0),
     awarded: [...p.awarded, e.id],
     events: [
       ...p.events,
@@ -94,7 +104,7 @@ export function award(p: Progress, e: AwardEvent): { progress: Progress; message
   const after = levelFor(progress.xp)
   const messages: string[] = []
   if (e.xp > 0) messages.push(`+${e.xp} XP · ${e.reason}`)
-  if (e.ps5Min) messages.push(`🎮 +${e.ps5Min} min PS5`)
+  if (e.rewardMin) messages.push(`${reward.emoji} +${e.rewardMin} min: ${reward.name}`)
   if (after.index > before.index) messages.push(`🎉 Novi nivo: ${after.name}!`)
   return { progress, messages }
 }
@@ -103,13 +113,13 @@ export function award(p: Progress, e: AwardEvent): { progress: Progress; message
 export function rewardForDone(
   a: { id: string; title: string; category: Category; start: string; end: string },
   date: string,
-  ps5MinPerStudyHour: number,
+  rewardMinPerStudyHour: number,
 ): AwardEvent | null {
   const minutes = timeToMin(a.end) - timeToMin(a.start)
   const xp = xpForActivity(a.category, minutes)
-  const ps5Min = a.category === 'study' ? ps5ForStudy(minutes, ps5MinPerStudyHour) : 0
-  if (xp <= 0 && !ps5Min) return null
-  return { id: `act-${a.id}-${date}`, date, reason: a.title, xp, category: a.category, ps5Min }
+  const rewardMin = a.category === 'study' ? rewardForStudy(minutes, rewardMinPerStudyHour) : 0
+  if (xp <= 0 && !rewardMin) return null
+  return { id: `act-${a.id}-${date}`, date, reason: a.title, xp, category: a.category, rewardMin }
 }
 
 /** Streak milestone messages for all streaks (e.g. "🔥 7 dana treninga zaredom!"). */
@@ -123,10 +133,10 @@ export function streakMessages(s: Streaks): string[] {
   return names.filter(([k]) => isMilestone(s[k])).map(([k, n]) => `🔥 ${s[k]} dana ${n} zaredom!`)
 }
 
-export function spendPs5(p: Progress, minutes: number): Progress {
-  return { ...p, ps5SpentMin: p.ps5SpentMin + Math.max(0, minutes) }
+export function spendReward(p: Progress, minutes: number): Progress {
+  return { ...p, rewardSpentMin: p.rewardSpentMin + Math.max(0, minutes) }
 }
-export const ps5Balance = (p: Progress) => p.ps5EarnedMin - p.ps5SpentMin
+export const rewardBalance = (p: Progress) => p.rewardEarnedMin - p.rewardSpentMin
 
 /* ---- streaks ---- */
 /** Consecutive days ending today (or yesterday, if today is not done yet). */

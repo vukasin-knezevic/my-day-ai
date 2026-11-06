@@ -1,5 +1,5 @@
 import type { AppData } from '../types'
-import { normalizeData } from './defaults'
+import { DATA_VERSION, normalizeData } from './defaults'
 
 const ARRAY_KEYS = [
   'subjects',
@@ -18,7 +18,7 @@ const ARRAY_KEYS = [
 export function exportJson(data: AppData, includeKey = false): string {
   const out = {
     app: 'my-day-ai',
-    version: 1,
+    version: DATA_VERSION,
     exportedAt: new Date().toISOString(),
     data: {
       ...data,

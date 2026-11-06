@@ -235,9 +235,9 @@ export interface XpEvent {
 export interface Progress {
   xp: number
   events: XpEvent[]
-  /** PS5 minutes earned and spent */
-  ps5EarnedMin: number
-  ps5SpentMin: number
+  /** Reward minutes earned and spent (the reward is named by the user in settings) */
+  rewardEarnedMin: number
+  rewardSpentMin: number
   /** ids of already awarded things (prevents double XP) */
   awarded: string[]
 }
@@ -256,7 +256,10 @@ export interface Settings {
   modelFast: string
   modelStrong: string
   reminders: boolean
-  ps5MinPerStudyHour: number
+  rewardMinPerStudyHour: number
+  /** What the user calls the reward, e.g. "Vreme za igrice" */
+  rewardName: string
+  rewardEmoji: string
   onboarded: boolean
 }
 

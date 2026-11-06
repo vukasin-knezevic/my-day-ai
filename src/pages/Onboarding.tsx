@@ -4,7 +4,7 @@ import { Button, Card, Field, Input } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
 
-const STEPS = ['Ime', 'Ritam dana', 'Ciljevi', 'Predmeti', 'AI ključ']
+const STEPS = ['Ime', 'Ritam dana', 'Ciljevi', 'Nagrada', 'Predmeti', 'AI režim']
 
 export default function Onboarding() {
   const settings = useStore((s) => s.settings)
@@ -22,7 +22,7 @@ export default function Onboarding() {
   const back = () => step > 0 && setStep(step - 1)
 
   function finish() {
-    setSettings({ ...draft, onboarded: true, aiMode: draft.apiKey.trim() ? 'api' : 'manual' })
+    setSettings({ ...draft, onboarded: true })
     if (demo) loadDemo()
   }
 
@@ -39,7 +39,7 @@ export default function Onboarding() {
               <Input
                 value={draft.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="npr. Vukašin"
+                placeholder="npr. Marko"
               />
             </Field>
           )}
@@ -99,6 +99,40 @@ export default function Onboarding() {
           {step === 3 && (
             <>
               <p className="text-sm">
+                Za učenje zarađuješ nagradu koju sam biraš: vreme za igrice, epizodu serije,
+                izlazak… Aplikacija je samo broji, bez zamerki.
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <Field label="Naziv nagrade">
+                    <Input
+                      value={draft.rewardName}
+                      onChange={(e) => set('rewardName', e.target.value)}
+                      placeholder="npr. Vreme za igrice"
+                    />
+                  </Field>
+                </div>
+                <Field label="Emotikon">
+                  <Input
+                    value={draft.rewardEmoji}
+                    onChange={(e) => set('rewardEmoji', e.target.value)}
+                  />
+                </Field>
+              </div>
+              <Field label="Minuta nagrade po satu učenja">
+                <NumberInput
+                  min={0}
+                  max={120}
+                  step={5}
+                  value={draft.rewardMinPerStudyHour}
+                  onChange={(v) => set('rewardMinPerStudyHour', v)}
+                />
+              </Field>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <p className="text-sm">
                 Predmete i raspored unosiš kasnije na ekranu <strong>Faks</strong>. Aplikacija ne
                 zna tvoje predmete, pa možeš da učitaš demo podatke (jasno označene sa „primer") da
                 vidiš kako sve izgleda.
@@ -114,24 +148,70 @@ export default function Onboarding() {
               </label>
             </>
           )}
-          {step === 4 && (
+          {step === 5 && (
             <>
               <p className="text-sm">
-                Bez ključa radi <strong>Ručni AI režim</strong> (kopiraš prompt u Claude chat,
-                besplatno). Ključ možeš da dodaš i kasnije u podešavanjima.
+                AI pravi planove, rezime i pametan unos. Izaberi kako da radi (možeš da promeniš u
+                podešavanjima):
               </p>
-              <Field label="Anthropic API ključ (opciono)">
-                <Input
-                  type="password"
-                  autoComplete="off"
-                  value={draft.apiKey}
-                  onChange={(e) => set('apiKey', e.target.value)}
-                  placeholder="sk-ant-…"
-                />
-              </Field>
-              <p className="text-xs text-amber-700 dark:text-amber-400">
-                ⚠️ Ključ se čuva samo na ovom uređaju i vidljiv je u pregledaču. Nikome ga ne deli.
-              </p>
+              <fieldset className="space-y-2">
+                <legend className="sr-only">AI režim</legend>
+                <label className="flex items-start gap-2 rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700">
+                  <input
+                    type="radio"
+                    name="ai-mode"
+                    className="mt-1 size-4"
+                    checked={draft.aiMode === 'manual'}
+                    onChange={() => set('aiMode', 'manual')}
+                  />
+                  <span>
+                    <strong>Ručni (besplatno)</strong>
+                    <br />
+                    Kopiraš gotov tekst u Claude chat i nalepiš odgovor nazad.
+                  </span>
+                </label>
+                <label className="flex items-start gap-2 rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700">
+                  <input
+                    type="radio"
+                    name="ai-mode"
+                    className="mt-1 size-4"
+                    checked={draft.aiMode === 'api'}
+                    onChange={() => set('aiMode', 'api')}
+                  />
+                  <span>
+                    <strong>API (plaća se po upotrebi)</strong>
+                    <br />
+                    Aplikacija sama zove Claude, bez kopiranja. Treba ti Anthropic API ključ, a
+                    plaćaš po potrošnji (obično nekoliko centi mesečno).
+                  </span>
+                </label>
+              </fieldset>
+              <a
+                className="block text-sm font-medium text-blue-700 underline dark:text-blue-300"
+                href="https://www.anthropic.com/pricing"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Saznaj više o ceni i ključu ↗
+              </a>
+              {draft.aiMode === 'api' && (
+                <>
+                  <Field label="Anthropic API ključ (možeš i kasnije)">
+                    <Input
+                      type="password"
+                      autoComplete="off"
+                      value={draft.apiKey}
+                      onChange={(e) => set('apiKey', e.target.value)}
+                      placeholder="sk-ant-…"
+                    />
+                  </Field>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    ⚠️ Ključ se čuva samo na ovom uređaju i vidljiv je u pregledaču. Nikome ga ne
+                    deli, ne unosi ga na tuđem računaru i postavi mesečni limit potrošnje u
+                    Anthropic konzoli.
+                  </p>
+                </>
+              )}
             </>
           )}
           <div className="flex justify-between pt-2">

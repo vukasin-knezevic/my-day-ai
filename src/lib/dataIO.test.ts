@@ -1,5 +1,5 @@
 import { exportJson, importJson } from './dataIO'
-import { emptyData } from './defaults'
+import { emptyData, normalizeData } from './defaults'
 import { makeDemoData } from './demo'
 import type { AppData } from '../types'
 
@@ -45,5 +45,40 @@ describe('export / import', () => {
       message: expect.stringContaining('lista'),
     })
     expect(importJson('{"settings": 5}')).toMatchObject({ ok: false })
+  })
+})
+
+describe('migration of older data (PS5 -> reward)', () => {
+  it('moves the old PS5 fields to the reward fields', () => {
+    const old = {
+      progress: { xp: 120, events: [], ps5EarnedMin: 90, ps5SpentMin: 30, awarded: ['a'] },
+      settings: { name: 'Mila', ps5MinPerStudyHour: 45 },
+    }
+    const d = normalizeData(old as never)
+    expect(d.progress).toMatchObject({ xp: 120, rewardEarnedMin: 90, rewardSpentMin: 30 })
+    expect(d.settings).toMatchObject({ name: 'Mila', rewardMinPerStudyHour: 45 })
+    expect('ps5EarnedMin' in d.progress).toBe(false)
+    expect('ps5MinPerStudyHour' in d.settings).toBe(false)
+    // new fields get their defaults
+    expect(d.settings.rewardName).toBe('Vreme za zabavu')
+    expect(d.settings.rewardEmoji).toBe('🎮')
+  })
+  it('is safe to run twice and does not overwrite new fields', () => {
+    const once = normalizeData({ progress: { rewardEarnedMin: 10 } } as never)
+    const twice = normalizeData(once)
+    expect(twice).toEqual(once)
+    expect(
+      normalizeData({ progress: { ps5EarnedMin: 5, rewardEarnedMin: 7 } } as never).progress
+        .rewardEarnedMin,
+    ).toBe(7)
+  })
+  it('importing an old backup keeps the minutes', () => {
+    const text = JSON.stringify({ data: { progress: { ps5EarnedMin: 40 }, settings: {} } })
+    const r = importJson(text)
+    expect(r.ok && r.data.progress.rewardEarnedMin).toBe(40)
+  })
+  it('a user can name the reward (e.g. PS5 time) and it survives', () => {
+    const d = normalizeData({ settings: { rewardName: 'PS5 vreme', rewardEmoji: '🕹️' } } as never)
+    expect(d.settings.rewardName).toBe('PS5 vreme')
   })
 })

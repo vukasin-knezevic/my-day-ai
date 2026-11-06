@@ -43,3 +43,6 @@ Napisao sam `IZVESTAJ.md` sa poštenim spiskom šta radi, šta nije urađeno i �
 
 ## Deo 1 — Popravke
 Greška sa nulom je nastajala jer je polje stalno pretvaralo prazan tekst u broj `0`. Sada postoji jedna zajednička komponenta `NumberInput` koja čuva ono što kucaš kao tekst, pa polje sme da bude prazno, a vrednost se ograničava na min/max. Tastatura radi preko male komponente `KeyScope`: Enter ide „Dalje/Sačuvaj/Potvrdi", Esc „Nazad/Otkaži", a u višeredom polju Enter samo pravi novi red. Posle promene koraka fokus se vraća na prvo polje, inače bi pritisak na Enter ostao bez efekta. Dodata je forma za novu i izmenu aktivnosti sa ponavljanjem (dnevno, radnim danima, nedeljno) i čuvanje sopstvenih šablona treninga.
+
+## Deo 2 — Opšta verzija
+„PS5" više nije fiksan pojam: korisnik sam imenuje nagradu (podrazumevano „Vreme za zabavu" sa emotikonom 🎮), a u kodu polja sada imaju opšta imena (`rewardEarnedMin`…). Da stari sačuvani podaci ne bi pukli, napisao sam funkciju `migrateData` koja premesti stara polja u nova; pokreće se pri učitavanju i pri uvozu, a može da se pokrene dvaput bez štete. Prompt za AI i demo podaci više ne pominju fakultet ni konkretnu igricu. Onboarding ima nove korake „Nagrada" i „AI režim" (ručni besplatno ili API koji se plaća po upotrebi, sa upozorenjem o ključu).

@@ -78,14 +78,6 @@ export default function Settings() {
                 onChange={(v) => setSettings({ proteinGoal: v })}
               />
             </Field>
-            <Field label="PS5 min po satu učenja">
-              <NumberInput
-                min={0}
-                step={5}
-                value={settings.ps5MinPerStudyHour}
-                onChange={(v) => setSettings({ ps5MinPerStudyHour: v })}
-              />
-            </Field>
             <Field label="Cilj sna (h)">
               <NumberInput
                 min={4}
@@ -94,6 +86,40 @@ export default function Settings() {
                 onChange={(v) => setSettings({ sleepGoalHours: v })}
               />
             </Field>
+          </div>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">🎁 Nagrada</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Nagrada koju sam biraš za učenje: igrice, epizoda serije, izlazak… Aplikacija je samo
+            broji, bez zamerki.
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2">
+              <Field label="Naziv nagrade">
+                <Input
+                  value={settings.rewardName}
+                  onChange={(e) => setSettings({ rewardName: e.target.value })}
+                  placeholder="npr. Vreme za igrice"
+                />
+              </Field>
+            </div>
+            <Field label="Emotikon">
+              <Input
+                value={settings.rewardEmoji}
+                onChange={(e) => setSettings({ rewardEmoji: e.target.value })}
+              />
+            </Field>
+            <div className="col-span-3">
+              <Field label={`${settings.rewardName || 'Nagrada'}: min po satu učenja`}>
+                <NumberInput
+                  min={0}
+                  step={5}
+                  value={settings.rewardMinPerStudyHour}
+                  onChange={(v) => setSettings({ rewardMinPerStudyHour: v })}
+                />
+              </Field>
+            </div>
           </div>
         </Card>
         <Card className="space-y-3">

@@ -4,20 +4,20 @@ import { WEEKDAY_NAMES, addDaysStr, daysUntil, formatShort, weekDates, weekdayOf
 import { buildAlerts, occurrencesOn } from '../schedule'
 import { avgSleep } from '../life'
 import { subjectPoints } from '../grades'
-import { computeStreaks, ps5Balance } from '../xp'
+import { computeStreaks, rewardBalance } from '../xp'
 import { workoutsInWeek, proteinOn } from '../workout'
 import { SCHEMA_TEXT, type AiKind } from './schemas'
 
 export type Tone = 'friendly' | 'strict' | 'support'
 
 /** The assistant's tone rules (used in the API system prompt AND at the top of manual prompts). */
-export const SYSTEM_PROMPT = `Ti si lični asistent za planiranje dana studenta prve godine elektrotehnike. Pišeš na srpskom (latinica), kratko, sa emotikonima.
+export const SYSTEM_PROMPT = `Ti si lični asistent za planiranje dana studenta. Pišeš na srpskom (latinica), kratko, sa emotikonima.
 
 TON (biraj prema situaciji):
 - Drugarski i kratak kad je sve u redu.
 - Strog, direktan i bez izgovora kad preskače obaveze, kad je kolokvijum neprijavljen ili je rok blizu.
 - Smiren i podržavajući kad je umoran, malo spava ili je teška nedelja.
-Nikad ne grdi zbog igranja igrica na PS5; igranje je nagrada posle učenja.
+Nikad ne grdi zbog zabave koju student sam bira kao nagradu; nagrada dolazi posle učenja.
 
 PRAVILA PLANIRANJA:
 - Ništa pre buđenja ni posle vremena spavanja.
@@ -115,7 +115,7 @@ export function buildContext(data: AppData, today: string): string {
   )
   lines.push(`ISHRANA: protein danas ${proteinOn(data.meals, today)} g.`)
   lines.push(
-    `PS5 vreme: stanje ${ps5Balance(data.progress)} min (zarađeno ${data.progress.ps5EarnedMin}).`,
+    `${data.settings.rewardName}: stanje ${rewardBalance(data.progress)} min (zarađeno ${data.progress.rewardEarnedMin}).`,
   )
   const alerts = buildAlerts(data, today)
   if (alerts.length) lines.push('\nUPOZORENJA: ' + alerts.map((a) => a.text).join(' | '))

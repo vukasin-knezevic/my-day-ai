@@ -44,7 +44,8 @@ const input = (p: Partial<PlanInput> = {}): PlanInput => ({
     bedTime: '01:00',
     studyHoursPerDay: 3,
     workoutsPerWeek: 3,
-    ps5MinPerStudyHour: 30,
+    rewardMinPerStudyHour: 30,
+    rewardName: 'Serija',
   },
   subjects: [subject()],
   assessments: [exam()],
@@ -293,6 +294,12 @@ describe('planWeek: easy day and games', () => {
   })
   it('no easy day when planning fewer than 3 days', () => {
     expect(planWeek(input({ days: 2 })).easyDay).toBeNull()
+  })
+  it('the reward suggestion uses the name the user chose', () => {
+    const r = planWeek(input())
+    const games = r.suggestions.filter((s) => s.category === 'games')
+    expect(games.length).toBeGreaterThan(0)
+    expect(games.every((g) => g.title.startsWith('Serija'))).toBe(true)
   })
   it('games are suggested as a reward after the last study block', () => {
     const r = planWeek(input())

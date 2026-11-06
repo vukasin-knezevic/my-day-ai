@@ -14,7 +14,9 @@ export const DEFAULT_SETTINGS: Settings = {
   modelFast: 'claude-haiku-5-5',
   modelStrong: 'claude-sonnet-5-5',
   reminders: false,
-  ps5MinPerStudyHour: 30,
+  rewardMinPerStudyHour: 30,
+  rewardName: 'Vreme za zabavu',
+  rewardEmoji: '🎮',
   onboarded: false,
 }
 
@@ -32,16 +34,43 @@ export function emptyData(): AppData {
     budget: {},
     habits: [],
     games: [],
-    progress: { xp: 0, events: [], ps5EarnedMin: 0, ps5SpentMin: 0, awarded: [] },
+    progress: { xp: 0, events: [], rewardEarnedMin: 0, rewardSpentMin: 0, awarded: [] },
     settings: { ...DEFAULT_SETTINGS },
     aiUsage: { month: '', inputTokens: 0, outputTokens: 0, calls: 0 },
   }
 }
 
+/** Version of the saved data format. 2 = the reward replaced the fixed "PS5 time". */
+export const DATA_VERSION = 2
+
+/**
+ * Migration of older saved data / backups to the current format (pure, safe to run twice).
+ * v1 -> v2: `ps5EarnedMin`, `ps5SpentMin` (progress) and `ps5MinPerStudyHour` (settings)
+ * became `rewardEarnedMin`, `rewardSpentMin` and `rewardMinPerStudyHour`.
+ */
+export function migrateData(raw: unknown): Partial<AppData> {
+  if (!raw || typeof raw !== 'object') return {}
+  const r = { ...(raw as Record<string, unknown>) }
+  const progress = { ...((r.progress as Record<string, unknown> | undefined) ?? {}) }
+  const settings = { ...((r.settings as Record<string, unknown> | undefined) ?? {}) }
+  const move = (o: Record<string, unknown>, from: string, to: string) => {
+    if (from in o) {
+      if (!(to in o)) o[to] = o[from]
+      delete o[from]
+    }
+  }
+  move(progress, 'ps5EarnedMin', 'rewardEarnedMin')
+  move(progress, 'ps5SpentMin', 'rewardSpentMin')
+  move(settings, 'ps5MinPerStudyHour', 'rewardMinPerStudyHour')
+  if ('progress' in r || Object.keys(progress).length) r.progress = progress
+  if ('settings' in r || Object.keys(settings).length) r.settings = settings
+  return r as Partial<AppData>
+}
+
 /** Fills in missing fields of (older / imported) data with defaults. */
-export function normalizeData(raw: Partial<AppData> | null | undefined): AppData {
+export function normalizeData(input: Partial<AppData> | null | undefined): AppData {
   const base = emptyData()
-  const r = raw ?? {}
+  const r = migrateData(input)
   return {
     ...base,
     ...r,

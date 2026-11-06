@@ -11,7 +11,12 @@ export interface PlanInput {
   days?: number
   settings: Pick<
     Settings,
-    'wakeTime' | 'bedTime' | 'studyHoursPerDay' | 'workoutsPerWeek' | 'ps5MinPerStudyHour'
+    | 'wakeTime'
+    | 'bedTime'
+    | 'studyHoursPerDay'
+    | 'workoutsPerWeek'
+    | 'rewardMinPerStudyHour'
+    | 'rewardName'
   >
   subjects: Subject[]
   assessments: Assessment[]
@@ -271,14 +276,22 @@ export function planWeek(input: PlanInput): PlanResult {
     if (st.newStudy === 0 || studied < 60 || eveDays.has(date) || st.lastStudyEnd === null) continue
     const reward = Math.min(
       120,
-      Math.floor(((studied / 60) * settings.ps5MinPerStudyHour) / 15) * 15,
+      Math.floor(((studied / 60) * settings.rewardMinPerStudyHour) / 15) * 15,
     )
     if (reward < 30) continue
     const after: Iv = { s: st.lastStudyEnd, e: windowEnd - 30 }
     for (const iv of st.free) {
       const cut = intersect(iv, after)
       if (cut && cut.e - cut.s >= reward) {
-        suggestions.push(makeAct('PS5 (nagrada za učenje)', 'games', date, cut.s, cut.s + reward))
+        suggestions.push(
+          makeAct(
+            `${settings.rewardName || 'Nagrada'} (nagrada za učenje)`,
+            'games',
+            date,
+            cut.s,
+            cut.s + reward,
+          ),
+        )
         break
       }
     }

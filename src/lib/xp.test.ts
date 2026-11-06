@@ -4,9 +4,9 @@ import {
   computeStreaks,
   isMilestone,
   levelFor,
-  ps5Balance,
-  ps5ForStudy,
-  spendPs5,
+  rewardBalance,
+  rewardForStudy,
+  spendReward,
   streakOf,
   xpForActivity,
 } from './xp'
@@ -46,11 +46,16 @@ describe('levels', () => {
 
 describe('award', () => {
   const ev = { id: 'a1', date: '2026-11-06', reason: 'Učenje', xp: 40, category: 'study' as const }
-  it('adds XP and PS5 minutes', () => {
-    const { progress, messages } = award(empty(), { ...ev, ps5Min: 60 })
+  it('adds XP and reward minutes', () => {
+    const { progress, messages } = award(empty(), { ...ev, rewardMin: 60 })
     expect(progress.xp).toBe(40)
-    expect(progress.ps5EarnedMin).toBe(60)
+    expect(progress.rewardEarnedMin).toBe(60)
     expect(messages.join(' ')).toContain('+40 XP')
+    expect(messages.join(' ')).toContain('+60 min')
+  })
+  it('uses the name and emoji the user chose for the reward', () => {
+    const { messages } = award(empty(), { ...ev, rewardMin: 30 }, { name: 'Serija', emoji: '📺' })
+    expect(messages.join(' ')).toContain('📺 +30 min: Serija')
   })
   it('never pays the same id twice', () => {
     const once = award(empty(), ev).progress
@@ -62,17 +67,17 @@ describe('award', () => {
     const { messages } = award({ ...empty(), xp: 90 }, ev)
     expect(messages.some((m) => m.includes('Novi nivo: Student'))).toBe(true)
   })
-  it('zero-xp events without PS5 are ignored', () => {
+  it('zero-xp events without reward are ignored', () => {
     expect(award(empty(), { ...ev, xp: 0 }).progress.awarded).toEqual([])
   })
 })
 
-describe('PS5 time', () => {
+describe('reward time', () => {
   it('earns per study hour (default 30 min/h)', () => {
-    expect(ps5ForStudy(60, 30)).toBe(30)
-    expect(ps5ForStudy(120, 30)).toBe(60)
-    expect(ps5ForStudy(90, 30)).toBe(45)
-    expect(ps5ForStudy(60, 20)).toBe(20)
+    expect(rewardForStudy(60, 30)).toBe(30)
+    expect(rewardForStudy(120, 30)).toBe(60)
+    expect(rewardForStudy(90, 30)).toBe(45)
+    expect(rewardForStudy(60, 20)).toBe(20)
   })
   it('balance = earned − spent, never grows from negative spend', () => {
     let p = award(empty(), {
@@ -81,14 +86,14 @@ describe('PS5 time', () => {
       reason: 'r',
       xp: 10,
       category: 'study',
-      ps5Min: 60,
+      rewardMin: 60,
     }).progress
-    p = spendPs5(p, 45)
-    expect(ps5Balance(p)).toBe(15)
-    expect(ps5Balance(spendPs5(p, -100))).toBe(15)
+    p = spendReward(p, 45)
+    expect(rewardBalance(p)).toBe(15)
+    expect(rewardBalance(spendReward(p, -100))).toBe(15)
   })
   it('can go negative (no scolding) — shown as is', () => {
-    expect(ps5Balance(spendPs5(empty(), 30))).toBe(-30)
+    expect(rewardBalance(spendReward(empty(), 30))).toBe(-30)
   })
 })
 
