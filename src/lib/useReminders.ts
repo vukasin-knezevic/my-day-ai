@@ -23,7 +23,7 @@ export function useReminders() {
       for (const r of dueReminders(data, new Date(), sent.current)) {
         sent.current.add(r.id)
         try {
-          new Notification(r.title, { body: r.body, icon: '/icon.svg' })
+          new Notification(r.title, { body: r.body, icon: `${import.meta.env.BASE_URL}icon.svg` })
         } catch {
           /* some mobile browsers only allow notifications via a service worker */
         }

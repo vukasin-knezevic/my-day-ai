@@ -32,3 +32,6 @@ Notifikacije pregledača rade samo dok je aplikacija otvorena ili nedavno koriš
 
 ## Faza 10 — Podaci i kvalitet
 Dodao sam izvoz i uvoz svih podataka kao JSON (izvoz namerno ne sadrži API ključ) i brisanje uz potvrdu unutar stranice. Napisao sam 16 end-to-end testova u Playwright-u: to je robot koji otvori pravi Chromium i klika kroz aplikaciju kao ti. Isti robot sa alatom `axe` proverava pristupačnost (kontrast, nazivi dugmadi) u svetloj i tamnoj temi i našao je stvarne greške koje sam popravio. Pokrivenost `src/lib/` je preko 90%, a stranice sa grafikonima se učitavaju tek kad zatrebaju (lazy loading), pa je prvo učitavanje brže.
+
+## Faza 11 — Portfolio
+Napisao sam README na srpskom i engleskom, `docs/ARHITEKTURA.md` sa Mermaid dijagramom toka podataka i dodao MIT licencu. GitHub Actions (`ci.yml`) na svaki push pokreće lint, typecheck, unit i e2e testove, a `deploy.yml` objavljuje aplikaciju na GitHub Pages. Ključna stvar na razgovoru: možeš da objasniš zašto je logika u čistim funkcijama i zašto AI nikad direktno ne menja podatke, nego pravi predlog koji ti prihvatiš.
