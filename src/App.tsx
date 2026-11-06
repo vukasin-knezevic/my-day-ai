@@ -5,6 +5,7 @@ import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
 import Onboarding from './pages/Onboarding'
 import Placeholder from './pages/Placeholder'
+import Today from './pages/Today'
 import More from './pages/More'
 import Settings from './pages/Settings'
 
@@ -26,7 +27,7 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<Placeholder title="🌅 Danas" phase="fazi 2" />} />
+          <Route index element={<Today />} />
           <Route path="faks" element={<Placeholder title="📚 Faks" phase="fazi 3" />} />
           <Route path="planer" element={<Placeholder title="🧠 Planer" phase="fazi 4" />} />
           <Route path="trening" element={<Placeholder title="🏋️ Trening" phase="fazi 5" />} />
