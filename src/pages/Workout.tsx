@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useStore } from '../store'
+import { tooltipProps } from '../components/chart'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
 import { WEEKDAY_NAMES, formatShort, todayStr } from '../lib/dates'
@@ -43,7 +44,7 @@ export default function Workout() {
             role="tab"
             aria-selected={tab === k}
             onClick={() => setTab(k)}
-            className={`min-h-10 rounded-xl px-3 text-sm font-medium ${tab === k ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
+            className={`min-h-10 rounded-xl px-3 text-sm font-medium ${tab === k ? 'bg-orange-700 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
           >
             {label}
           </button>
@@ -289,7 +290,7 @@ function Training() {
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis dataKey="date" tickFormatter={formatShort} fontSize={11} />
                 <YAxis unit=" kg" fontSize={11} width={55} />
-                <Tooltip />
+                <Tooltip {...tooltipProps} />
                 <Line type="monotone" dataKey="weight" stroke="#f97316" strokeWidth={2} dot />
               </LineChart>
             </ResponsiveContainer>

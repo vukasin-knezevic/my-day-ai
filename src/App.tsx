@@ -1,19 +1,22 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useStore } from './store'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
 import Onboarding from './pages/Onboarding'
 import Planner from './pages/Planner'
-import Workout from './pages/Workout'
-import Life from './pages/Life'
 import Ai from './pages/Ai'
-import Overview from './pages/Overview'
+import Shortcuts from './components/Shortcuts'
 import { useReminders } from './lib/useReminders'
 import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
 import Settings from './pages/Settings'
+
+// Pages with charts are loaded on demand, so the chart library is not in the first download.
+const Workout = lazy(() => import('./pages/Workout'))
+const Life = lazy(() => import('./pages/Life'))
+const Overview = lazy(() => import('./pages/Overview'))
 
 export default function App() {
   const hydrated = useStore((s) => s.hydrated)
@@ -33,19 +36,22 @@ export default function App() {
 
   return (
     <HashRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Today />} />
-          <Route path="faks" element={<Study />} />
-          <Route path="planer" element={<Planner />} />
-          <Route path="trening" element={<Workout />} />
-          <Route path="zivot" element={<Life />} />
-          <Route path="pregled" element={<Overview />} />
-          <Route path="ai" element={<Ai />} />
-          <Route path="vise" element={<More />} />
-          <Route path="podesavanja" element={<Settings />} />
-        </Route>
-      </Routes>
+      <Shortcuts />
+      <Suspense fallback={<p className="p-6">Učitavanje…</p>}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<Today />} />
+            <Route path="faks" element={<Study />} />
+            <Route path="planer" element={<Planner />} />
+            <Route path="trening" element={<Workout />} />
+            <Route path="zivot" element={<Life />} />
+            <Route path="pregled" element={<Overview />} />
+            <Route path="ai" element={<Ai />} />
+            <Route path="vise" element={<More />} />
+            <Route path="podesavanja" element={<Settings />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </HashRouter>
   )
 }

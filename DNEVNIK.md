@@ -29,3 +29,6 @@ Postoje dva režima sa istim kodom iza njih (`src/lib/ai/`): u API režimu aplik
 
 ## Faza 9 — Podsetnici i pregled
 Notifikacije pregledača rade samo dok je aplikacija otvorena ili nedavno korišćena, jer nema servera koji bi slao push. Zato postoji i izvoz u `.ics` (standardni format kalendara), pa telefon podseća sam preko kalendara. Odluka „kada se šalje podsetnik" je čista funkcija `dueReminders`, pa je testirana bez pregledača. Pregled nedelje i meseca računa sate po kategoriji, ciljeve, troškove, san, XP i poene, a Recharts crta grafikon.
+
+## Faza 10 — Podaci i kvalitet
+Dodao sam izvoz i uvoz svih podataka kao JSON (izvoz namerno ne sadrži API ključ) i brisanje uz potvrdu unutar stranice. Napisao sam 16 end-to-end testova u Playwright-u: to je robot koji otvori pravi Chromium i klika kroz aplikaciju kao ti. Isti robot sa alatom `axe` proverava pristupačnost (kontrast, nazivi dugmadi) u svetloj i tamnoj temi i našao je stvarne greške koje sam popravio. Pokrivenost `src/lib/` je preko 90%, a stranice sa grafikonima se učitavaju tek kad zatrebaju (lazy loading), pa je prvo učitavanje brže.

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DataCard from './DataCard'
 import { selectData, useStore } from '../store'
 import { buildIcs, downloadText } from '../lib/ics'
 import { requestNotifications } from '../lib/useReminders'
@@ -181,6 +182,7 @@ export default function Settings() {
             {cost !== null && ` ≈ $${cost.toFixed(4)}`}.
           </p>
         </Card>
+        <DataCard />
         <Card className="space-y-3">
           <h2 className="font-semibold">Demo podaci</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">

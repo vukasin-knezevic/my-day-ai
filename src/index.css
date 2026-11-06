@@ -22,6 +22,12 @@ body {
     sans-serif;
 }
 
+/* AA contrast for secondary text on dark backgrounds */
+.dark .text-slate-500,
+.dark .text-slate-600 {
+  color: #94a3b8;
+}
+
 :focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;

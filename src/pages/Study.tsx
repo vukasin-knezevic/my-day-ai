@@ -241,7 +241,12 @@ function SubjectCard({
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-semibold" style={{ color: subject.color }}>
+        <h2 className="flex items-center gap-2 font-semibold">
+          <span
+            aria-hidden
+            className="inline-block size-3 rounded-full"
+            style={{ background: subject.color }}
+          />
           {subject.name} <span className="text-xs text-slate-500">· {subject.espb} ESPB</span>
         </h2>
         <Button variant="ghost" onClick={onRemove} aria-label={`Obriši predmet ${subject.name}`}>
@@ -575,7 +580,12 @@ function Points() {
         const p = subjectPoints(s, assessments)
         return (
           <Card key={s.id}>
-            <h2 className="font-semibold" style={{ color: s.color }}>
+            <h2 className="flex items-center gap-2 font-semibold">
+              <span
+                aria-hidden
+                className="inline-block size-3 rounded-full"
+                style={{ background: s.color }}
+              />
               {s.name}
             </h2>
             <p className="mt-1 text-2xl font-bold">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useStore, selectData } from '../store'
+import { tooltipProps } from '../components/chart'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
 import { XP } from '../lib/xp'
@@ -115,7 +116,7 @@ function Sleep() {
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis dataKey="date" tickFormatter={formatShort} fontSize={11} />
               <YAxis fontSize={11} width={30} />
-              <Tooltip />
+              <Tooltip {...tooltipProps} />
               <Bar dataKey="h" fill="#8b5cf6" radius={4} />
             </BarChart>
           </ResponsiveContainer>
@@ -240,7 +241,7 @@ function Money() {
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis dataKey="name" fontSize={11} />
               <YAxis fontSize={11} width={45} />
-              <Tooltip />
+              <Tooltip {...tooltipProps} />
               <Bar dataKey="rsd" fill="#eab308" radius={4} />
             </BarChart>
           </ResponsiveContainer>

@@ -73,7 +73,7 @@ function Timeline({
         <div
           className="absolute inset-x-0 z-10 border-t-2 border-red-500"
           style={{ top: y(nowMin) }}
-          aria-label="Sada"
+          aria-hidden="true"
         />
       )}
     </div>

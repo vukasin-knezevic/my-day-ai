@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { selectData, useStore } from '../store'
+import { tooltipProps } from '../components/chart'
 import { Card, PageTitle } from '../components/ui'
 import { CATEGORY_META, type Category } from '../types'
 import { todayStr } from '../lib/dates'
@@ -23,7 +24,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
     <div className="rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
       <p className="text-xs text-slate-600 dark:text-slate-400">{label}</p>
       <p className="text-xl font-bold">{value}</p>
-      {sub && <p className="text-xs text-slate-500">{sub}</p>}
+      {sub && <p className="text-xs text-slate-600 dark:text-slate-400">{sub}</p>}
     </div>
   )
 }
@@ -89,7 +90,7 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis type="number" fontSize={11} />
               <YAxis type="category" dataKey="name" width={120} fontSize={11} />
-              <Tooltip />
+              <Tooltip {...tooltipProps} />
               <Bar dataKey="sati" radius={4}>
                 {chart.map((c) => (
                   <Cell key={c.name} fill={c.color} />
