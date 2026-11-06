@@ -12,6 +12,7 @@ import {
 import { useStore } from '../store'
 import { tooltipProps } from '../components/chart'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import NumberInput from '../components/NumberInput'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
 import { WEEKDAY_NAMES, formatShort, todayStr } from '../lib/dates'
 import {
@@ -66,10 +67,11 @@ interface Row {
 const emptyRow = (): Row => ({ name: '', sets: 3, reps: 8, weight: 0 })
 
 function Training() {
-  const { workouts, settings, add, remove, award } = useStore(
+  const { workouts, templates, settings, add, remove, award } = useStore(
     useShallow((s) => ({
       award: s.award,
       workouts: s.workouts,
+      templates: s.workoutTemplates,
       settings: s.settings,
       add: s.add,
       remove: s.remove,
@@ -81,6 +83,7 @@ function Training() {
   const [feeling, setFeeling] = useState(3)
   const [rows, setRows] = useState<Row[]>([emptyRow()])
   const [msg, setMsg] = useState('')
+  const [tplId, setTplId] = useState('')
   const [chartEx, setChartEx] = useState('')
   const names = exerciseNames(workouts)
   const chosen = chartEx || names[0] || ''
@@ -136,6 +139,28 @@ function Training() {
     )
     setRows([emptyRow()])
   }
+  function saveTemplate() {
+    const exercises = rows
+      .filter((r) => r.name.trim())
+      .map((r) => ({ name: r.name.trim(), sets: r.sets, reps: r.reps, weight: r.weight }))
+    if (exercises.length === 0) {
+      setMsg('Dodaj bar jednu vežbu da bi sačuvao šablon.')
+      return
+    }
+    const name = type.trim() || 'Šablon'
+    const existing = templates.find((t) => t.name.toLowerCase() === name.toLowerCase())
+    if (existing) remove('workoutTemplates', existing.id)
+    const id = add('workoutTemplates', { name, type: type.trim() || name, exercises })
+    setTplId(id)
+    setMsg(`📌 Šablon „${name}" sačuvan.`)
+  }
+  function loadTemplate(id: string) {
+    setTplId(id)
+    const t = templates.find((x) => x.id === id)
+    if (!t) return
+    setType(t.type)
+    setRows(t.exercises.map((e) => ({ ...e })))
+  }
   function repeatLast() {
     if (!last) return
     setType(last.type)
@@ -189,27 +214,43 @@ function Training() {
             </Button>
           )}
         </div>
+        {templates.length > 0 && (
+          <div className="mb-3 flex flex-wrap items-end gap-2">
+            <div className="min-w-40 flex-1">
+              <Field label="Moji šabloni">
+                <Select value={tplId} onChange={(e) => loadTemplate(e.target.value)}>
+                  <option value="">— izaberi šablon —</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.exercises.length})
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <Button
+              variant="ghost"
+              disabled={!tplId}
+              aria-label="Obriši izabrani šablon"
+              onClick={() => {
+                remove('workoutTemplates', tplId)
+                setTplId('')
+              }}
+            >
+              Obriši šablon
+            </Button>
+          </div>
+        )}
         <form onSubmit={save} className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <Field label="Tip">
               <Input value={type} onChange={(e) => setType(e.target.value)} />
             </Field>
             <Field label="Trajanje (min)">
-              <Input
-                type="number"
-                min={1}
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-              />
+              <NumberInput min={1} max={600} value={duration} onChange={setDuration} />
             </Field>
             <Field label="Osećaj (1–5)">
-              <Input
-                type="number"
-                min={1}
-                max={5}
-                value={feeling}
-                onChange={(e) => setFeeling(Number(e.target.value))}
-              />
+              <NumberInput min={1} max={5} value={feeling} onChange={setFeeling} />
             </Field>
           </div>
           {rows.map((r, i) => (
@@ -223,27 +264,27 @@ function Training() {
                   onChange={(e) => setRow(i, { name: e.target.value })}
                 />
               </div>
-              <Input
+              <NumberInput
                 aria-label={`Serije ${i + 1}`}
-                type="number"
                 min={1}
+                max={50}
                 value={r.sets}
-                onChange={(e) => setRow(i, { sets: Number(e.target.value) })}
+                onChange={(v) => setRow(i, { sets: v })}
               />
-              <Input
+              <NumberInput
                 aria-label={`Ponavljanja ${i + 1}`}
-                type="number"
                 min={1}
+                max={500}
                 value={r.reps}
-                onChange={(e) => setRow(i, { reps: Number(e.target.value) })}
+                onChange={(v) => setRow(i, { reps: v })}
               />
-              <Input
+              <NumberInput
                 aria-label={`Kilaža ${i + 1}`}
-                type="number"
                 min={0}
+                max={1000}
                 step={0.5}
                 value={r.weight}
-                onChange={(e) => setRow(i, { weight: Number(e.target.value) })}
+                onChange={(v) => setRow(i, { weight: v })}
               />
               <Button
                 variant="ghost"
@@ -263,6 +304,9 @@ function Training() {
           <div className="flex gap-2">
             <Button variant="soft" onClick={() => setRows((r) => [...r, emptyRow()])}>
               + Vežba
+            </Button>
+            <Button variant="soft" onClick={saveTemplate}>
+              📌 Sačuvaj kao šablon
             </Button>
             <Button type="submit">Sačuvaj trening</Button>
           </div>
@@ -425,12 +469,7 @@ function Food() {
             </Field>
           </div>
           <Field label="Protein (g)">
-            <Input
-              type="number"
-              min={0}
-              value={protein}
-              onChange={(e) => setProtein(Number(e.target.value))}
-            />
+            <NumberInput min={0} max={500} value={protein} onChange={setProtein} />
           </Field>
           <Button type="submit" className="col-span-3">
             Dodaj obrok

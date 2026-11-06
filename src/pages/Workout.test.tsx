@@ -34,6 +34,23 @@ test('obrok povećava protein', async () => {
   expect(useStore.getState().meals[0]).toMatchObject({ description: 'Jaja', protein: 30 })
 })
 
+test('sopstveni šablon treninga: sačuvaj i učitaj', async () => {
+  const user = userEvent.setup()
+  render(<Workout />)
+  await user.clear(screen.getByLabelText('Tip'))
+  await user.type(screen.getByLabelText('Tip'), 'Push dan')
+  await user.type(screen.getByLabelText('Vežba 1'), 'Bench press')
+  await user.click(screen.getByRole('button', { name: /Sačuvaj kao šablon/ }))
+  const tpl = useStore.getState().workoutTemplates
+  expect(tpl).toHaveLength(1)
+  expect(tpl[0]).toMatchObject({ name: 'Push dan' })
+  await user.clear(screen.getByLabelText('Vežba 1'))
+  await user.selectOptions(screen.getByLabelText('Moji šabloni'), tpl[0].id)
+  expect(screen.getByLabelText('Vežba 1')).toHaveValue('Bench press')
+  await user.click(screen.getByRole('button', { name: 'Obriši izabrani šablon' }))
+  expect(useStore.getState().workoutTemplates).toHaveLength(0)
+})
+
 test('izbor splita', async () => {
   const user = userEvent.setup()
   render(<Workout />)

@@ -19,6 +19,7 @@ export type CollectionKey =
   | 'expenses'
   | 'habits'
   | 'games'
+  | 'workoutTemplates'
 
 const COLLECTIONS: CollectionKey[] = [
   'subjects',

@@ -11,6 +11,7 @@ const ARRAY_KEYS = [
   'expenses',
   'habits',
   'games',
+  'workoutTemplates',
 ] as const
 
 /** JSON backup of everything. The API key is NOT included unless asked (so a backup can be shared safely). */

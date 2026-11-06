@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { selectData, useStore } from '../store'
 import { Button, Card } from '../components/ui'
+import KeyScope from '../components/KeyScope'
 import { exportJson, importJson } from '../lib/dataIO'
 import { downloadText } from '../lib/ics'
 import type { AppData } from '../types'
@@ -78,7 +79,10 @@ export default function DataCard() {
         Proveri uvoz
       </Button>
       {pending && (
-        <div
+        <KeyScope
+          focusOnMount
+          onEnter={applyImport}
+          onEscape={() => setPending(null)}
           role="alertdialog"
           aria-label="Potvrda uvoza"
           className="rounded-xl bg-amber-100 p-3 text-sm text-amber-900"
@@ -94,7 +98,7 @@ export default function DataCard() {
               Odustani
             </Button>
           </div>
-        </div>
+        </KeyScope>
       )}
       {msg && (
         <p role="status" className="text-sm">
@@ -113,7 +117,13 @@ export default function DataCard() {
           Obriši sve podatke
         </Button>
       ) : (
-        <div
+        <KeyScope
+          focusOnMount
+          onEnter={() => {
+            useStore.getState().resetAll()
+            setConfirmDelete(false)
+          }}
+          onEscape={() => setConfirmDelete(false)}
           role="alertdialog"
           aria-label="Potvrda brisanja"
           className="rounded-xl bg-red-100 p-3 text-sm text-red-900"
@@ -134,7 +144,7 @@ export default function DataCard() {
               Odustani
             </Button>
           </div>
-        </div>
+        </KeyScope>
       )}
     </Card>
   )

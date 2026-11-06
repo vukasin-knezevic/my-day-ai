@@ -176,6 +176,42 @@ test('14. nema horizontalnog skrola na 390 / 800 / 1920 px', async ({ page }) =>
   }
 })
 
+test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  await page.getByLabel('Kako da te zovem?').fill('Tasta')
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Enter')
+  await expect(page.getByText(/Korak 5 od 5/)).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText(/Korak 4 od 5/)).toBeVisible()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await expect(page.getByLabel('Brzi unos')).toBeVisible()
+})
+
+test('18. polje za broj: brisanje pa kucanje nema nulu ispred', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/#/podesavanja')
+  const field = page.getByLabel('Učenje (h/dan)')
+  await field.fill('')
+  await expect(field).toHaveValue('')
+  await field.pressSequentially('3')
+  await expect(field).toHaveValue('3')
+})
+
+test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
+  await onboard(page)
+  await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
+  await page.getByLabel('Naziv').fill('Šetnja')
+  await page.getByLabel('Ponavljanje').selectOption('daily')
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Šetnja').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Izmeni Šetnja' }).click()
+  await page.getByLabel('Naziv').fill('Duga šetnja')
+  await page.getByRole('button', { name: 'Sačuvaj izmene' }).click()
+  await expect(page.getByText('Duga šetnja').first()).toBeVisible()
+})
+
 test.describe('pristupačnost (axe, WCAG A/AA)', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`15. bez povreda na svim ekranima, ${theme} tema`, async ({ page }) => {

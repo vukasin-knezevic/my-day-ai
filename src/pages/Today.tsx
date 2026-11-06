@@ -18,6 +18,8 @@ import { applyParsed } from '../lib/apply'
 import { computeStreaks, rewardForDone, streakMessages } from '../lib/xp'
 import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
+import ActivityForm from '../components/ActivityForm'
+import type { Activity } from '../types'
 
 const PX_PER_HOUR = 44
 
@@ -87,6 +89,7 @@ export default function Today() {
   const [now, setNow] = useState(new Date())
   const [text, setText] = useState('')
   const [msg, setMsg] = useState('')
+  const [editing, setEditing] = useState<Activity | 'new' | null>(null)
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30000)
@@ -169,6 +172,9 @@ export default function Today() {
           placeholder="trening 18-19:30 · sutra učenje mata 2h · kafa 200 · legao 1:30"
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setText('')
+          }}
         />
         <Button type="submit">Dodaj</Button>
       </form>
@@ -195,8 +201,22 @@ export default function Today() {
         )}
       </Card>
 
+      {editing && (
+        <ActivityForm
+          key={editing === 'new' ? 'new' : editing.id}
+          initial={editing === 'new' ? undefined : editing}
+          defaultDate={today}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
       <Card className="mb-4">
-        <h2 className="mb-2 font-semibold">Obaveze</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-semibold">Obaveze</h2>
+          <Button variant="soft" onClick={() => setEditing('new')}>
+            + Nova aktivnost
+          </Button>
+        </div>
         {occ.length === 0 && (
           <p className="text-sm text-slate-500">Nema obaveza. Dodaj nešto gore. ☝️</p>
         )}
@@ -230,6 +250,18 @@ export default function Today() {
                     Preskoči
                   </Button>
                 </span>
+              )}
+              {o.type === 'activity' && o.activityId && (
+                <Button
+                  variant="ghost"
+                  aria-label={`Izmeni ${o.title}`}
+                  onClick={() => {
+                    const a = data.activities.find((x) => x.id === o.activityId)
+                    if (a) setEditing(a)
+                  }}
+                >
+                  ✎
+                </Button>
               )}
               {o.type === 'activity' && o.activityId && (
                 <Button

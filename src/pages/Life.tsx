@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useStore, selectData } from '../store'
 import { tooltipProps } from '../components/chart'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import NumberInput from '../components/NumberInput'
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
 import { XP } from '../lib/xp'
 import { addDaysStr, formatShort, monthOf, todayStr } from '../lib/dates'
@@ -170,7 +171,7 @@ function Money() {
   )
   const today = todayStr()
   const month = monthOf(today)
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState(0)
   const [category, setCategory] = useState<ExpenseCategory>('hrana')
   const [desc, setDesc] = useState('')
   const status = budgetStatus(expenses, budget, month)
@@ -180,10 +181,10 @@ function Money() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    const n = Number(amount)
+    const n = amount
     if (!n || n <= 0) return
     add('expenses', { date: today, amount: n, category, description: desc.trim() })
-    setAmount('')
+    setAmount(0)
     setDesc('')
   }
 
@@ -204,12 +205,7 @@ function Money() {
       <Card>
         <form onSubmit={submit} className="grid grid-cols-2 gap-2">
           <Field label="Iznos (RSD)">
-            <Input
-              type="number"
-              min={1}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
+            <NumberInput min={1} max={10000000} value={amount} onChange={setAmount} />
           </Field>
           <Field label="Kategorija">
             <Select
@@ -252,18 +248,12 @@ function Money() {
         <div className="grid grid-cols-2 gap-2">
           {EXPENSE_CATEGORIES.map((c) => (
             <Field key={c} label={CAT_LABEL[c]}>
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
-                value={budget[c] ?? ''}
-                onChange={(e) =>
-                  patch({
-                    budget: {
-                      ...budget,
-                      [c]: e.target.value === '' ? undefined : Number(e.target.value),
-                    },
-                  })
-                }
+                max={10000000}
+                value={budget[c]}
+                onChange={(v) => patch({ budget: { ...budget, [c]: v } })}
+                onEmpty={() => patch({ budget: { ...budget, [c]: undefined } })}
               />
             </Field>
           ))}
@@ -404,13 +394,7 @@ function Habits() {
             <Input value={emoji} onChange={(e) => setEmoji(e.target.value)} />
           </Field>
           <Field label="Cilj (broj)">
-            <Input
-              type="number"
-              min={1}
-              step={0.5}
-              value={goal}
-              onChange={(e) => setGoal(Number(e.target.value))}
-            />
+            <NumberInput min={0.5} max={10000} step={0.5} value={goal} onChange={setGoal} />
           </Field>
           <div className="col-span-2">
             <Field label="Jedinica (L, min…)">

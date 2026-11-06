@@ -157,6 +157,14 @@ export interface WorkoutPlan {
   days: WorkoutPlanDay[]
 }
 
+/** A saved workout the user can load into the "new workout" form again. */
+export interface WorkoutTemplate {
+  id: string
+  name: string
+  type: string
+  exercises: { name: string; sets: number; reps: number; weight: number }[]
+}
+
 export interface SleepLog {
   id: string
   /** Date of the wake-up day */
@@ -265,6 +273,7 @@ export interface AppData {
   activities: Activity[]
   workouts: Workout[]
   workoutPlan: WorkoutPlan | null
+  workoutTemplates: WorkoutTemplate[]
   sleep: SleepLog[]
   meals: Meal[]
   expenses: Expense[]

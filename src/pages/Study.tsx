@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import NumberInput from '../components/NumberInput'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
 import { WEEKDAY_NAMES, formatShort, monthOf, todayStr, weekdayOf } from '../lib/dates'
 import {
@@ -185,21 +186,10 @@ function Schedule() {
             </Field>
           </div>
           <Field label="ESPB">
-            <Input
-              type="number"
-              min={1}
-              value={espb}
-              onChange={(e) => setEspb(Number(e.target.value))}
-            />
+            <NumberInput min={1} max={30} value={espb} onChange={setEspb} />
           </Field>
           <Field label="Prolaz (poena)">
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={pass}
-              onChange={(e) => setPass(Number(e.target.value))}
-            />
+            <NumberInput min={0} max={100} value={pass} onChange={setPass} />
           </Field>
           <Button type="submit" className="col-span-2">
             Dodaj predmet
@@ -449,16 +439,13 @@ function Assessments() {
             )}
             <div className="mt-2 flex items-center gap-2 text-sm">
               <Field label={`Osvojeno poena (max ${a.maxPoints})`}>
-                <Input
-                  type="number"
+                <NumberInput
                   min={0}
                   max={a.maxPoints}
-                  value={a.points ?? ''}
-                  onChange={(e) =>
-                    update('assessments', a.id, {
-                      points: e.target.value === '' ? null : Number(e.target.value),
-                    })
-                  }
+                  step={0.5}
+                  value={a.points}
+                  onChange={(v) => update('assessments', a.id, { points: v })}
+                  onEmpty={() => update('assessments', a.id, { points: null })}
                 />
               </Field>
               <Button
@@ -530,28 +517,28 @@ function Assessments() {
               />
             </Field>
             <Field label="Maks. poena">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
+                max={1000}
                 value={f.maxPoints}
-                onChange={(e) => setF({ ...f, maxPoints: Number(e.target.value) })}
+                onChange={(v) => setF({ ...f, maxPoints: v })}
               />
             </Field>
             <Field label="Težina (1–5)">
-              <Input
-                type="number"
+              <NumberInput
                 min={1}
                 max={5}
                 value={f.difficulty}
-                onChange={(e) => setF({ ...f, difficulty: Number(e.target.value) })}
+                onChange={(v) => setF({ ...f, difficulty: v })}
               />
             </Field>
             <Field label="Sati učenja">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
+                max={200}
+                step={0.5}
                 value={f.studyHours}
-                onChange={(e) => setF({ ...f, studyHours: Number(e.target.value) })}
+                onChange={(v) => setF({ ...f, studyHours: v })}
               />
             </Field>
             <Button type="submit" className="col-span-2">
@@ -608,13 +595,12 @@ function Points() {
                 ` (sa ${p.earned} poena; skala 51–60 = 6 … 91–100 = 10)`}
             </p>
             <Field label="Granica prolaza">
-              <Input
+              <NumberInput
                 className="!w-24"
-                type="number"
                 min={0}
                 max={100}
                 value={s.passMark}
-                onChange={(e) => update('subjects', s.id, { passMark: Number(e.target.value) })}
+                onChange={(v) => update('subjects', s.id, { passMark: v })}
               />
             </Field>
             <p className="mt-1 text-xs text-slate-500">

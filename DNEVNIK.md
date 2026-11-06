@@ -38,3 +38,8 @@ Napisao sam README na srpskom i engleskom, `docs/ARHITEKTURA.md` sa Mermaid dija
 
 ## Faza 12 — Završetak
 Napisao sam `IZVESTAJ.md` sa poštenim spiskom šta radi, šta nije urađeno i šta nisam mogao da proverim (npr. pravi API poziv i Huawei format). `UCENJE.md` je tvoj vodič: poređenje sa Pythonom, redosled čitanja fajlova i 10 pitanja sa razgovora. Najvažnija lekcija projekta: kad ne možeš nešto da proveriš, to napišeš, a ne pretvaraš se da radi. Sledeći korak je da sam uključiš GitHub Pages (uputstvo je u README-u) i probaš AI sa pravim ključem.
+
+# Verzija 1.1
+
+## Deo 1 — Popravke
+Greška sa nulom je nastajala jer je polje stalno pretvaralo prazan tekst u broj `0`. Sada postoji jedna zajednička komponenta `NumberInput` koja čuva ono što kucaš kao tekst, pa polje sme da bude prazno, a vrednost se ograničava na min/max. Tastatura radi preko male komponente `KeyScope`: Enter ide „Dalje/Sačuvaj/Potvrdi", Esc „Nazad/Otkaži", a u višeredom polju Enter samo pravi novi red. Posle promene koraka fokus se vraća na prvo polje, inače bi pritisak na Enter ostao bez efekta. Dodata je forma za novu i izmenu aktivnosti sa ponavljanjem (dnevno, radnim danima, nedeljno) i čuvanje sopstvenih šablona treninga.

@@ -5,6 +5,7 @@ import { buildIcs, downloadText } from '../lib/ics'
 import { requestNotifications } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import NumberInput from '../components/NumberInput'
 
 export default function Settings() {
   const settings = useStore((s) => s.settings)
@@ -16,7 +17,6 @@ export default function Settings() {
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
-  const num = (v: string) => (v === '' ? 0 : Number(v))
 
   return (
     <>
@@ -56,47 +56,42 @@ export default function Settings() {
               />
             </Field>
             <Field label="Treninga nedeljno">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
                 max={7}
                 value={settings.workoutsPerWeek}
-                onChange={(e) => setSettings({ workoutsPerWeek: num(e.target.value) })}
+                onChange={(v) => setSettings({ workoutsPerWeek: v })}
               />
             </Field>
             <Field label="Učenje (h/dan)">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
                 max={12}
                 value={settings.studyHoursPerDay}
-                onChange={(e) => setSettings({ studyHoursPerDay: num(e.target.value) })}
+                onChange={(v) => setSettings({ studyHoursPerDay: v })}
               />
             </Field>
             <Field label="Protein (g/dan)">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
                 value={settings.proteinGoal}
-                onChange={(e) => setSettings({ proteinGoal: num(e.target.value) })}
+                onChange={(v) => setSettings({ proteinGoal: v })}
               />
             </Field>
             <Field label="PS5 min po satu učenja">
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
                 step={5}
                 value={settings.ps5MinPerStudyHour}
-                onChange={(e) => setSettings({ ps5MinPerStudyHour: num(e.target.value) })}
+                onChange={(v) => setSettings({ ps5MinPerStudyHour: v })}
               />
             </Field>
             <Field label="Cilj sna (h)">
-              <Input
-                type="number"
+              <NumberInput
                 min={4}
                 max={12}
                 value={settings.sleepGoalHours}
-                onChange={(e) => setSettings({ sleepGoalHours: num(e.target.value) })}
+                onChange={(v) => setSettings({ sleepGoalHours: v })}
               />
             </Field>
           </div>

@@ -25,6 +25,7 @@ export function emptyData(): AppData {
     activities: [],
     workouts: [],
     workoutPlan: null,
+    workoutTemplates: [],
     sleep: [],
     meals: [],
     expenses: [],
