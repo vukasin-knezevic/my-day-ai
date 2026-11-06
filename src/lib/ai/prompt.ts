@@ -1,34 +1,20 @@
 import type { AppData } from '../../types'
-import { CATEGORY_META } from '../../types'
-import { WEEKDAY_NAMES, addDaysStr, daysUntil, formatShort, weekDates, weekdayOf } from '../dates'
+import { t } from '../../i18n'
+import { categoryLabel, rewardNameOf } from '../labels'
+import { addDaysStr, daysUntil, formatShort, weekDates, weekdayName, weekdayOf } from '../dates'
 import { buildAlerts, occurrencesOn } from '../schedule'
 import { avgSleep } from '../life'
 import { subjectPoints } from '../grades'
 import { computeStreaks, rewardBalance } from '../xp'
 import { workoutsInWeek, proteinOn } from '../workout'
-import { SCHEMA_TEXT, type AiKind } from './schemas'
+import { schemaText, type AiKind } from './schemas'
 
 export type Tone = 'friendly' | 'strict' | 'support'
 
 /** The assistant's tone rules (used in the API system prompt AND at the top of manual prompts). */
-export const SYSTEM_PROMPT = `Ti si lični asistent za planiranje dana studenta. Pišeš na srpskom (latinica), kratko, sa emotikonima.
-
-TON (biraj prema situaciji):
-- Drugarski i kratak kad je sve u redu.
-- Strog, direktan i bez izgovora kad preskače obaveze, kad je kolokvijum neprijavljen ili je rok blizu.
-- Smiren i podržavajući kad je umoran, malo spava ili je teška nedelja.
-Nikad ne grdi zbog zabave koju student sam bira kao nagradu; nagrada dolazi posle učenja.
-
-PRAVILA PLANIRANJA:
-- Ništa pre buđenja ni posle vremena spavanja.
-- Najviše 3 h učenja zaredom, pa pauza (bar 30 min).
-- Teži ispit i bliži rok = više učenja ranije.
-- Dan pred kolokvijum trening skrati ili pomeri i objasni zašto.
-- Bar jedan lakši dan u nedelji.
-- Termini sa faksa koje student ne pohađa su slobodno vreme.
-- Igre predlaži kao nagradu posle učenja.
-- Koristi samo podatke koje dobiješ; ne izmišljaj predmete, rokove ni raspored.
-Kad tražim JSON, vrati ga u JEDNOM bloku koda (\`\`\`json) tačno po zadatoj šemi.`
+export function systemPrompt(): string {
+  return [t('prompt.intro'), t('prompt.langRule'), '', t('prompt.rules')].join('\n')
+}
 
 /** Which tone fits the data. Pure and testable. */
 export function toneHint(data: AppData, today: string): Tone {
@@ -45,53 +31,69 @@ export function toneHint(data: AppData, today: string): Tone {
   return 'friendly'
 }
 
-const TONE_TEXT: Record<Tone, string> = {
-  friendly: 'drugarski i kratak (sve je u redu)',
-  strict:
-    'STROG i direktan, bez izgovora (ima neprijavljen kolokvijum / blizak rok / preskočene obaveze)',
-  support: 'SMIREN i podržavajući (malo sna ili težak period)',
-}
+const toneText = (tone: Tone) => t(`prompt.tone.${tone}`)
 
 /** Compact text with this week's data. Contains only what the user entered. */
 export function buildContext(data: AppData, today: string): string {
   const s = data.settings
   const lines: string[] = []
-  lines.push(`Danas: ${today} (${WEEKDAY_NAMES[weekdayOf(today)]}).`)
+  lines.push(t('prompt.ctx.today', { date: today, weekday: weekdayName(weekdayOf(today)) }))
   lines.push(
-    `Ime: ${s.name || 'nepoznato'}. Budim se ${s.wakeTime}, spavam oko ${s.bedTime}. Cilj sna ${s.sleepGoalHours} h.`,
+    t('prompt.ctx.profile', {
+      name: s.name || t('prompt.ctx.unknownName'),
+      wake: s.wakeTime,
+      bed: s.bedTime,
+      goal: s.sleepGoalHours,
+    }),
   )
   lines.push(
-    `Ciljevi: ${s.workoutsPerWeek} treninga nedeljno, ${s.studyHoursPerDay} h učenja dnevno, ${s.proteinGoal} g proteina dnevno.`,
+    t('prompt.ctx.goals', { w: s.workoutsPerWeek, s: s.studyHoursPerDay, p: s.proteinGoal }),
   )
-  lines.push(`Predloženi ton danas: ${TONE_TEXT[toneHint(data, today)]}.`)
-  lines.push('\nOBAVEZE OVE NEDELJE:')
+  lines.push(t('prompt.ctx.tone', { tone: toneText(toneHint(data, today)) }))
+  lines.push('\n' + t('prompt.ctx.weekHeader'))
   for (const d of weekDates(today)) {
     const occ = occurrencesOn(data, d).filter((o) => !o.suggested && o.status !== 'skipped')
     const txt = occ.length
       ? occ
           .map(
             (o) =>
-              `${o.start}-${o.end} ${CATEGORY_META[o.category].label}: ${o.title}${o.status === 'done' ? ' (urađeno)' : ''}`,
+              `${o.start}-${o.end} ${categoryLabel(o.category)}: ${o.title}${o.status === 'done' ? t('prompt.ctx.done') : ''}`,
           )
           .join('; ')
-      : 'nema'
-    lines.push(`- ${d} ${WEEKDAY_NAMES[weekdayOf(d)]}: ${txt}`)
+      : t('prompt.ctx.none')
+    lines.push(`- ${d} ${weekdayName(weekdayOf(d))}: ${txt}`)
   }
   const free = data.subjects.flatMap((sub) =>
     sub.slots
       .filter((x) => x.attendance === 'ne-idem')
-      .map((x) => `${WEEKDAY_NAMES[x.day]} ${x.start}-${x.end} (${sub.name}, ne idem = slobodno)`),
+      .map((x) =>
+        t('prompt.ctx.freeSlot', {
+          day: weekdayName(x.day),
+          start: x.start,
+          end: x.end,
+          subject: sub.name,
+        }),
+      ),
   )
-  if (free.length) lines.push('\nSLOBODNO VREME (termini koje preskačem): ' + free.join('; '))
-  lines.push('\nKOLOKVIJUMI, ISPITI, DOMAĆI (narednih 30 dana):')
+  if (free.length) lines.push('\n' + t('prompt.ctx.free') + ' ' + free.join('; '))
+  lines.push('\n' + t('prompt.ctx.examsHeader'))
   const up = data.assessments
     .filter((a) => daysUntil(a.date, today) >= 0 && daysUntil(a.date, today) <= 30)
     .sort((a, b) => a.date.localeCompare(b.date))
-  if (!up.length) lines.push('- nema unetih')
+  if (!up.length) lines.push(t('prompt.ctx.noExams'))
   for (const a of up) {
     const sub = data.subjects.find((x) => x.id === a.subjectId)?.name ?? '?'
     lines.push(
-      `- ${a.date} ${a.title} (${sub}, ${a.type}), težina ${a.difficulty}/5, procena učenja ${a.studyHours} h, prijava: ${a.registration}${a.registrationDeadline ? `, rok prijave ${a.registrationDeadline}` : ''}`,
+      t('prompt.ctx.exam', {
+        date: a.date,
+        title: a.title,
+        subject: sub,
+        type: a.type,
+        d: a.difficulty,
+        h: a.studyHours,
+        reg: a.registration,
+      }) +
+        (a.registrationDeadline ? t('prompt.ctx.deadline', { date: a.registrationDeadline }) : ''),
     )
   }
   const pts = data.subjects
@@ -99,45 +101,57 @@ export function buildContext(data: AppData, today: string): string {
     .filter((x) => x.p.maxTotal > 0)
   if (pts.length)
     lines.push(
-      '\nPOENI: ' +
+      '\n' +
+        t('prompt.ctx.points') +
+        ' ' +
         pts
-          .map(
-            ({ sub, p }) =>
-              `${sub.name} ${p.earned}/${p.maxGraded} (fali do prolaza ${p.missingToPass})`,
+          .map(({ sub, p }) =>
+            t('prompt.ctx.pointsItem', {
+              subject: sub.name,
+              earned: p.earned,
+              graded: p.maxGraded,
+              missing: p.missingToPass,
+            }),
           )
           .join('; '),
     )
   const avg = avgSleep(data.sleep, today)
-  lines.push(`\nSAN: prosek 7 dana ${avg ?? 'nema podataka'} h.`)
+  lines.push('\n' + t('prompt.ctx.sleep', { avg: avg ?? t('prompt.ctx.noData') }))
   const st = computeStreaks(data, today)
   lines.push(
-    `TRENING: ${workoutsInWeek(data.workouts, today).length} ove nedelje; nizovi dana: učenje ${st.study}, trening ${st.workout}, san ${st.sleep}, navike ${st.habits}.`,
+    t('prompt.ctx.workout', {
+      n: workoutsInWeek(data.workouts, today).length,
+      s: st.study,
+      w: st.workout,
+      sl: st.sleep,
+      h: st.habits,
+    }),
   )
-  lines.push(`ISHRANA: protein danas ${proteinOn(data.meals, today)} g.`)
+  lines.push(t('prompt.ctx.food', { g: proteinOn(data.meals, today) }))
   lines.push(
-    `${data.settings.rewardName}: stanje ${rewardBalance(data.progress)} min (zarađeno ${data.progress.rewardEarnedMin}).`,
+    t('prompt.ctx.reward', {
+      name: rewardNameOf(data.settings),
+      bal: rewardBalance(data.progress),
+      earned: data.progress.rewardEarnedMin,
+    }),
   )
   const alerts = buildAlerts(data, today)
-  if (alerts.length) lines.push('\nUPOZORENJA: ' + alerts.map((a) => a.text).join(' | '))
+  if (alerts.length)
+    lines.push('\n' + t('prompt.ctx.alerts') + ' ' + alerts.map((a) => a.text).join(' | '))
   return lines.join('\n')
 }
 
 const TASKS: Record<AiKind, (today: string, text: string) => string> = {
-  'plan-dana': (t) =>
-    `ZADATAK: Napravi plan za DANAS (${t}). Rasporedi učenje, trening, odmor i igre. Poštuj postojeće obaveze (ne preklapaj ih).`,
-  'plan-nedelje': (t) =>
-    `ZADATAK: Napravi plan od ${t} do kraja nedelje (do ${addDaysStr(t, 7 - weekdayOf(t))}). Poštuj postojeće obaveze (ne preklapaj ih), rokove i pravila planiranja.`,
-  unos: (t, text) =>
-    `ZADATAK: Pretvori ovaj slobodan unos u aktivnosti. Današnji datum je ${t}. Unos: „${text}"`,
-  rezime: () =>
-    'ZADATAK: Napravi kratak rezime protekle nedelje (šta je išlo dobro, šta nije) i 3 konkretna saveta za sledeću.',
-  uvoz: (_t, text) =>
-    `ZADATAK: Iz teksta ispod izvuci kolokvijume, ispite, domaće i lab vežbe sa datumima. Ako nema godine, uzmi najbližu budućnost u odnosu na današnji datum. Ne izmišljaj ono čega nema u tekstu.\nTEKST:\n${text}`,
-  trening: () =>
-    'ZADATAK: Napravi plan treninga u teretani za mene (cilj, iskustvo i broj treninga nedeljno su u podacima iznad; rasporedi dane tako da ne smetaju faksu). Dani su 1=ponedeljak … 7=nedelja.',
+  'plan-dana': (d) => t('prompt.task.plan-dana', { date: d }),
+  'plan-nedelje': (d) =>
+    t('prompt.task.plan-nedelje', { from: d, to: addDaysStr(d, 7 - weekdayOf(d)) }),
+  unos: (d, text) => t('prompt.task.unos', { date: d, text }),
+  rezime: () => t('prompt.task.rezime'),
+  uvoz: (_d, text) => t('prompt.task.uvoz', { text }),
+  trening: () => t('prompt.task.trening'),
 }
 
-export const MANUAL_QUESTIONS = `PRE NEGO ŠTO VRATIŠ PLAN: prvo mi postavi 3–5 kratkih pitanja (kako sam spavao, kako se osećam, da li idem na predavanja, šta je hitno) i sačekaj moje odgovore. Tek posle toga vrati rezultat.`
+export const manualQuestions = () => t('prompt.questions')
 
 /** Full prompt text. In manual mode it also asks Claude to ask questions first. */
 export function buildPrompt(
@@ -151,28 +165,21 @@ export function buildPrompt(
     '',
     TASKS[kind](today, opts.text ?? ''),
     '',
-    'ŠEMA ODGOVORA (JSON, u jednom bloku koda):',
-    SCHEMA_TEXT[kind],
+    t('prompt.schemaHeader'),
+    schemaText(kind),
   ].join('\n')
   const manualText = [
-    SYSTEM_PROMPT,
+    systemPrompt(),
     '',
-    '--- MOJI PODACI ---',
+    t('prompt.dataHeader'),
     user,
     '',
-    MANUAL_QUESTIONS,
-    'Na kraju vrati JSON u bloku koda po šemi iznad.',
+    manualQuestions(),
+    t('prompt.jsonAtEnd'),
   ].join('\n')
-  return { system: SYSTEM_PROMPT, user, manualText }
+  return { system: systemPrompt(), user, manualText }
 }
 
-export const KIND_LABEL: Record<AiKind, string> = {
-  'plan-dana': 'Plan dana',
-  'plan-nedelje': 'Plan nedelje',
-  unos: 'Pametan unos',
-  rezime: 'Rezime nedelje',
-  uvoz: 'Uvoz rasporeda kolokvijuma',
-  trening: 'Plan treninga',
-}
+export const kindLabel = (k: AiKind) => t(`ai.kind.${k}`)
 
 export { formatShort }

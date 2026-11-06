@@ -6,11 +6,12 @@ import {
   startOfWeek,
   differenceInCalendarDays,
 } from 'date-fns'
-import { srLatn } from 'date-fns/locale'
+import { getLocaleModule, t } from '../i18n'
 import type { Weekday } from '../types'
 
-export const LOCALE = srLatn
-const WEEK = { weekStartsOn: 1 as const, locale: LOCALE }
+const WEEK = { weekStartsOn: 1 as const }
+/** date-fns locale of the selected language (month and weekday names, formats). */
+const locale = () => getLocaleModule().dateLocale
 
 export const DATE_FMT = 'yyyy-MM-dd'
 
@@ -45,31 +46,29 @@ export function monthOf(s: string): string {
   return s.slice(0, 7)
 }
 
-export const WEEKDAY_NAMES: Record<Weekday, string> = {
-  1: 'Ponedeljak',
-  2: 'Utorak',
-  3: 'Sreda',
-  4: 'Četvrtak',
-  5: 'Petak',
-  6: 'Subota',
-  7: 'Nedelja',
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+// 2024-01-01 was a Monday: a fixed reference week for weekday names
+const refDay = (d: Weekday) => fromDateStr(`2024-01-0${d}`)
+
+/** "Petak" / "Friday" / "Петак" — weekday name in the selected language. */
+export function weekdayName(d: Weekday): string {
+  return capitalize(format(refDay(d), 'EEEE', { locale: locale() }))
 }
-export const WEEKDAY_SHORT: Record<Weekday, string> = {
-  1: 'Pon',
-  2: 'Uto',
-  3: 'Sre',
-  4: 'Čet',
-  5: 'Pet',
-  6: 'Sub',
-  7: 'Ned',
+/** Short weekday name ("Pet" / "Fri"). */
+export function weekdayShort(d: Weekday): string {
+  return capitalize(format(refDay(d), 'EEE', { locale: locale() }))
+}
+/** Month name (1-12) in the selected language, capitalised. */
+export function monthName(month: number): string {
+  return capitalize(format(new Date(2024, month - 1, 1), 'LLLL', { locale: locale() }))
 }
 
 export function formatLong(s: string): string {
-  const text = format(fromDateStr(s), 'EEEE, d. MMMM', { locale: LOCALE })
-  return text.charAt(0).toUpperCase() + text.slice(1) // "Petak, 6. novembar"
+  // "Petak, 6. novembar" / "Friday, November 6th" (the pattern comes from the locale file)
+  return capitalize(format(fromDateStr(s), t('date.long'), { locale: locale() }))
 }
 export function formatShort(s: string): string {
-  return format(fromDateStr(s), 'd. MMM', { locale: LOCALE })
+  return format(fromDateStr(s), t('date.short'), { locale: locale() })
 }
 
 // ---- time helpers ('HH:mm') ----

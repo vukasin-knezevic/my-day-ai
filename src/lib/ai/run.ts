@@ -1,7 +1,8 @@
 import type { AppData } from '../../types'
 import { callClaude, type ClaudeReply } from './client'
 import { parseAiResponse, type ParseResult } from './extract'
-import { buildContext, buildPrompt, SYSTEM_PROMPT } from './prompt'
+import { buildContext, buildPrompt, systemPrompt } from './prompt'
+import { t } from '../../i18n'
 import type { AiKind } from './schemas'
 
 const FAST_KINDS: AiKind[] = ['unos', 'uvoz']
@@ -42,14 +43,17 @@ export async function runChat(
   fetchImpl?: typeof fetch,
 ) {
   const transcript = history
-    .map((m) => `${m.role === 'user' ? 'Student' : 'Asistent'}: ${m.content}`)
+    .map(
+      (m) =>
+        `${m.role === 'user' ? t('prompt.chat.student') : t('prompt.chat.assistant')}: ${m.content}`,
+    )
     .join('\n')
-  const user = `${buildContext(data, today)}\n\n${transcript ? transcript + '\n' : ''}Student: ${question}\n\nOdgovori kratko (do 6 rečenica), konkretno, na srpskom.`
+  const user = `${buildContext(data, today)}\n\n${transcript ? transcript + '\n' : ''}${t('prompt.chat.student')}: ${question}\n\n${t('prompt.chat.instruction')}`
   const model = modelFor('chat', data.settings)
   const reply = await callClaude({
     apiKey: data.settings.apiKey,
     model,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt(),
     user,
     maxTokens: 1000,
     fetchImpl,

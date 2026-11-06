@@ -2,6 +2,7 @@
 import type { Budget, Expense, ExpenseCategory, Habit, SleepLog } from '../types'
 import { EXPENSE_CATEGORIES } from '../types'
 import { addDaysStr, minToTime, monthOf, timeToMin } from './dates'
+import { formatNumber } from '../i18n'
 
 /* ---------- sleep ---------- */
 export function sleepHours(log: SleepLog): number | null {
@@ -61,7 +62,9 @@ export function budgetStatus(expenses: Expense[], budget: Budget, month: string)
   })
 }
 
-export const fmtRsd = (n: number) => `${Math.round(n).toLocaleString('sr-Latn-RS')} RSD`
+/** 1 234 RSD / 1,234 RSD: number format of the current language + the user's currency. */
+export const fmtMoney = (n: number, currency = 'RSD') =>
+  `${formatNumber(Math.round(n))} ${currency}`
 
 /* ---------- habits ---------- */
 export function habitDone(h: Habit, date: string): boolean {

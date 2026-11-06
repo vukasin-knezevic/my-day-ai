@@ -10,10 +10,14 @@ import { XP } from '../lib/xp'
 import { addDaysStr, formatShort, monthOf, todayStr } from '../lib/dates'
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
+import { currencyOf, expenseLabel } from '../lib/labels'
+import { useT } from '../i18n'
+import type { BaseKey } from '../i18n'
+import Rich from '../i18n/Rich'
 import {
   avgSleep,
   budgetStatus,
-  fmtRsd,
+  fmtMoney,
   habitDone,
   habitStreak,
   sleepHours,
@@ -24,15 +28,16 @@ import {
 type Tab = 'san' | 'novac' | 'navike'
 
 export default function Life() {
+  const { t } = useT()
   const [tab, setTab] = useState<Tab>('san')
-  const tabs: [Tab, string][] = [
-    ['san', '😴 San'],
-    ['novac', '💰 Novac'],
-    ['navike', '✅ Navike'],
+  const tabs: [Tab, BaseKey][] = [
+    ['san', 'life.tab.sleep'],
+    ['novac', 'life.tab.money'],
+    ['navike', 'life.tab.habits'],
   ]
   return (
     <>
-      <PageTitle>Život</PageTitle>
+      <PageTitle>{t('life.title')}</PageTitle>
       <div role="tablist" className="mb-4 flex gap-2">
         {tabs.map(([k, label]) => (
           <button
@@ -42,7 +47,7 @@ export default function Life() {
             onClick={() => setTab(k)}
             className={`min-h-10 rounded-xl px-3 text-sm font-medium ${tab === k ? 'bg-violet-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
           >
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -54,6 +59,7 @@ export default function Life() {
 }
 
 function Sleep() {
+  const { t } = useT()
   const data = useStore(useShallow(selectData))
   const store = useStore()
   const today = todayStr()
@@ -83,7 +89,7 @@ function Sleep() {
               applyParsed({ kind: 'sleep', event: 'bed', time: hhmm, date: today }, store)
             }
           >
-            😴 Legao
+            {t('life.bed')}
           </Button>
           <Button
             variant="soft"
@@ -92,25 +98,24 @@ function Sleep() {
               applyParsed({ kind: 'sleep', event: 'wake', time: hhmm, date: today }, store)
             }
           >
-            🌅 Ustao
+            {t('life.wake')}
           </Button>
         </div>
         {open && (
           <p className="mt-2 text-sm">
-            Spavaš od {open.bedtime.slice(11, 16)}. Kad ustaneš, klikni „Ustao".
+            {t('life.sleepingSince', { time: open.bedtime.slice(11, 16) })}
           </p>
         )}
         <p className="mt-2 text-sm">
-          Prosek 7 dana: <strong>{avg ?? '—'} h</strong> (cilj {data.settings.sleepGoalHours} h)
+          <Rich text={t('life.avg', { avg: avg ?? '—', goal: data.settings.sleepGoalHours })} />
         </p>
         <p className="text-sm">
-          💡 Predlog za večeras: legni oko <strong>{suggest}</strong> (sutra prva obaveza u {first}
-          ).
+          <Rich text={t('life.suggestion', { time: suggest, first })} />
         </p>
       </Card>
       {last && <Quality log={last} />}
       <Card>
-        <h2 className="mb-2 font-semibold">Poslednjih 7 dana (sati)</h2>
+        <h2 className="mb-2 font-semibold">{t('life.chart7')}</h2>
         <div style={{ width: '100%', height: 180 }}>
           <ResponsiveContainer>
             <BarChart data={chart}>
@@ -128,18 +133,19 @@ function Sleep() {
 }
 
 function Quality({ log }: { log: SleepLog }) {
+  const { t } = useT()
   const update = useStore((s) => s.update)
   return (
     <Card>
       <p className="mb-2 text-sm">
-        Poslednji san ({formatShort(log.date)}, {sleepHours(log)} h) — kako je bio?
+        {t('life.lastSleep', { date: formatShort(log.date), h: sleepHours(log) ?? '—' })}
       </p>
       <div className="flex gap-1">
         {([1, 2, 3, 4, 5] as const).map((q) => (
           <Button
             key={q}
             variant={log.quality === q ? 'primary' : 'soft'}
-            aria-label={`Kvalitet sna ${q}`}
+            aria-label={t('life.qualityAria', { q })}
             onClick={() => update('sleep', log.id, { quality: q })}
           >
             {q}
@@ -150,20 +156,13 @@ function Quality({ log }: { log: SleepLog }) {
   )
 }
 
-const CAT_LABEL: Record<ExpenseCategory, string> = {
-  hrana: 'Hrana',
-  prevoz: 'Prevoz',
-  igre: 'Igre',
-  faks: 'Faks',
-  izlasci: 'Izlasci',
-  ostalo: 'Ostalo',
-}
-
 function Money() {
-  const { expenses, budget, add, remove, patch } = useStore(
+  const { t } = useT()
+  const { expenses, budget, currency, add, remove, patch } = useStore(
     useShallow((s) => ({
       expenses: s.expenses,
       budget: s.budget,
+      currency: currencyOf(s.settings),
       add: s.add,
       remove: s.remove,
       patch: s.patch,
@@ -177,7 +176,7 @@ function Money() {
   const status = budgetStatus(expenses, budget, month)
   const spent = spentByCategory(expenses, month)
   const total = Object.values(spent).reduce((a, b) => a + b, 0)
-  const chart = EXPENSE_CATEGORIES.map((c) => ({ name: CAT_LABEL[c], rsd: spent[c] }))
+  const chart = EXPENSE_CATEGORIES.map((c) => ({ name: expenseLabel(c), rsd: spent[c] }))
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -198,39 +197,46 @@ function Money() {
             role="alert"
             className={`rounded-xl p-3 text-sm font-medium ${s.level === 'over' ? 'bg-red-100 text-red-900' : 'bg-amber-100 text-amber-900'}`}
           >
-            {s.level === 'over' ? '🚨' : '⚠️'} {CAT_LABEL[s.category]}: potrošeno {s.pct}% budžeta (
-            {fmtRsd(s.spent)} od {fmtRsd(s.limit)})
+            {t('life.budgetAlert', {
+              emoji: s.level === 'over' ? '🚨' : '⚠️',
+              cat: expenseLabel(s.category),
+              pct: s.pct,
+              spent: fmtMoney(s.spent, currency),
+              limit: fmtMoney(s.limit, currency),
+            })}
           </p>
         ))}
       <Card>
         <form onSubmit={submit} className="grid grid-cols-2 gap-2">
-          <Field label="Iznos (RSD)">
+          <Field label={t('life.amount', { cur: currency })}>
             <NumberInput min={1} max={10000000} value={amount} onChange={setAmount} />
           </Field>
-          <Field label="Kategorija">
+          <Field label={t('act.category')}>
             <Select
               value={category}
               onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
             >
               {EXPENSE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {CAT_LABEL[c]}
+                  {expenseLabel(c)}
                 </option>
               ))}
             </Select>
           </Field>
           <div className="col-span-2">
-            <Field label="Opis">
+            <Field label={t('life.desc')}>
               <Input value={desc} onChange={(e) => setDesc(e.target.value)} />
             </Field>
           </div>
           <Button type="submit" className="col-span-2">
-            Dodaj trošak
+            {t('life.addExpense')}
           </Button>
         </form>
       </Card>
       <Card>
-        <h2 className="mb-1 font-semibold">Ovaj mesec: {fmtRsd(total)}</h2>
+        <h2 className="mb-1 font-semibold">
+          {t('life.thisMonth', { total: fmtMoney(total, currency) })}
+        </h2>
         <div style={{ width: '100%', height: 180 }}>
           <ResponsiveContainer>
             <BarChart data={chart}>
@@ -244,10 +250,10 @@ function Money() {
         </div>
       </Card>
       <Card>
-        <h2 className="mb-2 font-semibold">Mesečni budžet (RSD)</h2>
+        <h2 className="mb-2 font-semibold">{t('life.budget', { cur: currency })}</h2>
         <div className="grid grid-cols-2 gap-2">
           {EXPENSE_CATEGORIES.map((c) => (
-            <Field key={c} label={CAT_LABEL[c]}>
+            <Field key={c} label={expenseLabel(c)}>
               <NumberInput
                 min={0}
                 max={10000000}
@@ -260,18 +266,22 @@ function Money() {
         </div>
       </Card>
       <Card>
-        <h2 className="mb-2 font-semibold">Poslednji troškovi</h2>
+        <h2 className="mb-2 font-semibold">{t('life.recent')}</h2>
         <ul className="space-y-1 text-sm">
           {[...expenses]
             .reverse()
             .slice(0, 15)
             .map((e) => (
               <li key={e.id} className="flex items-center gap-2">
-                {formatShort(e.date)} · {fmtRsd(e.amount)} · {CAT_LABEL[e.category]}{' '}
+                {t('life.expenseLine', {
+                  date: formatShort(e.date),
+                  amount: fmtMoney(e.amount, currency),
+                  cat: expenseLabel(e.category),
+                })}{' '}
                 {e.description && `· ${e.description}`}
                 <Button
                   variant="ghost"
-                  aria-label={`Obriši trošak ${e.amount}`}
+                  aria-label={t('life.deleteExpense', { amount: e.amount })}
                   onClick={() => remove('expenses', e.id)}
                 >
                   ✕
@@ -285,6 +295,7 @@ function Money() {
 }
 
 function Habits() {
+  const { t } = useT()
   const { habits, add, update, remove, award } = useStore(
     useShallow((s) => ({
       habits: s.habits,
@@ -331,12 +342,18 @@ function Habits() {
                 {h.emoji}
               </span>
               <strong>{h.name}</strong>
-              {streak > 0 && <Badge className="bg-orange-100 text-orange-800">🔥 {streak} d</Badge>}
-              {habitDone(h, today) && <Badge className="bg-teal-100 text-teal-800">urađeno</Badge>}
+              {streak > 0 && (
+                <Badge className="bg-orange-100 text-orange-800">
+                  {t('life.streakBadge', { n: streak })}
+                </Badge>
+              )}
+              {habitDone(h, today) && (
+                <Badge className="bg-teal-100 text-teal-800">{t('life.habitDone')}</Badge>
+              )}
               <Button
                 variant="ghost"
                 className="ml-auto"
-                aria-label={`Obriši naviku ${h.name}`}
+                aria-label={t('life.deleteHabit', { name: h.name })}
                 onClick={() => remove('habits', h.id)}
               >
                 ✕
@@ -350,13 +367,13 @@ function Habits() {
                   checked={v >= 1}
                   onChange={(e) => setEntry(h, e.target.checked ? 1 : 0)}
                 />
-                Danas urađeno
+                {t('life.doneToday')}
               </label>
             ) : (
               <div className="mt-2 flex items-center gap-2 text-sm">
                 <Button
                   variant="soft"
-                  aria-label={`Manje ${h.name}`}
+                  aria-label={t('life.less', { name: h.name })}
                   onClick={() =>
                     setEntry(h, Math.max(0, +(v - (h.goal >= 10 ? 5 : 0.5)).toFixed(1)))
                   }
@@ -368,7 +385,7 @@ function Habits() {
                 </span>
                 <Button
                   variant="soft"
-                  aria-label={`Više ${h.name}`}
+                  aria-label={t('life.more', { name: h.name })}
                   onClick={() => setEntry(h, +(v + (h.goal >= 10 ? 5 : 0.5)).toFixed(1))}
                 >
                   +
@@ -379,30 +396,30 @@ function Habits() {
         )
       })}
       <Card>
-        <h2 className="mb-2 font-semibold">Nova navika</h2>
+        <h2 className="mb-2 font-semibold">{t('life.newHabit')}</h2>
         <form onSubmit={submit} className="grid grid-cols-4 gap-2">
           <div className="col-span-3">
-            <Field label="Naziv">
+            <Field label={t('life.habitName')}>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Voda, čitanje, šetnja…"
+                placeholder={t('life.habitPlaceholder')}
               />
             </Field>
           </div>
-          <Field label="Emotikon">
+          <Field label={t('life.habitEmoji')}>
             <Input value={emoji} onChange={(e) => setEmoji(e.target.value)} />
           </Field>
-          <Field label="Cilj (broj)">
+          <Field label={t('life.habitGoal')}>
             <NumberInput min={0.5} max={10000} step={0.5} value={goal} onChange={setGoal} />
           </Field>
           <div className="col-span-2">
-            <Field label="Jedinica (L, min…)">
+            <Field label={t('life.habitUnit')}>
               <Input value={unit} onChange={(e) => setUnit(e.target.value)} />
             </Field>
           </div>
           <Button type="submit" className="col-span-4">
-            Dodaj naviku
+            {t('life.addHabit')}
           </Button>
         </form>
       </Card>

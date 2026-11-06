@@ -2,10 +2,14 @@ import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card } from './ui'
 import { todayStr } from '../lib/dates'
+import { useT } from '../i18n'
+import { rewardNameOf } from '../lib/labels'
+import Rich from '../i18n/Rich'
 import { computeStreaks, levelFor, rewardBalance } from '../lib/xp'
 
 /** Level, XP bar, streaks and the reward time balance. Never scolds for playing. */
 export default function ProgressCard() {
+  const { t } = useT()
   const data = useStore(useShallow(selectData))
   const spendReward = useStore((s) => s.spendReward)
   const p = data.progress
@@ -16,15 +20,13 @@ export default function ProgressCard() {
   return (
     <Card className="mb-4">
       <div className="flex items-baseline justify-between">
-        <p className="font-semibold">
-          Nivo {lvl.index + 1}: {lvl.name}
-        </p>
+        <p className="font-semibold">{t('progress.level', { n: lvl.index + 1, name: lvl.name })}</p>
         <p className="text-sm text-slate-600 dark:text-slate-400">{p.xp} XP</p>
       </div>
       <div
         className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
         role="progressbar"
-        aria-label="Napredak do sledećeg nivoa"
+        aria-label={t('progress.aria')}
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -33,7 +35,7 @@ export default function ProgressCard() {
       </div>
       {lvl.nextName && (
         <p className="mt-1 text-xs text-slate-500">
-          Još {lvl.size! - lvl.into} XP do nivoa „{lvl.nextName}"
+          {t('progress.toNext', { xp: lvl.size! - lvl.into, name: lvl.nextName })}
         </p>
       )}
       <p className="mt-2 flex flex-wrap gap-x-4 text-sm">
@@ -44,16 +46,22 @@ export default function ProgressCard() {
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 text-sm dark:border-slate-800">
         <span>
-          {data.settings.rewardEmoji} {data.settings.rewardName}: zarađeno{' '}
-          <strong>{p.rewardEarnedMin}</strong> min · potrošeno <strong>{p.rewardSpentMin}</strong>{' '}
-          min · stanje <strong>{balance}</strong> min
+          <Rich
+            text={t('progress.reward', {
+              emoji: data.settings.rewardEmoji,
+              name: rewardNameOf(data.settings),
+              earned: p.rewardEarnedMin,
+              spent: p.rewardSpentMin,
+              bal: balance,
+            })}
+          />
         </span>
         <span className="ml-auto flex gap-1">
           <Button variant="soft" onClick={() => spendReward(30)}>
-            Iskoristio 30 min
+            {t('progress.use', { n: 30 })}
           </Button>
           <Button variant="soft" onClick={() => spendReward(60)}>
-            Iskoristio 60 min
+            {t('progress.use', { n: 60 })}
           </Button>
         </span>
       </div>

@@ -2,6 +2,7 @@
 import type { AppData } from '../types'
 import { addDaysStr, todayStr } from './dates'
 import { occurrencesOn } from './schedule'
+import { t } from '../i18n'
 
 const esc = (s: string) =>
   s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
@@ -95,7 +96,7 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
     )
       events.push({
         uid: `reg-${a.id}`,
-        summary: `🚨 Rok za prijavu: ${a.title}`,
+        summary: t('ics.regDeadline', { title: a.title }),
         date: a.registrationDeadline,
         alarmMin: 0,
       })

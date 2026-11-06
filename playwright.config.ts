@@ -10,6 +10,8 @@ export default defineConfig({
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',
     viewport: { width: 390, height: 844 },
+    // the tests are written for Serbian; the app picks its language from the browser
+    locale: 'sr-RS',
   },
   projects: [
     {

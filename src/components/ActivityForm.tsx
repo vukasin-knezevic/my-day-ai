@@ -3,14 +3,11 @@ import { useStore } from '../store'
 import { Button, Card, Field, Input, Select } from './ui'
 import KeyScope from './KeyScope'
 import { CATEGORY_META, type Activity, type Category, type Recurrence } from '../types'
+import { useT } from '../i18n'
+import { categoryLabel, recurrenceLabel } from '../lib/labels'
 import { timeToMin } from '../lib/dates'
 
-const RECURRENCE_LABEL: Record<Recurrence, string> = {
-  none: 'Jednokratno',
-  daily: 'Svaki dan',
-  weekdays: 'Radnim danima (pon–pet)',
-  weekly: 'Jednom nedeljno (istog dana)',
-}
+const RECURRENCES: Recurrence[] = ['none', 'daily', 'weekdays', 'weekly']
 
 /** Add a new activity or edit an existing one. Enter saves, Escape closes. */
 export default function ActivityForm({
@@ -22,6 +19,7 @@ export default function ActivityForm({
   defaultDate: string
   onClose: () => void
 }) {
+  const { t } = useT()
   const add = useStore((s) => s.add)
   const update = useStore((s) => s.update)
   const [f, setF] = useState({
@@ -36,9 +34,9 @@ export default function ActivityForm({
   const [error, setError] = useState('')
 
   function save() {
-    if (!f.title.trim()) return setError('Upiši naziv aktivnosti.')
-    if (!f.date) return setError('Izaberi datum.')
-    if (timeToMin(f.end) <= timeToMin(f.start)) return setError('Kraj mora biti posle početka.')
+    if (!f.title.trim()) return setError(t('act.errTitle'))
+    if (!f.date) return setError(t('act.errDate'))
+    if (timeToMin(f.end) <= timeToMin(f.start)) return setError(t('act.errEnd'))
     const patch = {
       title: f.title.trim(),
       category: f.category,
@@ -54,12 +52,12 @@ export default function ActivityForm({
   }
 
   return (
-    <KeyScope onEnter={save} onEscape={onClose} role="dialog" aria-label="Aktivnost">
+    <KeyScope onEnter={save} onEscape={onClose} role="dialog" aria-label={t('act.dialog')}>
       <Card className="mb-4 border-blue-300 dark:border-blue-800">
-        <h2 className="mb-3 font-semibold">{initial ? 'Izmeni aktivnost' : 'Nova aktivnost'}</h2>
+        <h2 className="mb-3 font-semibold">{initial ? t('act.edit') : t('act.new')}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <Field label="Naziv">
+            <Field label={t('act.name')}>
               <Input
                 autoFocus
                 value={f.title}
@@ -67,31 +65,31 @@ export default function ActivityForm({
               />
             </Field>
           </div>
-          <Field label="Kategorija">
+          <Field label={t('act.category')}>
             <Select
               value={f.category}
               onChange={(e) => setF({ ...f, category: e.target.value as Category })}
             >
               {(Object.keys(CATEGORY_META) as Category[]).map((c) => (
                 <option key={c} value={c}>
-                  {CATEGORY_META[c].emoji} {CATEGORY_META[c].label}
+                  {CATEGORY_META[c].emoji} {categoryLabel(c)}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Ponavljanje">
+          <Field label={t('act.recurrence')}>
             <Select
               value={f.recurrence}
               onChange={(e) => setF({ ...f, recurrence: e.target.value as Recurrence })}
             >
-              {(Object.keys(RECURRENCE_LABEL) as Recurrence[]).map((r) => (
+              {RECURRENCES.map((r) => (
                 <option key={r} value={r}>
-                  {RECURRENCE_LABEL[r]}
+                  {recurrenceLabel(r)}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label={f.recurrence === 'none' ? 'Datum' : 'Počinje'}>
+          <Field label={f.recurrence === 'none' ? t('act.date') : t('act.starts')}>
             <Input
               type="date"
               value={f.date}
@@ -99,14 +97,14 @@ export default function ActivityForm({
             />
           </Field>
           <div className="grid grid-cols-2 gap-2">
-            <Field label="Početak">
+            <Field label={t('act.start')}>
               <Input
                 type="time"
                 value={f.start}
                 onChange={(e) => setF({ ...f, start: e.target.value })}
               />
             </Field>
-            <Field label="Kraj">
+            <Field label={t('act.end')}>
               <Input
                 type="time"
                 value={f.end}
@@ -115,7 +113,7 @@ export default function ActivityForm({
             </Field>
           </div>
           <div className="col-span-2">
-            <Field label="Beleška (opciono)">
+            <Field label={t('act.note')}>
               <Input value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
             </Field>
           </div>
@@ -127,9 +125,9 @@ export default function ActivityForm({
         )}
         <div className="mt-3 flex justify-end gap-2">
           <Button variant="soft" onClick={onClose}>
-            Otkaži
+            {t('common.cancel')}
           </Button>
-          <Button onClick={save}>{initial ? 'Sačuvaj izmene' : 'Dodaj'}</Button>
+          <Button onClick={save}>{initial ? t('act.saveChanges') : t('common.add')}</Button>
         </div>
       </Card>
     </KeyScope>

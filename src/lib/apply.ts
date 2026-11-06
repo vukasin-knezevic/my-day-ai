@@ -2,10 +2,15 @@ import type { Store } from '../store'
 import type { Parsed } from './quickParse'
 import { CATEGORY_META } from '../types'
 import { formatShort } from './dates'
+import { t } from '../i18n'
+import { currencyOf, expenseLabel } from './labels'
 
-type Actions = Pick<Store, 'add' | 'update'> & { sleep: Store['sleep'] }
+type Actions = Pick<Store, 'add' | 'update'> & {
+  sleep: Store['sleep']
+  settings?: { currency: string }
+}
 
-/** Saves a parsed quick entry into the store. Returns a short Serbian confirmation message. */
+/** Saves a parsed quick entry into the store. Returns a short confirmation message (in the current language). */
 export function applyParsed(p: Parsed, st: Actions): string {
   switch (p.kind) {
     case 'activity':
@@ -19,7 +24,13 @@ export function applyParsed(p: Parsed, st: Actions): string {
         status: 'planned',
         source: 'me',
       })
-      return `${CATEGORY_META[p.category].emoji} Dodato: ${p.title}, ${formatShort(p.date)} ${p.start}–${p.end}`
+      return t('apply.added', {
+        emoji: CATEGORY_META[p.category].emoji,
+        title: p.title,
+        date: formatShort(p.date),
+        start: p.start,
+        end: p.end,
+      })
     case 'expense':
       st.add('expenses', {
         date: p.date,
@@ -27,7 +38,11 @@ export function applyParsed(p: Parsed, st: Actions): string {
         category: p.category,
         description: p.description,
       })
-      return `💰 Trošak ${p.amount} RSD (${p.category}) sačuvan`
+      return t('apply.expense', {
+        amount: p.amount,
+        currency: st.settings ? currencyOf(st.settings) : t('currency.default'),
+        category: expenseLabel(p.category),
+      })
     case 'sleep': {
       const iso = `${p.date}T${p.time}:00`
       if (p.event === 'bed') {
@@ -39,7 +54,7 @@ export function applyParsed(p: Parsed, st: Actions): string {
           quality: null,
           source: 'manual',
         })
-        return `😴 Legao u ${p.time}. Laku noć!`
+        return t('apply.bed', { time: p.time })
       }
       const open = [...st.sleep].reverse().find((s) => s.wakeTime === null)
       if (open) st.update('sleep', open.id, { wakeTime: iso, date: p.date })
@@ -51,9 +66,9 @@ export function applyParsed(p: Parsed, st: Actions): string {
           quality: null,
           source: 'manual',
         })
-      return `🌅 Ustao u ${p.time}. Dobro jutro!`
+      return t('apply.wake', { time: p.time })
     }
     default:
-      return 'Nisam razumeo. Probaj npr. „trening 18-19:30", „kafa 200" ili „legao 1:30".'
+      return t('apply.unknown')
   }
 }

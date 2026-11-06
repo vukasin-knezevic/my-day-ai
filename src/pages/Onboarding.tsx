@@ -1,12 +1,24 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { Button, Card, Field, Input } from '../components/ui'
+import { Button, Card, Field, Input, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
+import Rich from '../i18n/Rich'
+import { LANGUAGES, getLanguage, useT } from '../i18n'
+import type { BaseKey } from '../i18n'
 
-const STEPS = ['Ime', 'Ritam dana', 'Ciljevi', 'Nagrada', 'Predmeti', 'AI režim']
+const STEPS: BaseKey[] = [
+  'ob.s.language',
+  'ob.s.name',
+  'ob.s.rhythm',
+  'ob.s.goals',
+  'ob.s.reward',
+  'ob.s.subjects',
+  'ob.s.ai',
+]
 
 export default function Onboarding() {
+  const { t } = useT()
   const settings = useStore((s) => s.settings)
   const setSettings = useStore((s) => s.setSettings)
   const loadDemo = useStore((s) => s.loadDemo)
@@ -28,38 +40,62 @@ export default function Onboarding() {
 
   return (
     <div className="mx-auto max-w-md p-4 pt-10">
-      <h1 className="mb-1 text-2xl font-bold">🌅 Dobrodošao u My Day AI</h1>
+      <h1 className="mb-1 text-2xl font-bold">{t('ob.title')}</h1>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-        Korak {step + 1} od {STEPS.length}: {STEPS[step]}
+        {t('ob.step', { n: step + 1, total: STEPS.length, name: t(STEPS[step]) })}
       </p>
       <KeyScope onEnter={next} onEscape={back} focusKey={step}>
         <Card className="space-y-4">
           {step === 0 && (
-            <Field label="Kako da te zovem?">
+            <>
+              <p className="text-sm">{t('ob.lang.intro')}</p>
+              <Field label={t('set.language')}>
+                <Select
+                  value={draft.language || ''}
+                  onChange={(e) => {
+                    set('language', e.target.value)
+                    // the screen switches language right away
+                    setSettings({ language: e.target.value })
+                  }}
+                >
+                  <option value="">
+                    {t('set.langAuto')} · {LANGUAGES.find((l) => l.code === getLanguage())?.name}
+                  </option>
+                  {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </>
+          )}
+          {step === 1 && (
+            <Field label={t('ob.name.label')}>
               <Input
                 value={draft.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="npr. Marko"
+                placeholder={t('ob.name.placeholder')}
               />
             </Field>
           )}
-          {step === 1 && (
+          {step === 2 && (
             <>
-              <Field label="Obično ustajem u (između 8 i 10)">
+              <Field label={t('ob.wake')}>
                 <Input
                   type="time"
                   value={draft.wakeTime}
                   onChange={(e) => set('wakeTime', e.target.value)}
                 />
               </Field>
-              <Field label="Obično legnem u (između 00 i 02)">
+              <Field label={t('ob.bed')}>
                 <Input
                   type="time"
                   value={draft.bedTime}
                   onChange={(e) => set('bedTime', e.target.value)}
                 />
               </Field>
-              <Field label="Cilj sna (sati)">
+              <Field label={t('ob.sleepGoal')}>
                 <NumberInput
                   min={4}
                   max={12}
@@ -69,9 +105,9 @@ export default function Onboarding() {
               </Field>
             </>
           )}
-          {step === 2 && (
+          {step === 3 && (
             <>
-              <Field label="Treninga nedeljno">
+              <Field label={t('ob.workouts')}>
                 <NumberInput
                   min={0}
                   max={7}
@@ -79,7 +115,7 @@ export default function Onboarding() {
                   onChange={(v) => set('workoutsPerWeek', v)}
                 />
               </Field>
-              <Field label="Sati učenja dnevno">
+              <Field label={t('ob.study')}>
                 <NumberInput
                   min={0}
                   max={12}
@@ -87,7 +123,7 @@ export default function Onboarding() {
                   onChange={(v) => set('studyHoursPerDay', v)}
                 />
               </Field>
-              <Field label="Dnevni cilj proteina (g)">
+              <Field label={t('ob.protein')}>
                 <NumberInput
                   min={0}
                   value={draft.proteinGoal}
@@ -96,30 +132,27 @@ export default function Onboarding() {
               </Field>
             </>
           )}
-          {step === 3 && (
+          {step === 4 && (
             <>
-              <p className="text-sm">
-                Za učenje zarađuješ nagradu koju sam biraš: vreme za igrice, epizodu serije,
-                izlazak… Aplikacija je samo broji, bez zamerki.
-              </p>
+              <p className="text-sm">{t('ob.reward.intro')}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <Field label="Naziv nagrade">
+                  <Field label={t('set.reward.name')}>
                     <Input
                       value={draft.rewardName}
                       onChange={(e) => set('rewardName', e.target.value)}
-                      placeholder="npr. Vreme za igrice"
+                      placeholder={t('reward.default')}
                     />
                   </Field>
                 </div>
-                <Field label="Emotikon">
+                <Field label={t('set.reward.emoji')}>
                   <Input
                     value={draft.rewardEmoji}
                     onChange={(e) => set('rewardEmoji', e.target.value)}
                   />
                 </Field>
               </div>
-              <Field label="Minuta nagrade po satu učenja">
+              <Field label={t('ob.reward.perHour')}>
                 <NumberInput
                   min={0}
                   max={120}
@@ -130,12 +163,10 @@ export default function Onboarding() {
               </Field>
             </>
           )}
-          {step === 4 && (
+          {step === 5 && (
             <>
               <p className="text-sm">
-                Predmete i raspored unosiš kasnije na ekranu <strong>Faks</strong>. Aplikacija ne
-                zna tvoje predmete, pa možeš da učitaš demo podatke (jasno označene sa „primer") da
-                vidiš kako sve izgleda.
+                <Rich text={t('ob.subjects.text')} />
               </p>
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -144,18 +175,15 @@ export default function Onboarding() {
                   onChange={(e) => setDemo(e.target.checked)}
                   className="size-5"
                 />
-                Učitaj demo podatke (kasnije ih brišeš jednim dugmetom)
+                {t('ob.demo')}
               </label>
             </>
           )}
-          {step === 5 && (
+          {step === 6 && (
             <>
-              <p className="text-sm">
-                AI pravi planove, rezime i pametan unos. Izaberi kako da radi (možeš da promeniš u
-                podešavanjima):
-              </p>
+              <p className="text-sm">{t('ob.ai.intro')}</p>
               <fieldset className="space-y-2">
-                <legend className="sr-only">AI režim</legend>
+                <legend className="sr-only">{t('ob.ai.legend')}</legend>
                 <label className="flex items-start gap-2 rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700">
                   <input
                     type="radio"
@@ -165,9 +193,9 @@ export default function Onboarding() {
                     onChange={() => set('aiMode', 'manual')}
                   />
                   <span>
-                    <strong>Ručni (besplatno)</strong>
+                    <strong>{t('ob.ai.manualTitle')}</strong>
                     <br />
-                    Kopiraš gotov tekst u Claude chat i nalepiš odgovor nazad.
+                    {t('ob.ai.manualDesc')}
                   </span>
                 </label>
                 <label className="flex items-start gap-2 rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700">
@@ -179,10 +207,9 @@ export default function Onboarding() {
                     onChange={() => set('aiMode', 'api')}
                   />
                   <span>
-                    <strong>API (plaća se po upotrebi)</strong>
+                    <strong>{t('ob.ai.apiTitle')}</strong>
                     <br />
-                    Aplikacija sama zove Claude, bez kopiranja. Treba ti Anthropic API ključ, a
-                    plaćaš po potrošnji (obično nekoliko centi mesečno).
+                    {t('ob.ai.apiDesc')}
                   </span>
                 </label>
               </fieldset>
@@ -192,11 +219,11 @@ export default function Onboarding() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Saznaj više o ceni i ključu ↗
+                {t('ob.ai.more')}
               </a>
               {draft.aiMode === 'api' && (
                 <>
-                  <Field label="Anthropic API ključ (možeš i kasnije)">
+                  <Field label={t('ob.ai.keyLabel')}>
                     <Input
                       type="password"
                       autoComplete="off"
@@ -205,24 +232,16 @@ export default function Onboarding() {
                       placeholder="sk-ant-…"
                     />
                   </Field>
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
-                    ⚠️ Ključ se čuva samo na ovom uređaju i vidljiv je u pregledaču. Nikome ga ne
-                    deli, ne unosi ga na tuđem računaru i postavi mesečni limit potrošnje u
-                    Anthropic konzoli.
-                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">{t('ob.ai.keyWarn')}</p>
                 </>
               )}
             </>
           )}
           <div className="flex justify-between pt-2">
-            <Button variant="soft" disabled={step === 0} onClick={() => setStep(step - 1)}>
-              Nazad
+            <Button variant="soft" disabled={step === 0} onClick={back}>
+              {t('common.back')}
             </Button>
-            {step < STEPS.length - 1 ? (
-              <Button onClick={() => setStep(step + 1)}>Dalje</Button>
-            ) : (
-              <Button onClick={finish}>Završi</Button>
-            )}
+            <Button onClick={next}>{last ? t('common.finish') : t('common.next')}</Button>
           </div>
         </Card>
       </KeyScope>

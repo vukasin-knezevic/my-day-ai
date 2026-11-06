@@ -1,4 +1,5 @@
-import type { Meal, Workout, WorkoutPlan } from '../types'
+import type { Meal, Weekday, Workout, WorkoutPlan } from '../types'
+import { t } from '../i18n'
 import { addDaysStr, weekStartStr } from './dates'
 
 const norm = (s: string) => s.trim().toLowerCase()
@@ -77,122 +78,134 @@ export function proteinOn(meals: Meal[], date: string): number {
   return meals.filter((m) => m.date === date).reduce((n, m) => n + m.protein, 0)
 }
 
-export const SPLITS: WorkoutPlan[] = [
+type ExKey = Parameters<typeof t>[0]
+type SplitDay = { day: Weekday; title: ExKey; ex: [ExKey, number, string][] }
+const SPLIT_DEFS: { name: ExKey; days: SplitDay[] }[] = [
   {
-    name: '3× Full body',
-    source: 'template',
-    days: [1, 3, 5].map((day) => ({
-      day: day as 1 | 3 | 5,
-      title: 'Full body',
-      exercises: [
-        { name: 'Čučanj', sets: 3, reps: '8' },
-        { name: 'Bench press', sets: 3, reps: '8' },
-        { name: 'Veslanje šipkom', sets: 3, reps: '8' },
-        { name: 'Overhead press', sets: 3, reps: '10' },
-        { name: 'Plank', sets: 3, reps: '45 s' },
-      ],
+    name: 'split.full3',
+    days: ([1, 3, 5] as Weekday[]).map((day) => ({
+      day,
+      title: 'split.full' as ExKey,
+      ex: [
+        ['ex.squat', 3, '8'],
+        ['ex.bench', 3, '8'],
+        ['ex.row', 3, '8'],
+        ['ex.ohp', 3, '10'],
+        ['ex.plank', 3, '45 s'],
+      ] as [ExKey, number, string][],
     })),
   },
   {
-    name: '4× Gornji / donji',
-    source: 'template',
+    name: 'split.ul4',
     days: [
       {
         day: 1,
-        title: 'Gornji deo',
-        exercises: [
-          { name: 'Bench press', sets: 4, reps: '6-8' },
-          { name: 'Veslanje šipkom', sets: 4, reps: '8' },
-          { name: 'Overhead press', sets: 3, reps: '10' },
-          { name: 'Zadnja loža ruku', sets: 3, reps: '12' },
+        title: 'split.upper',
+        ex: [
+          ['ex.bench', 4, '6-8'],
+          ['ex.row', 4, '8'],
+          ['ex.ohp', 3, '10'],
+          ['ex.triceps', 3, '12'],
         ],
       },
       {
         day: 2,
-        title: 'Donji deo',
-        exercises: [
-          { name: 'Čučanj', sets: 4, reps: '6-8' },
-          { name: 'Rumunsko mrtvo dizanje', sets: 3, reps: '8' },
-          { name: 'Iskoraci', sets: 3, reps: '10' },
-          { name: 'Listovi', sets: 4, reps: '15' },
+        title: 'split.lower',
+        ex: [
+          ['ex.squat', 4, '6-8'],
+          ['ex.rdl', 3, '8'],
+          ['ex.lunges', 3, '10'],
+          ['ex.calves', 4, '15'],
         ],
       },
       {
         day: 4,
-        title: 'Gornji deo',
-        exercises: [
-          { name: 'Kosi bench', sets: 4, reps: '8' },
-          { name: 'Zgibovi', sets: 4, reps: '6-10' },
-          { name: 'Bočno dizanje', sets: 3, reps: '15' },
-          { name: 'Biceps pregib', sets: 3, reps: '12' },
+        title: 'split.upper',
+        ex: [
+          ['ex.incline', 4, '8'],
+          ['ex.pullups', 4, '6-10'],
+          ['ex.lateral', 3, '15'],
+          ['ex.biceps', 3, '12'],
         ],
       },
       {
         day: 5,
-        title: 'Donji deo',
-        exercises: [
-          { name: 'Mrtvo dizanje', sets: 3, reps: '5' },
-          { name: 'Leg press', sets: 3, reps: '12' },
-          { name: 'Zadnja loža', sets: 3, reps: '12' },
-          { name: 'Plank', sets: 3, reps: '45 s' },
+        title: 'split.lower',
+        ex: [
+          ['ex.deadlift', 3, '5'],
+          ['ex.legpress', 3, '12'],
+          ['ex.hamstring', 3, '12'],
+          ['ex.plank', 3, '45 s'],
         ],
       },
     ],
   },
   {
-    name: '5× Push / Pull / Noge',
-    source: 'template',
+    name: 'split.ppl5',
     days: [
       {
         day: 1,
-        title: 'Push',
-        exercises: [
-          { name: 'Bench press', sets: 4, reps: '6-8' },
-          { name: 'Overhead press', sets: 3, reps: '8-10' },
-          { name: 'Kosi bench', sets: 3, reps: '10' },
-          { name: 'Triceps sprava', sets: 3, reps: '12' },
+        title: 'split.push',
+        ex: [
+          ['ex.bench', 4, '6-8'],
+          ['ex.ohp', 3, '8-10'],
+          ['ex.incline', 3, '10'],
+          ['ex.tricepsMachine', 3, '12'],
         ],
       },
       {
         day: 2,
-        title: 'Pull',
-        exercises: [
-          { name: 'Zgibovi', sets: 4, reps: '6-10' },
-          { name: 'Veslanje šipkom', sets: 4, reps: '8' },
-          { name: 'Face pull', sets: 3, reps: '15' },
-          { name: 'Biceps pregib', sets: 3, reps: '12' },
+        title: 'split.pull',
+        ex: [
+          ['ex.pullups', 4, '6-10'],
+          ['ex.row', 4, '8'],
+          ['ex.facepull', 3, '15'],
+          ['ex.biceps', 3, '12'],
         ],
       },
       {
         day: 3,
-        title: 'Noge',
-        exercises: [
-          { name: 'Čučanj', sets: 4, reps: '6-8' },
-          { name: 'Rumunsko mrtvo dizanje', sets: 3, reps: '8' },
-          { name: 'Leg press', sets: 3, reps: '12' },
-          { name: 'Listovi', sets: 4, reps: '15' },
+        title: 'split.legs',
+        ex: [
+          ['ex.squat', 4, '6-8'],
+          ['ex.rdl', 3, '8'],
+          ['ex.legpress', 3, '12'],
+          ['ex.calves', 4, '15'],
         ],
       },
       {
         day: 5,
-        title: 'Push',
-        exercises: [
-          { name: 'Overhead press', sets: 4, reps: '6-8' },
-          { name: 'Bench press', sets: 3, reps: '10' },
-          { name: 'Bočno dizanje', sets: 4, reps: '15' },
-          { name: 'Triceps sprava', sets: 3, reps: '12' },
+        title: 'split.push',
+        ex: [
+          ['ex.ohp', 4, '6-8'],
+          ['ex.bench', 3, '10'],
+          ['ex.lateral', 4, '15'],
+          ['ex.tricepsMachine', 3, '12'],
         ],
       },
       {
         day: 6,
-        title: 'Pull + noge',
-        exercises: [
-          { name: 'Mrtvo dizanje', sets: 3, reps: '5' },
-          { name: 'Zgibovi', sets: 3, reps: '8' },
-          { name: 'Iskoraci', sets: 3, reps: '10' },
-          { name: 'Biceps pregib', sets: 3, reps: '12' },
+        title: 'split.pullLegs',
+        ex: [
+          ['ex.deadlift', 3, '5'],
+          ['ex.pullups', 3, '8'],
+          ['ex.lunges', 3, '10'],
+          ['ex.biceps', 3, '12'],
         ],
       },
     ],
   },
 ]
+
+/** Ready-made splits in the current language (built on demand, so they follow the language). */
+export function getSplits(): WorkoutPlan[] {
+  return SPLIT_DEFS.map((d) => ({
+    name: t(d.name),
+    source: 'template',
+    days: d.days.map((day) => ({
+      day: day.day,
+      title: t(day.title),
+      exercises: day.ex.map(([name, sets, reps]) => ({ name: t(name), sets, reps })),
+    })),
+  }))
+}

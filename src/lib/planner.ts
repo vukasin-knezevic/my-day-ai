@@ -3,6 +3,8 @@
 import type { Activity, Assessment, Category, Settings, Subject } from '../types'
 import { addDaysStr, daysUntil, minToTime, timeToMin, weekdayOf } from './dates'
 import { freeSlots, occurrencesOn } from './schedule'
+import { t as tr } from '../i18n'
+import { rewardNameOf } from './labels'
 
 export interface PlanInput {
   /** First day to plan (usually today) */
@@ -132,8 +134,7 @@ export function planWeek(input: PlanInput): PlanResult {
     const cands = dates.filter((d) => !examDays.has(d) && !eveDays.has(d))
     cands.sort((a, b) => state.get(a)!.load - state.get(b)!.load || b.localeCompare(a))
     easyDay = cands[0] ?? null
-    if (easyDay)
-      notes.push(`🌿 Lakši dan: ${easyDay}. Manje učenja, bez novog treninga, da se odmoriš.`)
+    if (easyDay) notes.push(tr('plan.easyDay', { date: easyDay }))
   }
 
   // ---- workouts: shorten the one on an exam eve, add new ones spread over the week ----
@@ -148,11 +149,9 @@ export function planWeek(input: PlanInput): PlanResult {
           activityId: a.id,
           date,
           newEnd: minToTime(timeToMin(a.start) + EVE_WORKOUT_MAX),
-          reason: `Sutra je kolokvijum/ispit, pa skrati trening na ${EVE_WORKOUT_MAX} min i idi ranije na spavanje.`,
+          reason: tr('plan.eveReason', { min: EVE_WORKOUT_MAX }),
         })
-        notes.push(
-          `⏱️ ${date}: trening skraćen na ${EVE_WORKOUT_MAX} min jer je sutra kolokvijum/ispit.`,
-        )
+        notes.push(tr('plan.eveNote', { date, min: EVE_WORKOUT_MAX }))
       }
     }
   }
@@ -181,10 +180,10 @@ export function planWeek(input: PlanInput): PlanResult {
     st.free = subtract(st.free, { s: slot, e: slot + WORKOUT_MIN + 15 })
     st.workout = true
     trained.add(day)
-    suggestions.push(makeAct('Trening', 'workout', day, slot, slot + WORKOUT_MIN))
+    suggestions.push(makeAct(tr('plan.workoutTitle'), 'workout', day, slot, slot + WORKOUT_MIN))
     toAdd--
   }
-  if (toAdd > 0) notes.push(`⚠️ Nema mesta za još ${toAdd} trening(a) ove nedelje.`)
+  if (toAdd > 0) notes.push(tr('plan.noRoom', { n: toAdd }))
 
   // ---- study demand per exam, spread over days ----
   const demand = new Map<string, { exam: Assessment; minutes: number }[]>()
@@ -206,7 +205,7 @@ export function planWeek(input: PlanInput): PlanResult {
 
   // ---- place study blocks day by day, carrying leftovers forward ----
   const carry = new Map<string, number>() // exam id -> minutes
-  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? 'Predmet'
+  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? tr('subject.fallback')
   for (const date of dates) {
     const st = state.get(date)!
     const cap = date === easyDay ? 60 : settings.studyHoursPerDay * 60
@@ -244,7 +243,7 @@ export function planWeek(input: PlanInput): PlanResult {
         }
         suggestions.push(
           makeAct(
-            `Učenje: ${subjName(t.exam.subjectId)}`,
+            tr('plan.studyTitle', { subject: subjName(t.exam.subjectId) }),
             'study',
             date,
             slot.s,
@@ -264,9 +263,7 @@ export function planWeek(input: PlanInput): PlanResult {
   }
   for (const [id, m] of carry) {
     const ex = exams.find((e) => e.id === id)!
-    notes.push(
-      `⚠️ Za „${ex.title}" ne stiže još oko ${Math.round(m / 6) / 10} h učenja u ovom periodu.`,
-    )
+    notes.push(tr('plan.notEnough', { title: ex.title, h: Math.round(m / 6) / 10 }))
   }
 
   // ---- games as a reward after studying ----
@@ -285,7 +282,7 @@ export function planWeek(input: PlanInput): PlanResult {
       if (cut && cut.e - cut.s >= reward) {
         suggestions.push(
           makeAct(
-            `${settings.rewardName || 'Nagrada'} (nagrada za učenje)`,
+            tr('plan.rewardTitle', { name: rewardNameOf(settings) }),
             'games',
             date,
             cut.s,

@@ -16,7 +16,10 @@ import { Card, PageTitle } from '../components/ui'
 import { CATEGORY_META, type Category } from '../types'
 import { todayStr } from '../lib/dates'
 import { overview, type Period } from '../lib/overview'
-import { fmtRsd } from '../lib/life'
+import { fmtMoney } from '../lib/life'
+import { categoryLabel, currencyOf, expenseLabel } from '../lib/labels'
+import { useT } from '../i18n'
+import type { ExpenseCategory } from '../types'
 import { levelFor } from '../lib/xp'
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -30,11 +33,13 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 }
 
 export default function Overview() {
+  const { t } = useT()
+  const currency = useStore((s) => currencyOf(s.settings))
   const data = useStore(useShallow(selectData))
   const [period, setPeriod] = useState<Period>('week')
   const o = overview(data, period, todayStr())
   const chart = (Object.keys(o.hours) as Category[]).map((c) => ({
-    name: CATEGORY_META[c].emoji + ' ' + CATEGORY_META[c].label,
+    name: CATEGORY_META[c].emoji + ' ' + categoryLabel(c),
     sati: o.hours[c],
     color: CATEGORY_META[c].color,
   }))
@@ -42,7 +47,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageTitle>📊 Pregled</PageTitle>
+      <PageTitle>{t('ov.title')}</PageTitle>
       <div role="tablist" className="mb-4 flex gap-2">
         {(['week', 'month'] as Period[]).map((p) => (
           <button
@@ -52,38 +57,38 @@ export default function Overview() {
             onClick={() => setPeriod(p)}
             className={`min-h-10 rounded-xl px-3 text-sm font-medium ${period === p ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
           >
-            {p === 'week' ? 'Nedelja' : 'Mesec'}
+            {p === 'week' ? t('ov.week') : t('ov.month')}
           </button>
         ))}
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat
-          label="Treninzi"
+          label={t('ov.workouts')}
           value={`${o.workouts.done} / ${o.workouts.goal}`}
-          sub="cilj za period"
+          sub={t('ov.goalPeriod')}
         />
         <Stat
-          label="Učenje (h)"
+          label={t('ov.study')}
           value={`${o.studyHours.actual} / ${o.studyHours.goal}`}
-          sub="planirano / cilj"
+          sub={t('ov.studySub')}
         />
         <Stat
-          label="Prosečan san"
+          label={t('ov.sleep')}
           value={o.avgSleep !== null ? `${o.avgSleep} h` : '—'}
-          sub={`cilj ${data.settings.sleepGoalHours} h`}
+          sub={t('ov.sleepSub', { goal: data.settings.sleepGoalHours })}
         />
-        <Stat label="Potrošeno" value={fmtRsd(o.spent)} />
-        <Stat label="XP u periodu" value={String(o.xp)} sub={`Nivo: ${lvl.name}`} />
+        <Stat label={t('ov.spent')} value={fmtMoney(o.spent, currency)} />
+        <Stat label={t('ov.xp')} value={String(o.xp)} sub={t('ov.level', { name: lvl.name })} />
         <Stat
-          label="Nizovi 🔥"
+          label={t('ov.streaks')}
           value={`${o.streaks.study}/${o.streaks.workout}/${o.streaks.sleep}/${o.streaks.habits}`}
-          sub="učenje / trening / san / navike"
+          sub={t('ov.streaksSub')}
         />
       </div>
 
       <Card className="mb-4">
-        <h2 className="mb-2 font-semibold">Sati po kategoriji</h2>
+        <h2 className="mb-2 font-semibold">{t('ov.hours')}</h2>
         <div style={{ width: '100%', height: 240 }}>
           <ResponsiveContainer>
             <BarChart data={chart} layout="vertical" margin={{ left: 10 }}>
@@ -91,7 +96,7 @@ export default function Overview() {
               <XAxis type="number" fontSize={11} />
               <YAxis type="category" dataKey="name" width={120} fontSize={11} />
               <Tooltip {...tooltipProps} />
-              <Bar dataKey="sati" radius={4}>
+              <Bar dataKey="sati" name={t('ov.hoursUnit')} radius={4}>
                 {chart.map((c) => (
                   <Cell key={c.name} fill={c.color} />
                 ))}
@@ -102,11 +107,11 @@ export default function Overview() {
       </Card>
 
       <Card className="mb-4">
-        <h2 className="mb-2 font-semibold">Troškovi po kategorijama</h2>
+        <h2 className="mb-2 font-semibold">{t('ov.expenses')}</h2>
         <ul className="grid grid-cols-2 gap-1 text-sm">
           {Object.entries(o.spentByCategory).map(([k, v]) => (
             <li key={k}>
-              {k}: <strong>{fmtRsd(v)}</strong>
+              {expenseLabel(k as ExpenseCategory)}: <strong>{fmtMoney(v, currency)}</strong>
             </li>
           ))}
         </ul>
@@ -114,9 +119,9 @@ export default function Overview() {
 
       {period === 'month' && (
         <Card>
-          <h2 className="mb-2 font-semibold">Poeni po predmetima</h2>
+          <h2 className="mb-2 font-semibold">{t('ov.points')}</h2>
           {o.pointsBySubject.length === 0 && (
-            <p className="text-sm text-slate-500">Nema predmeta.</p>
+            <p className="text-sm text-slate-500">{t('ov.noSubjects')}</p>
           )}
           <ul className="space-y-1 text-sm">
             {o.pointsBySubject.map((p) => (

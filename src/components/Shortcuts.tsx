@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from './ui'
+import { useT } from '../i18n'
+import type { BaseKey } from '../i18n'
 
-export const SHORTCUTS: [string, string][] = [
-  ['N', 'Nova stavka (brzi unos)'],
-  ['T', 'Danas'],
-  ['W', 'Pregled nedelje'],
-  ['/', 'Brzi unos'],
-  ['?', 'Ova lista prečica'],
+export const SHORTCUTS: [string, BaseKey][] = [
+  ['N', 'shortcut.new'],
+  ['T', 'shortcut.today'],
+  ['W', 'shortcut.week'],
+  ['/', 'shortcut.quick'],
+  ['?', 'shortcut.help'],
 ]
 
 function isTyping(el: EventTarget | null) {
@@ -23,6 +25,7 @@ function isTyping(el: EventTarget | null) {
 
 /** Global keyboard shortcuts + the help dialog. Disabled while typing in a field. */
 export default function Shortcuts() {
+  const { t } = useT()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
 
@@ -62,23 +65,23 @@ export default function Shortcuts() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Prečice na tastaturi"
+      aria-label={t('shortcut.title')}
       className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4"
     >
       <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
-        <h2 className="mb-3 text-lg font-bold">⌨️ Prečice</h2>
+        <h2 className="mb-3 text-lg font-bold">⌨️ {t('shortcut.heading')}</h2>
         <ul className="space-y-1 text-sm">
           {SHORTCUTS.map(([k, d]) => (
             <li key={k}>
               <kbd className="rounded bg-slate-200 px-2 py-0.5 font-mono dark:bg-slate-700">
                 {k}
               </kbd>{' '}
-              {d}
+              {t(d)}
             </li>
           ))}
         </ul>
         <Button className="mt-4" onClick={() => setOpen(false)} autoFocus>
-          Zatvori
+          {t('common.close')}
         </Button>
       </div>
     </div>

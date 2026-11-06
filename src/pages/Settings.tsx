@@ -6,8 +6,12 @@ import { requestNotifications } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
+import { LANGUAGES, getLanguage, useT } from '../i18n'
+import { rewardNameOf, themeLabel } from '../lib/labels'
+import type { Settings as SettingsT } from '../types'
 
 export default function Settings() {
+  const { t } = useT()
   const settings = useStore((s) => s.settings)
   const setSettings = useStore((s) => s.setSettings)
   const loadDemo = useStore((s) => s.loadDemo)
@@ -20,42 +24,59 @@ export default function Settings() {
 
   return (
     <>
-      <PageTitle>⚙️ Podešavanja</PageTitle>
+      <PageTitle>{t('set.title')}</PageTitle>
       <div className="space-y-4">
         <Card className="space-y-3">
-          <h2 className="font-semibold">Izgled</h2>
-          <Field label="Tema">
+          <h2 className="font-semibold">{t('set.appearance')}</h2>
+          <Field label={t('set.theme')}>
             <Select
               value={settings.theme}
-              onChange={(e) => setSettings({ theme: e.target.value as typeof settings.theme })}
+              onChange={(e) => setSettings({ theme: e.target.value as SettingsT['theme'] })}
             >
-              <option value="system">Prati sistem</option>
-              <option value="light">Svetla</option>
-              <option value="dark">Tamna</option>
+              {(['system', 'light', 'dark'] as const).map((x) => (
+                <option key={x} value={x}>
+                  {themeLabel(x)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={t('set.language')}>
+            <Select
+              value={settings.language || ''}
+              onChange={(e) => setSettings({ language: e.target.value })}
+            >
+              <option value="">
+                {t('set.langAuto')} · {LANGUAGES.find((l) => l.code === getLanguage())?.name}
+              </option>
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.name}
+                </option>
+              ))}
             </Select>
           </Field>
         </Card>
         <Card className="space-y-3">
-          <h2 className="font-semibold">Ritam i ciljevi</h2>
-          <Field label="Ime">
+          <h2 className="font-semibold">{t('set.rhythm')}</h2>
+          <Field label={t('set.name')}>
             <Input value={settings.name} onChange={(e) => setSettings({ name: e.target.value })} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Buđenje">
+            <Field label={t('set.wake')}>
               <Input
                 type="time"
                 value={settings.wakeTime}
                 onChange={(e) => setSettings({ wakeTime: e.target.value })}
               />
             </Field>
-            <Field label="Spavanje">
+            <Field label={t('set.bed')}>
               <Input
                 type="time"
                 value={settings.bedTime}
                 onChange={(e) => setSettings({ bedTime: e.target.value })}
               />
             </Field>
-            <Field label="Treninga nedeljno">
+            <Field label={t('set.workoutsPerWeek')}>
               <NumberInput
                 min={0}
                 max={7}
@@ -63,7 +84,7 @@ export default function Settings() {
                 onChange={(v) => setSettings({ workoutsPerWeek: v })}
               />
             </Field>
-            <Field label="Učenje (h/dan)">
+            <Field label={t('set.studyPerDay')}>
               <NumberInput
                 min={0}
                 max={12}
@@ -71,14 +92,14 @@ export default function Settings() {
                 onChange={(v) => setSettings({ studyHoursPerDay: v })}
               />
             </Field>
-            <Field label="Protein (g/dan)">
+            <Field label={t('set.protein')}>
               <NumberInput
                 min={0}
                 value={settings.proteinGoal}
                 onChange={(v) => setSettings({ proteinGoal: v })}
               />
             </Field>
-            <Field label="Cilj sna (h)">
+            <Field label={t('set.sleepGoal')}>
               <NumberInput
                 min={4}
                 max={12}
@@ -86,32 +107,41 @@ export default function Settings() {
                 onChange={(v) => setSettings({ sleepGoalHours: v })}
               />
             </Field>
+            <Field label={t('set.currency')}>
+              <Input
+                maxLength={8}
+                value={settings.currency}
+                placeholder={t('currency.default')}
+                onChange={(e) => setSettings({ currency: e.target.value })}
+              />
+            </Field>
           </div>
         </Card>
         <Card className="space-y-3">
-          <h2 className="font-semibold">🎁 Nagrada</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Nagrada koju sam biraš za učenje: igrice, epizoda serije, izlazak… Aplikacija je samo
-            broji, bez zamerki.
-          </p>
+          <h2 className="font-semibold">{t('set.reward.title')}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t('set.reward.desc')}</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <Field label="Naziv nagrade">
+              <Field label={t('set.reward.name')}>
                 <Input
                   value={settings.rewardName}
                   onChange={(e) => setSettings({ rewardName: e.target.value })}
-                  placeholder="npr. Vreme za igrice"
+                  placeholder={t('reward.default')}
                 />
               </Field>
             </div>
-            <Field label="Emotikon">
+            <Field label={t('set.reward.emoji')}>
               <Input
                 value={settings.rewardEmoji}
                 onChange={(e) => setSettings({ rewardEmoji: e.target.value })}
               />
             </Field>
             <div className="col-span-3">
-              <Field label={`${settings.rewardName || 'Nagrada'}: min po satu učenja`}>
+              <Field
+                label={t('set.reward.perHour', {
+                  name: rewardNameOf(settings),
+                })}
+              >
                 <NumberInput
                   min={0}
                   step={5}
@@ -123,7 +153,7 @@ export default function Settings() {
           </div>
         </Card>
         <Card className="space-y-3">
-          <h2 className="font-semibold">🔔 Podsetnici</h2>
+          <h2 className="font-semibold">{t('set.reminders')}</h2>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -132,44 +162,38 @@ export default function Settings() {
               onChange={async (e) => {
                 if (e.target.checked) {
                   const ok = await requestNotifications()
-                  setNotifMsg(
-                    ok ? '' : 'Pregledač nije dozvolio notifikacije (proveri podešavanja sajta).',
-                  )
+                  setNotifMsg(ok ? '' : t('set.notifDenied'))
                   setSettings({ reminders: ok })
                 } else setSettings({ reminders: false })
               }}
             />
-            Notifikacije pregledača (pre predavanja, rokova, prijava i spavanja)
+            {t('set.notif')}
           </label>
           {notifMsg && (
             <p role="alert" className="text-sm text-red-700">
               {notifMsg}
             </p>
           )}
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            Iskreno: bez servera notifikacije na telefonu rade pouzdano samo dok je aplikacija
-            otvorena ili nedavno korišćena. Za pouzdane podsetnike izvezi kalendar (.ics) i uvezi ga
-            u kalendar telefona; kalendar tada podseća sam.
-          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.notifNote')}</p>
           <Button
             variant="soft"
             onClick={() => downloadText('my-day-ai.ics', buildIcs(selectData(useStore.getState())))}
           >
-            📅 Izvezi kalendar (.ics)
+            {t('set.ics')}
           </Button>
         </Card>
         <Card className="space-y-3">
-          <h2 className="font-semibold">🤖 AI</h2>
-          <Field label="AI režim">
+          <h2 className="font-semibold">{t('set.ai')}</h2>
+          <Field label={t('set.aiMode')}>
             <Select
               value={settings.aiMode}
-              onChange={(e) => setSettings({ aiMode: e.target.value as typeof settings.aiMode })}
+              onChange={(e) => setSettings({ aiMode: e.target.value as SettingsT['aiMode'] })}
             >
-              <option value="manual">Ručni (besplatno, kopiraš u Claude chat)</option>
-              <option value="api">API (direktno, košta po upotrebi)</option>
+              <option value="manual">{t('set.aiManual')}</option>
+              <option value="api">{t('set.aiApi')}</option>
             </Select>
           </Field>
-          <Field label="Anthropic API ključ">
+          <Field label={t('set.apiKey')}>
             <Input
               type="password"
               autoComplete="off"
@@ -178,19 +202,15 @@ export default function Settings() {
               onChange={(e) => setSettings({ apiKey: e.target.value })}
             />
           </Field>
-          <p className="rounded-xl bg-amber-100 p-3 text-xs text-amber-900">
-            ⚠️ Ključ se čuva samo na ovom uređaju, ali je vidljiv u pregledaču (alati za
-            programere). Nikome ga ne deli, ne stavljaj ga na tuđ računar i postavi mesečni limit
-            potrošnje u Anthropic konzoli.
-          </p>
+          <p className="rounded-xl bg-amber-100 p-3 text-xs text-amber-900">{t('set.keyWarn')}</p>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Brži model (unos, uvoz)">
+            <Field label={t('set.modelFast')}>
               <Input
                 value={settings.modelFast}
                 onChange={(e) => setSettings({ modelFast: e.target.value })}
               />
             </Field>
-            <Field label="Jači model (planiranje)">
+            <Field label={t('set.modelStrong')}>
               <Input
                 value={settings.modelStrong}
                 onChange={(e) => setSettings({ modelStrong: e.target.value })}
@@ -198,23 +218,25 @@ export default function Settings() {
             </Field>
           </div>
           <p className="text-sm" data-testid="ai-usage">
-            Potrošnja ovog meseca ({aiUsage.month || '—'}): {aiUsage.calls} poziva,{' '}
-            {aiUsage.inputTokens} ulaznih i {aiUsage.outputTokens} izlaznih tokena
-            {cost !== null && ` ≈ $${cost.toFixed(4)}`}.
+            {t('set.usage', {
+              month: aiUsage.month || '—',
+              calls: aiUsage.calls,
+              input: aiUsage.inputTokens,
+              output: aiUsage.outputTokens,
+              cost: cost !== null ? ` ≈ $${cost.toFixed(4)}` : '',
+            })}
           </p>
         </Card>
         <DataCard />
         <Card className="space-y-3">
-          <h2 className="font-semibold">Demo podaci</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Primeri označeni sa „(primer)". Ne sadrže tvoje prave podatke.
-          </p>
+          <h2 className="font-semibold">{t('set.demo.title')}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t('set.demo.note')}</p>
           <div className="flex gap-2">
             <Button variant="soft" onClick={loadDemo}>
-              Učitaj demo podatke
+              {t('set.demo.load')}
             </Button>
             <Button variant="danger" disabled={!hasDemo} onClick={clearDemo}>
-              Obriši demo podatke
+              {t('set.demo.clear')}
             </Button>
           </div>
         </Card>

@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+import { t } from '../../i18n'
 import { SCHEMAS, type AiKind, type AiResult } from './schemas'
 
 export type Extracted =
@@ -59,7 +60,7 @@ export type ParseResult =
 function issues(err: z.ZodError): string {
   return err.issues
     .slice(0, 3)
-    .map((i) => `${i.path.join('.') || '(koren)'}: ${i.message}`)
+    .map((i) => `${i.path.join('.') || t('aiparse.root')}: ${i.message}`)
     .join('; ')
 }
 
@@ -67,24 +68,18 @@ function issues(err: z.ZodError): string {
 export function parseAiResponse(kind: AiKind, text: string): ParseResult {
   const ex = extractJson(text)
   if (!ex.ok) {
-    if (ex.reason === 'empty')
-      return { ok: false, message: 'Polje je prazno. Nalepi ceo odgovor iz chata.' }
-    if (ex.reason === 'none')
-      return {
-        ok: false,
-        message:
-          'Nisam našao JSON u odgovoru. Napiši Claude-u: „Vrati samo JSON u bloku koda po zadatoj šemi."',
-      }
+    if (ex.reason === 'empty') return { ok: false, message: t('aiparse.empty') }
+    if (ex.reason === 'none') return { ok: false, message: t('aiparse.none') }
     return {
       ok: false,
-      message: `JSON nije ispravan (${ex.detail}). Napiši Claude-u: „Ispravi JSON, mora da bude validan, u jednom bloku koda."`,
+      message: t('aiparse.invalid', { detail: ex.detail ?? '' }),
     }
   }
   const r = SCHEMAS[kind].safeParse(ex.value)
   if (!r.success)
     return {
       ok: false,
-      message: `JSON ne prati šemu (${issues(r.error)}). Napiši Claude-u: „Ispravi JSON da tačno prati šemu iz prompta."`,
+      message: t('aiparse.schema', { detail: issues(r.error) }),
     }
   return { ok: true, kind, data: r.data as AiResult }
 }

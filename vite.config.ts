@@ -17,12 +17,12 @@ export default defineConfig({
       manifest: {
         name: 'My Day AI',
         short_name: 'My Day',
-        description: 'Lični planer dana za studenta',
+        description: 'A daily planner for students',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: base,
-        lang: 'sr',
+        lang: 'en',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

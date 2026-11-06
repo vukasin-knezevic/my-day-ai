@@ -1,5 +1,6 @@
 import type { Assessment, Subject } from '../types'
 import { addDaysStr, daysUntil, monthOf, weekStartStr } from './dates'
+import { t } from '../i18n'
 
 export type Urgency = 'past' | 'red' | 'orange' | 'yellow' | 'green'
 
@@ -22,13 +23,13 @@ export const URGENCY_CLS: Record<Urgency, string> = {
 
 export function countdownLabel(date: string, today: string): string {
   const d = daysUntil(date, today)
-  if (d < 0) return `pre ${-d} d`
-  if (d === 0) return 'danas'
-  if (d === 1) return 'sutra'
-  return `za ${d} d`
+  if (d < 0) return t('countdown.past', { n: -d })
+  if (d === 0) return t('when.today')
+  if (d === 1) return t('when.tomorrow')
+  return t('countdown.future', { n: d })
 }
 
-/** Exams that need registration (kolokvijum / ispit) of a month with their status — "Novembar: prijave". */
+/** Exams that need registration (kolokvijum / ispit) of a month with their status - shown as "<month>: registrations". */
 export function monthRegistrations(assessments: Assessment[], month: string) {
   return assessments
     .filter((a) => (a.type === 'kolokvijum' || a.type === 'ispit') && monthOf(a.date) === month)

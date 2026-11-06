@@ -3,8 +3,9 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
+import KeyScope from '../components/KeyScope'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
-import { WEEKDAY_NAMES, formatShort, monthOf, todayStr, weekdayOf } from '../lib/dates'
+import { formatShort, monthName, monthOf, todayStr, weekdayName, weekdayOf } from '../lib/dates'
 import {
   URGENCY_CLS,
   countdownLabel,
@@ -17,44 +18,26 @@ import {
 } from '../lib/exams'
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
+import { useT } from '../i18n'
+import type { BaseKey } from '../i18n'
+import Rich from '../i18n/Rich'
+import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
 type Tab = 'raspored' | 'ispiti' | 'poeni'
-const MONTHS = [
-  'Januar',
-  'Februar',
-  'Mart',
-  'April',
-  'Maj',
-  'Jun',
-  'Jul',
-  'Avgust',
-  'Septembar',
-  'Oktobar',
-  'Novembar',
-  'Decembar',
-]
-const TYPE_LABEL: Record<AssessmentType, string> = {
-  kolokvijum: 'Kolokvijum',
-  ispit: 'Ispit',
-  domaci: 'Domaći',
-  lab: 'Lab vežba',
-}
-const ATT_LABEL: Record<Attendance, string> = {
-  idem: 'Idem',
-  'ne-idem': 'Ne idem',
-  ponekad: 'Ponekad',
-}
+const ASSESSMENT_TYPES: AssessmentType[] = ['kolokvijum', 'ispit', 'domaci', 'lab']
+const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 
 export default function Study() {
+  const { t } = useT()
   const [tab, setTab] = useState<Tab>('raspored')
-  const tabs: [Tab, string][] = [
-    ['raspored', 'Raspored'],
-    ['ispiti', 'Ispiti i domaći'],
-    ['poeni', 'Poeni'],
+  const tabs: [Tab, BaseKey][] = [
+    ['raspored', 'study.tab.schedule'],
+    ['ispiti', 'study.tab.exams'],
+    ['poeni', 'study.tab.points'],
   ]
   return (
     <>
-      <PageTitle>📚 Faks</PageTitle>
+      <PageTitle>📚 {t('nav.study')}</PageTitle>
       <div role="tablist" className="mb-4 flex gap-2">
         {tabs.map(([k, label]) => (
           <button
@@ -66,7 +49,7 @@ export default function Study() {
               tab === k ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
             }`}
           >
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -77,14 +60,15 @@ export default function Study() {
   )
 }
 
-/* ---------------- Raspored ---------------- */
+/* ---------------- Timetable ---------------- */
 function Schedule() {
+  const { t } = useT()
   const { subjects, add, update, remove } = useStore(
     useShallow((s) => ({ subjects: s.subjects, add: s.add, update: s.update, remove: s.remove })),
   )
   const today = todayStr()
   const unanswered = unansweredSlots(subjects)
-  // "ponekad" is asked on Sunday evening for next week
+  // "sometimes" is asked on Sunday evening for next week
   const sundayEvening = weekdayOf(today) === 7 && new Date().getHours() >= 17
   const weekly = sundayEvening ? slotsToAsk(subjects, today) : []
   const [name, setName] = useState('')
@@ -106,8 +90,8 @@ function Schedule() {
       ),
     })
   }
-  function addSubject(e: React.FormEvent) {
-    e.preventDefault()
+  function addSubject(e?: React.FormEvent) {
+    e?.preventDefault()
     if (!name.trim()) return
     const colors = ['#2563eb', '#0d9488', '#9333ea', '#db2777', '#ea580c', '#65a30d']
     add('subjects', {
@@ -124,23 +108,35 @@ function Schedule() {
     <div className="space-y-4">
       {unanswered.length > 0 && (
         <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <h2 className="mb-2 font-semibold">Da li ideš na ove termine?</h2>
+          <h2 className="mb-2 font-semibold">{t('study.ask.title')}</h2>
           <ul className="space-y-3">
             {unanswered.map(({ subject, slot }) => (
               <li key={slot.id} className="text-sm">
                 <p>
-                  <strong>{subject.name}</strong> — {slot.kind}, {WEEKDAY_NAMES[slot.day]}{' '}
-                  {slot.start}–{slot.end}
+                  <Rich
+                    text={t('study.ask.slot', {
+                      subject: subject.name,
+                      kind: slotKindLabel(slot.kind),
+                      day: weekdayName(slot.day),
+                      start: slot.start,
+                      end: slot.end,
+                    })}
+                  />
                 </p>
                 <div className="mt-1 flex gap-2">
-                  {(['idem', 'ne-idem', 'ponekad'] as Attendance[]).map((a) => (
+                  {ATTENDANCES.map((a) => (
                     <Button
                       key={a}
                       variant="soft"
-                      aria-label={`${ATT_LABEL[a]}: ${subject.name} ${slot.kind} ${WEEKDAY_NAMES[slot.day]}`}
+                      aria-label={t('study.ask.aria', {
+                        att: attendanceLabel(a),
+                        subject: subject.name,
+                        kind: slotKindLabel(slot.kind),
+                        day: weekdayName(slot.day),
+                      })}
                       onClick={() => setAttendance(subject, slot, a)}
                     >
-                      {ATT_LABEL[a]}
+                      {attendanceLabel(a)}
                     </Button>
                   ))}
                 </div>
@@ -151,16 +147,21 @@ function Schedule() {
       )}
       {weekly.length > 0 && (
         <Card className="border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950">
-          <h2 className="mb-2 font-semibold">🗓️ Sledeća nedelja: da li ideš?</h2>
+          <h2 className="mb-2 font-semibold">{t('study.weekly.title')}</h2>
           {weekly.map(({ subject, slot }) => (
             <div key={slot.id} className="mb-2 text-sm">
-              {subject.name} — {slot.kind}, {WEEKDAY_NAMES[slot.day]} {slot.start}
+              {t('study.weekly.slot', {
+                subject: subject.name,
+                kind: slotKindLabel(slot.kind),
+                day: weekdayName(slot.day),
+                start: slot.start,
+              })}
               <span className="ml-2 inline-flex gap-1">
                 <Button variant="soft" onClick={() => answerWeekly(subject, slot, true)}>
-                  Idem
+                  {attendanceLabel('idem')}
                 </Button>
                 <Button variant="soft" onClick={() => answerWeekly(subject, slot, false)}>
-                  Ne idem
+                  {attendanceLabel('ne-idem')}
                 </Button>
               </span>
             </div>
@@ -178,23 +179,25 @@ function Schedule() {
       ))}
 
       <Card>
-        <h2 className="mb-2 font-semibold">Novi predmet</h2>
-        <form onSubmit={addSubject} className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
-            <Field label="Naziv predmeta">
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+        <h2 className="mb-2 font-semibold">{t('study.newSubject')}</h2>
+        <KeyScope onEscape={() => setName('')}>
+          <form onSubmit={addSubject} className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <Field label={t('study.subjectName')}>
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </Field>
+            </div>
+            <Field label={t('study.espb')}>
+              <NumberInput min={1} max={30} value={espb} onChange={setEspb} />
             </Field>
-          </div>
-          <Field label="ESPB">
-            <NumberInput min={1} max={30} value={espb} onChange={setEspb} />
-          </Field>
-          <Field label="Prolaz (poena)">
-            <NumberInput min={0} max={100} value={pass} onChange={setPass} />
-          </Field>
-          <Button type="submit" className="col-span-2">
-            Dodaj predmet
-          </Button>
-        </form>
+            <Field label={t('study.pass')}>
+              <NumberInput min={0} max={100} value={pass} onChange={setPass} />
+            </Field>
+            <Button type="submit" className="col-span-2">
+              {t('study.addSubject')}
+            </Button>
+          </form>
+        </KeyScope>
       </Card>
     </div>
   )
@@ -209,6 +212,7 @@ function SubjectCard({
   onSlotAttendance: (s: Subject, slot: ClassSlot, a: Attendance) => void
   onRemove: () => void
 }) {
+  const { t } = useT()
   const update = useStore((s) => s.update)
   const [kind, setKind] = useState<'predavanje' | 'vezbe'>('predavanje')
   const [day, setDay] = useState<Weekday>(1)
@@ -237,76 +241,98 @@ function SubjectCard({
             className="inline-block size-3 rounded-full"
             style={{ background: subject.color }}
           />
-          {subject.name} <span className="text-xs text-slate-500">· {subject.espb} ESPB</span>
+          {subject.name}{' '}
+          <span className="text-xs text-slate-500">
+            {t('study.espbBadge', { n: subject.espb })}
+          </span>
         </h2>
-        <Button variant="ghost" onClick={onRemove} aria-label={`Obriši predmet ${subject.name}`}>
-          Obriši
+        <Button
+          variant="ghost"
+          onClick={onRemove}
+          aria-label={t('study.deleteSubject', { name: subject.name })}
+        >
+          {t('common.delete')}
         </Button>
       </div>
       <ul className="mb-3 space-y-1 text-sm">
-        {slots.length === 0 && <li className="text-slate-500">Još nema termina.</li>}
+        {slots.length === 0 && <li className="text-slate-500">{t('study.noSlots')}</li>}
         {slots.map((sl) => (
           <li key={sl.id} className="flex flex-wrap items-center gap-2">
             <span>
-              {WEEKDAY_NAMES[sl.day]} {sl.start}–{sl.end} ({sl.kind})
+              {t('study.slotLine', {
+                day: weekdayName(sl.day),
+                start: sl.start,
+                end: sl.end,
+                kind: slotKindLabel(sl.kind),
+              })}
             </span>
             {sl.attendance && (
               <Select
-                aria-label={`Prisustvo ${subject.name} ${sl.kind} ${WEEKDAY_NAMES[sl.day]}`}
+                aria-label={t('study.attAria', {
+                  subject: subject.name,
+                  kind: slotKindLabel(sl.kind),
+                  day: weekdayName(sl.day),
+                })}
                 className="!w-auto !py-1 text-sm"
                 value={sl.attendance}
                 onChange={(e) => onSlotAttendance(subject, sl, e.target.value as Attendance)}
               >
-                {(Object.keys(ATT_LABEL) as Attendance[]).map((a) => (
+                {ATTENDANCES.map((a) => (
                   <option key={a} value={a}>
-                    {ATT_LABEL[a]}
+                    {attendanceLabel(a)}
                   </option>
                 ))}
               </Select>
             )}
             {sl.attendance === 'ne-idem' && (
-              <Badge className="bg-emerald-100 text-emerald-800">slobodno vreme</Badge>
+              <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
             )}
           </li>
         ))}
       </ul>
       <form onSubmit={addSlot} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <Select
-          aria-label="Vrsta termina"
+          aria-label={t('study.kindAria')}
           value={kind}
           onChange={(e) => setKind(e.target.value as typeof kind)}
         >
-          <option value="predavanje">Predavanje</option>
-          <option value="vezbe">Vežbe</option>
+          <option value="predavanje">{slotKindLabel('predavanje')}</option>
+          <option value="vezbe">{slotKindLabel('vezbe')}</option>
         </Select>
         <Select
-          aria-label="Dan"
+          aria-label={t('study.dayAria')}
           value={day}
           onChange={(e) => setDay(Number(e.target.value) as Weekday)}
         >
           {([1, 2, 3, 4, 5, 6, 7] as Weekday[]).map((d) => (
             <option key={d} value={d}>
-              {WEEKDAY_NAMES[d]}
+              {weekdayName(d)}
             </option>
           ))}
         </Select>
         <Input
-          aria-label="Početak"
+          aria-label={t('act.start')}
           type="time"
           value={start}
           onChange={(e) => setStart(e.target.value)}
         />
-        <Input aria-label="Kraj" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+        <Input
+          aria-label={t('act.end')}
+          type="time"
+          value={end}
+          onChange={(e) => setEnd(e.target.value)}
+        />
         <Button type="submit" variant="soft">
-          + Termin
+          {t('study.addSlot')}
         </Button>
       </form>
     </Card>
   )
 }
 
-/* ---------------- Ispiti ---------------- */
+/* ---------------- Exams ---------------- */
 function Assessments() {
+  const { t } = useT()
   const { subjects, assessments, add, update, remove, award } = useStore(
     useShallow((s) => ({
       subjects: s.subjects,
@@ -319,7 +345,6 @@ function Assessments() {
   )
   const today = todayStr()
   const month = monthOf(today)
-  const monthName = MONTHS[Number(month.slice(5)) - 1]
   const regs = monthRegistrations(assessments, month)
   const subj = (id: string) => subjects.find((s) => s.id === id)
   const [f, setF] = useState({
@@ -334,8 +359,8 @@ function Assessments() {
     studyHours: 6,
   })
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
+  function submit(e?: React.FormEvent) {
+    e?.preventDefault()
     const subjectId = f.subjectId || subjects[0]?.id
     if (!subjectId || !f.title.trim()) return
     const needsReg = f.type === 'kolokvijum' || f.type === 'ispit'
@@ -358,10 +383,10 @@ function Assessments() {
   return (
     <div className="space-y-4">
       <Card>
-        <h2 className="mb-2 font-semibold">{monthName}: prijave</h2>
-        {regs.length === 0 && (
-          <p className="text-sm text-slate-500">Nema kolokvijuma ni ispita ovog meseca.</p>
-        )}
+        <h2 className="mb-2 font-semibold">
+          {t('study.monthRegs', { month: monthName(Number(month.slice(5))) })}
+        </h2>
+        {regs.length === 0 && <p className="text-sm text-slate-500">{t('study.noMonthExams')}</p>}
         <ul className="space-y-2">
           {regs.map((a) => (
             <li key={a.id} className="flex flex-wrap items-center gap-2 text-sm">
@@ -376,7 +401,7 @@ function Assessments() {
                     : 'bg-red-100 text-red-800'
                 }
               >
-                {a.registration === 'prijavljen' ? 'prijavljen' : 'nije prijavljen'}
+                {a.registration === 'prijavljen' ? t('study.registered') : t('study.notRegistered')}
               </Badge>
             </li>
           ))}
@@ -390,7 +415,7 @@ function Assessments() {
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">
               <strong>{a.title}</strong>
-              <Badge className="bg-slate-100 dark:bg-slate-800">{TYPE_LABEL[a.type]}</Badge>
+              <Badge className="bg-slate-100 dark:bg-slate-800">{assessmentLabel(a.type)}</Badge>
               <Badge className={URGENCY_CLS[u]}>{countdownLabel(a.date, today)}</Badge>
               <span className="text-sm text-slate-500">
                 {subj(a.subjectId)?.name} · {formatShort(a.date)} {a.time ?? ''}
@@ -411,16 +436,16 @@ function Assessments() {
                         award({
                           id: `reg-${a.id}`,
                           date: today,
-                          reason: `Prijavljen: ${a.title}`,
+                          reason: t('study.xp.registered', { title: a.title }),
                           xp: XP.registration,
                           category: 'study',
                         })
                     }}
                   />
-                  Da li si prijavio?{' '}
+                  {t('study.askRegistered')}{' '}
                   {a.registrationDeadline && (
                     <span className="text-slate-500">
-                      (rok {formatShort(a.registrationDeadline)})
+                      {t('study.deadline', { date: formatShort(a.registrationDeadline) })}
                     </span>
                   )}
                 </label>
@@ -434,11 +459,11 @@ function Assessments() {
                   checked={!!a.done}
                   onChange={(e) => update('assessments', a.id, { done: e.target.checked })}
                 />
-                Predato
+                {t('study.submitted')}
               </label>
             )}
             <div className="mt-2 flex items-center gap-2 text-sm">
-              <Field label={`Osvojeno poena (max ${a.maxPoints})`}>
+              <Field label={t('study.pointsLabel', { max: a.maxPoints })}>
                 <NumberInput
                   min={0}
                   max={a.maxPoints}
@@ -451,9 +476,9 @@ function Assessments() {
               <Button
                 variant="ghost"
                 onClick={() => remove('assessments', a.id)}
-                aria-label={`Obriši ${a.title}`}
+                aria-label={t('study.deleteAssessment', { title: a.title })}
               >
-                Obriši
+                {t('common.delete')}
               </Button>
             </div>
           </Card>
@@ -461,106 +486,106 @@ function Assessments() {
       })}
 
       <Card>
-        <h2 className="mb-2 font-semibold">Novi kolokvijum / ispit / domaći / lab</h2>
+        <h2 className="mb-2 font-semibold">{t('study.newAssessment')}</h2>
         {subjects.length === 0 ? (
-          <p className="text-sm text-slate-500">Prvo dodaj predmet na tabu Raspored.</p>
+          <p className="text-sm text-slate-500">{t('study.addSubjectFirst')}</p>
         ) : (
-          <form onSubmit={submit} className="grid grid-cols-2 gap-3">
-            <Field label="Predmet">
-              <Select
-                value={f.subjectId || subjects[0].id}
-                onChange={(e) => setF({ ...f, subjectId: e.target.value })}
-              >
-                {subjects.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Vrsta">
-              <Select
-                value={f.type}
-                onChange={(e) => setF({ ...f, type: e.target.value as AssessmentType })}
-              >
-                {(Object.keys(TYPE_LABEL) as AssessmentType[]).map((t) => (
-                  <option key={t} value={t}>
-                    {TYPE_LABEL[t]}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <div className="col-span-2">
-              <Field label="Naziv">
-                <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+          <KeyScope onEscape={() => setF({ ...f, title: '' })}>
+            <form onSubmit={submit} className="grid grid-cols-2 gap-3">
+              <Field label={t('study.f.subject')}>
+                <Select
+                  value={f.subjectId || subjects[0].id}
+                  onChange={(e) => setF({ ...f, subjectId: e.target.value })}
+                >
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </Select>
               </Field>
-            </div>
-            <Field label="Datum">
-              <Input
-                type="date"
-                value={f.date}
-                onChange={(e) => setF({ ...f, date: e.target.value })}
-              />
-            </Field>
-            <Field label="Vreme">
-              <Input
-                type="time"
-                value={f.time}
-                onChange={(e) => setF({ ...f, time: e.target.value })}
-              />
-            </Field>
-            <Field label="Rok za prijavu">
-              <Input
-                type="date"
-                value={f.regDeadline}
-                onChange={(e) => setF({ ...f, regDeadline: e.target.value })}
-              />
-            </Field>
-            <Field label="Maks. poena">
-              <NumberInput
-                min={0}
-                max={1000}
-                value={f.maxPoints}
-                onChange={(v) => setF({ ...f, maxPoints: v })}
-              />
-            </Field>
-            <Field label="Težina (1–5)">
-              <NumberInput
-                min={1}
-                max={5}
-                value={f.difficulty}
-                onChange={(v) => setF({ ...f, difficulty: v })}
-              />
-            </Field>
-            <Field label="Sati učenja">
-              <NumberInput
-                min={0}
-                max={200}
-                step={0.5}
-                value={f.studyHours}
-                onChange={(v) => setF({ ...f, studyHours: v })}
-              />
-            </Field>
-            <Button type="submit" className="col-span-2">
-              Dodaj
-            </Button>
-          </form>
+              <Field label={t('study.f.type')}>
+                <Select
+                  value={f.type}
+                  onChange={(e) => setF({ ...f, type: e.target.value as AssessmentType })}
+                >
+                  {ASSESSMENT_TYPES.map((x) => (
+                    <option key={x} value={x}>
+                      {assessmentLabel(x)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <div className="col-span-2">
+                <Field label={t('study.f.title')}>
+                  <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+                </Field>
+              </div>
+              <Field label={t('study.f.date')}>
+                <Input
+                  type="date"
+                  value={f.date}
+                  onChange={(e) => setF({ ...f, date: e.target.value })}
+                />
+              </Field>
+              <Field label={t('study.f.time')}>
+                <Input
+                  type="time"
+                  value={f.time}
+                  onChange={(e) => setF({ ...f, time: e.target.value })}
+                />
+              </Field>
+              <Field label={t('study.f.regDeadline')}>
+                <Input
+                  type="date"
+                  value={f.regDeadline}
+                  onChange={(e) => setF({ ...f, regDeadline: e.target.value })}
+                />
+              </Field>
+              <Field label={t('study.f.maxPoints')}>
+                <NumberInput
+                  min={0}
+                  max={1000}
+                  value={f.maxPoints}
+                  onChange={(v) => setF({ ...f, maxPoints: v })}
+                />
+              </Field>
+              <Field label={t('study.f.difficulty')}>
+                <NumberInput
+                  min={1}
+                  max={5}
+                  value={f.difficulty}
+                  onChange={(v) => setF({ ...f, difficulty: v })}
+                />
+              </Field>
+              <Field label={t('study.f.hours')}>
+                <NumberInput
+                  min={0}
+                  max={200}
+                  step={0.5}
+                  value={f.studyHours}
+                  onChange={(v) => setF({ ...f, studyHours: v })}
+                />
+              </Field>
+              <Button type="submit" className="col-span-2">
+                {t('common.add')}
+              </Button>
+            </form>
+          </KeyScope>
         )}
-        <p className="mt-3 text-xs text-slate-500">
-          Uvoz rasporeda kolokvijuma iz nalepljenog teksta stiže uz AI (stranica 🤖 AI). Do tada
-          unosi ručno.
-        </p>
+        <p className="mt-3 text-xs text-slate-500">{t('study.importNote')}</p>
       </Card>
     </div>
   )
 }
 
-/* ---------------- Poeni ---------------- */
+/* ---------------- Points ---------------- */
 function Points() {
+  const { t } = useT()
   const { subjects, assessments, update } = useStore(
     useShallow((s) => ({ subjects: s.subjects, assessments: s.assessments, update: s.update })),
   )
-  if (subjects.length === 0) return <Card>Dodaj predmete da vidiš poene.</Card>
+  if (subjects.length === 0) return <Card>{t('study.points.empty')}</Card>
   return (
     <div className="space-y-4">
       {subjects.map((s) => {
@@ -578,23 +603,21 @@ function Points() {
             <p className="mt-1 text-2xl font-bold">
               {p.earned}{' '}
               <span className="text-base font-normal text-slate-500">
-                / {p.maxGraded} ocenjeno ({p.maxTotal} ukupno)
+                {t('study.points.graded', { graded: p.maxGraded, total: p.maxTotal })}
               </span>
             </p>
             <p className="text-sm">
               {p.missingToPass === 0
-                ? '✅ Prolaz je obezbeđen.'
+                ? t('study.points.secured')
                 : p.canPass
-                  ? `Fali ${p.missingToPass} poena do prolaza (${s.passMark}).`
-                  : `⚠️ Sa preostalim obavezama (${p.remaining} poena) ne može se doći do ${s.passMark}.`}
+                  ? t('study.points.missing', { n: p.missingToPass, pass: s.passMark })
+                  : t('study.points.cannot', { n: p.remaining, pass: s.passMark })}
             </p>
             <p className="text-sm">
-              Procena ocene: <strong>{p.grade ?? '—'}</strong>
-              {p.grade !== null &&
-                p.earned < 100 &&
-                ` (sa ${p.earned} poena; skala 51–60 = 6 … 91–100 = 10)`}
+              <Rich text={t('study.points.grade', { grade: p.grade ?? '—' })} />
+              {p.grade !== null && p.earned < 100 && t('study.points.gradeNote', { n: p.earned })}
             </p>
-            <Field label="Granica prolaza">
+            <Field label={t('study.points.passMark')}>
               <NumberInput
                 className="!w-24"
                 min={0}
@@ -604,7 +627,7 @@ function Points() {
               />
             </Field>
             <p className="mt-1 text-xs text-slate-500">
-              Do ocene 10 (91 poen) fali {Math.max(0, 91 - p.earned)} poena.
+              {t('study.points.to10', { n: Math.max(0, 91 - p.earned) })}
             </p>
           </Card>
         )

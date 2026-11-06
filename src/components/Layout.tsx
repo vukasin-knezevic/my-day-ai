@@ -1,18 +1,20 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useToast } from '../lib/toast'
+import { useT } from '../i18n'
+import type { BaseKey } from '../i18n'
 
-const MAIN = [
-  { to: '/', label: 'Danas', icon: '🌅' },
-  { to: '/faks', label: 'Faks', icon: '📚' },
-  { to: '/trening', label: 'Trening', icon: '🏋️' },
-  { to: '/zivot', label: 'Život', icon: '💰' },
-  { to: '/vise', label: 'Više', icon: '☰' },
+const MAIN: { to: string; label: BaseKey; icon: string }[] = [
+  { to: '/', label: 'nav.today', icon: '🌅' },
+  { to: '/faks', label: 'nav.study', icon: '📚' },
+  { to: '/trening', label: 'nav.workout', icon: '🏋️' },
+  { to: '/zivot', label: 'nav.life', icon: '💰' },
+  { to: '/vise', label: 'nav.more', icon: '☰' },
 ]
-const EXTRA = [
-  { to: '/planer', label: 'Planer', icon: '🧠' },
-  { to: '/pregled', label: 'Pregled', icon: '📊' },
-  { to: '/ai', label: 'AI', icon: '🤖' },
-  { to: '/podesavanja', label: 'Podešavanja', icon: '⚙️' },
+const EXTRA: { to: string; label: BaseKey; icon: string }[] = [
+  { to: '/planer', label: 'nav.planner', icon: '🧠' },
+  { to: '/pregled', label: 'nav.overview', icon: '📊' },
+  { to: '/ai', label: 'nav.ai', icon: '🤖' },
+  { to: '/podesavanja', label: 'nav.settings', icon: '⚙️' },
 ]
 
 function linkCls({ isActive }: { isActive: boolean }) {
@@ -40,15 +42,16 @@ function Toasts() {
 }
 
 export default function Layout() {
+  const { t } = useT()
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
       <aside className="hidden w-56 shrink-0 border-r border-slate-200 p-3 md:block dark:border-slate-800">
         <div className="mb-4 px-3 text-lg font-bold">🌅 My Day AI</div>
-        <nav aria-label="Glavna navigacija" className="space-y-1">
+        <nav aria-label={t('nav.main')} className="space-y-1">
           {[...MAIN.filter((m) => m.to !== '/vise'), ...EXTRA].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'} className={linkCls}>
-              <span aria-hidden>{n.icon}</span> {n.label}
+              <span aria-hidden>{n.icon}</span> {t(n.label)}
             </NavLink>
           ))}
         </nav>
@@ -57,7 +60,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <nav
-        aria-label="Donja navigacija"
+        aria-label={t('nav.bottom')}
         className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
       >
         {MAIN.map((n) => (
@@ -76,7 +79,7 @@ export default function Layout() {
             <span aria-hidden className="text-lg">
               {n.icon}
             </span>
-            {n.label}
+            {t(n.label)}
           </NavLink>
         ))}
       </nav>

@@ -2,6 +2,8 @@
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
 import { CATEGORY_META } from '../types'
 import { addDaysStr, daysUntil, fromDateStr, timeToMin, weekdayOf, weekStartStr } from './dates'
+import { t } from '../i18n'
+import { slotKindLabel } from './labels'
 
 export interface Occurrence {
   key: string
@@ -53,7 +55,7 @@ export function classOccurrences(subjects: Subject[], date: string): Occurrence[
       if (slot.day !== wd || !slotCounts(slot, date)) continue
       out.push({
         key: `class-${slot.id}-${date}`,
-        title: `${s.name} (${slot.kind})`,
+        title: `${s.name} (${slotKindLabel(slot.kind)})`,
         category: 'study',
         date,
         start: slot.start,
@@ -77,7 +79,11 @@ export function freeSlots(
   return subjects.flatMap((s) =>
     s.slots
       .filter((sl) => sl.day === wd && sl.attendance === 'ne-idem')
-      .map((sl) => ({ start: sl.start, end: sl.end, title: `${s.name} (${sl.kind})` })),
+      .map((sl) => ({
+        start: sl.start,
+        end: sl.end,
+        title: `${s.name} (${slotKindLabel(sl.kind)})`,
+      })),
   )
 }
 
@@ -130,7 +136,9 @@ export interface Alert {
 
 export function buildAlerts(data: AppData, today: string): Alert[] {
   const alerts: Alert[] = []
-  const subjName = (id: string) => data.subjects.find((s) => s.id === id)?.name ?? 'Predmet'
+  const when = (d: number) => (d === 0 ? t('when.today') : t('when.tomorrow'))
+  const subjName = (id: string) =>
+    data.subjects.find((s) => s.id === id)?.name ?? t('subject.fallback')
   for (const a of data.assessments) {
     if (a.type === 'domaci' || a.type === 'lab') {
       const d = daysUntil(a.date, today)
@@ -138,7 +146,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
         alerts.push({
           id: `due-${a.id}`,
           level: 'red',
-          text: `📝 ${a.title} — rok ${d === 0 ? 'danas' : 'sutra'}`,
+          text: t('alert.due', { title: a.title, when: when(d) }),
         })
       continue
     }
@@ -148,13 +156,17 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
         alerts.push({
           id: `reg-${a.id}`,
           level: 'red',
-          text: `🚨 Neprijavljen: ${a.title} (${subjName(a.subjectId)}) — rok za prijavu ${d === 0 ? 'danas' : d === 1 ? 'sutra' : `za ${d} dana`}`,
+          text: t('alert.unregistered', {
+            title: a.title,
+            subject: subjName(a.subjectId),
+            when: d <= 1 ? when(d) : t('when.inDays', { n: d }),
+          }),
         })
       else if (d < 0 && daysUntil(a.date, today) >= 0)
         alerts.push({
           id: `late-${a.id}`,
           level: 'red',
-          text: `🚨 Rok za prijavu prošao, a nisi prijavljen: ${a.title}`,
+          text: t('alert.regLate', { title: a.title }),
         })
     }
     const d = daysUntil(a.date, today)
@@ -162,7 +174,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
       alerts.push({
         id: `soon-${a.id}`,
         level: 'amber',
-        text: `⏰ ${a.title} je ${d === 0 ? 'danas' : 'sutra'}`,
+        text: t('alert.soon', { title: a.title, when: when(d) }),
       })
   }
   const last = [...data.sleep]
@@ -175,7 +187,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
       alerts.push({
         id: 'sleep',
         level: 'amber',
-        text: `😴 Spavao si samo ${hours.toFixed(1)} h. Danas polako.`,
+        text: t('alert.sleep', { h: hours.toFixed(1) }),
       })
   }
   return alerts
@@ -189,12 +201,11 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
     .filter((o) => o.type === 'activity' && o.category === 'study')
     .reduce((n, o) => n + timeToMin(o.end) - timeToMin(o.start), 0)
   const parts: string[] = []
-  if (classes) parts.push(`${classes} ${classes === 1 ? 'čas' : 'časa'} na faksu`)
-  if (workouts) parts.push(workouts === 1 ? 'trening' : `${workouts} treninga`)
-  if (studyMin) parts.push(`${+(studyMin / 60).toFixed(1)} h učenja`)
-  if (!parts.length)
-    return studyAndWorkoutLabel ? 'Danas je slobodan dan. Iskoristi ga pametno. 🙂' : ''
-  return 'Danas: ' + parts.join(', ')
+  if (classes) parts.push(t('day.classes', { n: classes }))
+  if (workouts) parts.push(t('day.workouts', { n: workouts }))
+  if (studyMin) parts.push(t('day.study', { h: +(studyMin / 60).toFixed(1) }))
+  if (!parts.length) return studyAndWorkoutLabel ? t('day.free') : ''
+  return t('day.prefix', { parts: parts.join(', ') })
 }
 
 export function categoryEmoji(c: Category) {

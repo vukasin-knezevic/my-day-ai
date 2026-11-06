@@ -46,3 +46,7 @@ Greška sa nulom je nastajala jer je polje stalno pretvaralo prazan tekst u broj
 
 ## Deo 2 — Opšta verzija
 „PS5" više nije fiksan pojam: korisnik sam imenuje nagradu (podrazumevano „Vreme za zabavu" sa emotikonom 🎮), a u kodu polja sada imaju opšta imena (`rewardEarnedMin`…). Da stari sačuvani podaci ne bi pukli, napisao sam funkciju `migrateData` koja premesti stara polja u nova; pokreće se pri učitavanju i pri uvozu, a može da se pokrene dvaput bez štete. Prompt za AI i demo podaci više ne pominju fakultet ni konkretnu igricu. Onboarding ima nove korake „Nagrada" i „AI režim" (ručni besplatno ili API koji se plaća po upotrebi, sa upozorenjem o ključu).
+
+## Deo 3 — Više jezika
+Aplikacija sada ima i18n (internacionalizaciju): svi tekstovi interfejsa su u fajlovima prevoda u `src/i18n/locales/`, a u komponentama nema tvrdo upisanog teksta, samo pozivi `t('ključ')`. Novi jezik je samo novi fajl u toj fascikli: spisak jezika se otkriva sam (`import.meta.glob`), a TypeScript i test javljaju grešku ako nekom jeziku fali ključ ili `{parametar}`. Srpska ćirilica se izvodi iz latinice pravilom pretvaranja slova 1:1, pa nema duplog održavanja. Datumi, nazivi dana i brojevi prate jezik preko date-fns locale-a i `Intl`, a AI prompt, odgovori i brzi unos rade na srpskom i engleskom. Playwright proverava ćirilicu i engleski bez horizontalnog skrola i bez axe povreda.
+

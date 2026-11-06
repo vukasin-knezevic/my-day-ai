@@ -3,8 +3,8 @@ import type { KeyboardEvent, ReactNode } from 'react'
 
 /**
  * Keyboard shortcuts for a step, form or dialog:
- * - Enter runs `onEnter` (not in a textarea unless Ctrl/Cmd is held, and not on buttons,
- *   links or selects, which keep their own Enter behaviour),
+ * - Enter runs `onEnter` (not in a textarea unless Ctrl/Cmd is held, and not on buttons
+ *   or links, which keep their own Enter behaviour),
  * - Escape runs `onEscape`.
  */
 export default function KeyScope({
@@ -49,7 +49,7 @@ export default function KeyScope({
     const tag = (e.target as HTMLElement).tagName
     if (tag === 'TEXTAREA') {
       if (!(e.ctrlKey || e.metaKey)) return
-    } else if (tag === 'BUTTON' || tag === 'A' || tag === 'SELECT') return
+    } else if (tag === 'BUTTON' || tag === 'A') return
     e.preventDefault()
     onEnter()
   }

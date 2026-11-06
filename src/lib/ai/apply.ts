@@ -1,5 +1,6 @@
 import type { Store } from '../../store'
 import type { Assessment } from '../../types'
+import { t } from '../../i18n'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
 
 type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan'>
@@ -15,7 +16,7 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
         days: p.days.map((d) => ({ ...d, day: d.day as 1 | 2 | 3 | 4 | 5 | 6 | 7 })),
       },
     })
-    return `🏋️ Plan treninga „${p.name}" sačuvan (tab Plan).`
+    return t('aiapply.workout', { name: p.name })
   }
   if (kind === 'uvoz') {
     const imp = data as ImportResult
@@ -51,9 +52,9 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
       st.add('assessments', item)
       n++
     }
-    return `📚 Uvezeno ${n} stavki. Proveri poene i težinu na ekranu Faks.`
+    return t('aiapply.import', { n })
   }
-  if (kind === 'rezime') return 'Rezime je prikazan ispod.'
+  if (kind === 'rezime') return t('aiapply.summary')
   const plan = data as PlanResult
   for (const a of plan.activities)
     st.add('activities', {
@@ -68,5 +69,5 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
       source: 'ai',
       suggested: true,
     })
-  return `🤖 ${plan.activities.length} predloga dodato. Prihvati ih na ekranu Danas ili Planer.`
+  return t('aiapply.plan', { n: plan.activities.length })
 }

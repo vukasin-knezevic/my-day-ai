@@ -3,6 +3,7 @@
 import type { AppData } from '../types'
 import { addDaysStr, daysUntil, timeToMin, todayStr } from './dates'
 import { occurrencesOn } from './schedule'
+import { t } from '../i18n'
 
 export interface Reminder {
   id: string
@@ -24,8 +25,8 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     if (until >= 0 && until <= LEAD.event) {
       out.push({
         id: `ev-${o.key}`,
-        title: o.type === 'class' ? '📚 Uskoro predavanje/vežbe' : '⏰ Uskoro',
-        body: `${o.title} počinje u ${o.start} (za ${until} min)`,
+        title: o.type === 'class' ? t('rem.class') : t('rem.soon'),
+        body: t('rem.body', { title: o.title, start: o.start, n: until }),
       })
     }
   }
@@ -36,8 +37,8 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
       if (d >= 0 && d <= 1 && nowMin >= 9 * 60)
         out.push({
           id: `reg-${a.id}-${today}`,
-          title: '🚨 Prijava kolokvijuma',
-          body: `${a.title}: rok za prijavu ${d === 0 ? 'je danas' : 'je sutra'}!`,
+          title: t('rem.reg.title'),
+          body: t(d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', { title: a.title }),
         })
     }
     if ((a.type === 'domaci' || a.type === 'lab') && !a.done) {
@@ -45,8 +46,8 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
       if (d >= 0 && d <= 1 && nowMin >= 9 * 60)
         out.push({
           id: `due-${a.id}-${today}`,
-          title: '📝 Rok predaje',
-          body: `${a.title} ${d === 0 ? 'danas' : 'sutra'}`,
+          title: t('rem.due.title'),
+          body: `${a.title} ${d === 0 ? t('when.today') : t('when.tomorrow')}`,
         })
     }
   }
@@ -60,8 +61,8 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     const key = nowMin < 6 * 60 ? addDaysStr(today, -1) : today
     out.push({
       id: `bed-${key}`,
-      title: '😴 Vreme za spavanje',
-      body: `Cilj: legni u ${data.settings.bedTime}. Odloži ekran.`,
+      title: t('rem.bed.title'),
+      body: t('rem.bed.body', { time: data.settings.bedTime }),
     })
   }
 

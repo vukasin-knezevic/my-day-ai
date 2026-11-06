@@ -1,3 +1,5 @@
+import { t } from '../../i18n'
+
 // Direct browser -> Anthropic Messages API call (plain fetch, no SDK).
 // The API key lives only on this device. See README for the security warning.
 
@@ -29,7 +31,7 @@ export class AiError extends Error {
 }
 
 export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
-  if (!c.apiKey.trim()) throw new AiError('Nema API ključa. Koristi ručni režim.', 'no-key')
+  if (!c.apiKey.trim()) throw new AiError(t('aierr.noKey'), 'no-key')
   const f = c.fetchImpl ?? fetch
   let res: Response
   try {
@@ -50,10 +52,7 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
       }),
     })
   } catch {
-    throw new AiError(
-      'Nema veze sa Anthropic serverom (offline ili je pregledač blokirao poziv). Koristi ručni režim.',
-      'offline',
-    )
+    throw new AiError(t('aierr.offline'), 'offline')
   }
   if (!res.ok) {
     let detail = ''
@@ -63,17 +62,16 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
       /* ignore */
     }
     if (res.status === 401 || res.status === 403)
-      throw new AiError(`Ključ nije prihvaćen (${res.status}). ${detail}`, 'auth')
-    if (res.status === 429) throw new AiError('Previše zahteva (429). Pokušaj za minut.', 'rate')
-    throw new AiError(`Greška API-ja ${res.status}: ${detail}`, 'http')
+      throw new AiError(t('aierr.auth', { status: res.status, detail }), 'auth')
+    if (res.status === 429) throw new AiError(t('aierr.rate'), 'rate')
+    throw new AiError(t('aierr.http', { status: res.status, detail }), 'http')
   }
   const body = (await res.json()) as {
     content?: { type: string; text?: string }[]
     usage?: { input_tokens?: number; output_tokens?: number }
     stop_reason?: string
   }
-  if (body.stop_reason === 'refusal')
-    throw new AiError('Model je odbio zahtev (refusal).', 'refusal')
+  if (body.stop_reason === 'refusal') throw new AiError(t('aierr.refusal'), 'refusal')
   const text = (body.content ?? [])
     .filter((b) => b.type === 'text')
     .map((b) => b.text ?? '')

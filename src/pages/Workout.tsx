@@ -14,30 +14,34 @@ import { tooltipProps } from '../components/chart'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
-import { WEEKDAY_NAMES, formatShort, todayStr } from '../lib/dates'
+import { formatShort, todayStr, weekdayName } from '../lib/dates'
 import {
-  SPLITS,
   exerciseHistory,
   exerciseNames,
+  getSplits,
   newRecords,
   proteinOn,
   totalVolume,
   workoutsInWeek,
 } from '../lib/workout'
 import { XP } from '../lib/xp'
+import { useT } from '../i18n'
+import type { BaseKey } from '../i18n'
+import Rich from '../i18n/Rich'
 
 type Tab = 'trening' | 'plan' | 'ishrana'
 
 export default function Workout() {
+  const { t } = useT()
   const [tab, setTab] = useState<Tab>('trening')
-  const tabs: [Tab, string][] = [
-    ['trening', 'Trening'],
-    ['plan', 'Plan'],
-    ['ishrana', 'Ishrana'],
+  const tabs: [Tab, BaseKey][] = [
+    ['trening', 'wo.tab.training'],
+    ['plan', 'wo.tab.plan'],
+    ['ishrana', 'wo.tab.food'],
   ]
   return (
     <>
-      <PageTitle>🏋️ Trening i 🍗 ishrana</PageTitle>
+      <PageTitle>{t('wo.title')}</PageTitle>
       <div role="tablist" className="mb-4 flex gap-2">
         {tabs.map(([k, label]) => (
           <button
@@ -47,7 +51,7 @@ export default function Workout() {
             onClick={() => setTab(k)}
             className={`min-h-10 rounded-xl px-3 text-sm font-medium ${tab === k ? 'bg-orange-700 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
           >
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -67,6 +71,7 @@ interface Row {
 const emptyRow = (): Row => ({ name: '', sets: 3, reps: 8, weight: 0 })
 
 function Training() {
+  const { t } = useT()
   const { workouts, templates, settings, add, remove, award } = useStore(
     useShallow((s) => ({
       award: s.award,
@@ -78,7 +83,7 @@ function Training() {
     })),
   )
   const today = todayStr()
-  const [type, setType] = useState('Trening')
+  const [type, setType] = useState(() => t('plan.workoutTitle'))
   const [duration, setDuration] = useState(60)
   const [feeling, setFeeling] = useState(3)
   const [rows, setRows] = useState<Row[]>([emptyRow()])
@@ -119,7 +124,7 @@ function Training() {
     award({
       id: `workout-${id}`,
       date: today,
-      reason: `Trening: ${type}`,
+      reason: t('wo.xp.workout', { type }),
       xp: XP.workout,
       category: 'workout',
     })
@@ -127,15 +132,19 @@ function Training() {
       award({
         id: `pr-${id}-${r.name}`,
         date: today,
-        reason: `Rekord: ${r.name} ${r.weight} kg`,
+        reason: t('wo.xp.record', { name: r.name, kg: r.weight }),
         xp: XP.personalRecord,
         category: 'workout',
       }),
     )
     setMsg(
       records.length
-        ? `🎉 Novi rekord: ${records.map((r) => `${r.name} ${r.weight} kg (bilo ${r.before})`).join(', ')}`
-        : '💪 Trening sačuvan!',
+        ? t('wo.record', {
+            list: records
+              .map((r) => t('wo.recordItem', { name: r.name, kg: r.weight, before: r.before }))
+              .join(', '),
+          })
+        : t('wo.saved'),
     )
     setRows([emptyRow()])
   }
@@ -144,22 +153,22 @@ function Training() {
       .filter((r) => r.name.trim())
       .map((r) => ({ name: r.name.trim(), sets: r.sets, reps: r.reps, weight: r.weight }))
     if (exercises.length === 0) {
-      setMsg('Dodaj bar jednu vežbu da bi sačuvao šablon.')
+      setMsg(t('wo.tplNeedsExercise'))
       return
     }
-    const name = type.trim() || 'Šablon'
-    const existing = templates.find((t) => t.name.toLowerCase() === name.toLowerCase())
+    const name = type.trim() || t('wo.tplDefaultName')
+    const existing = templates.find((x) => x.name.toLowerCase() === name.toLowerCase())
     if (existing) remove('workoutTemplates', existing.id)
     const id = add('workoutTemplates', { name, type: type.trim() || name, exercises })
     setTplId(id)
-    setMsg(`📌 Šablon „${name}" sačuvan.`)
+    setMsg(t('wo.tplSaved', { name }))
   }
   function loadTemplate(id: string) {
     setTplId(id)
-    const t = templates.find((x) => x.id === id)
-    if (!t) return
-    setType(t.type)
-    setRows(t.exercises.map((e) => ({ ...e })))
+    const tpl = templates.find((x) => x.id === id)
+    if (!tpl) return
+    setType(tpl.type)
+    setRows(tpl.exercises.map((e) => ({ ...e })))
   }
   function repeatLast() {
     if (!last) return
@@ -178,14 +187,14 @@ function Training() {
     <div className="space-y-4">
       <Card>
         <p className="text-sm">
-          Ove nedelje: <strong>{weekCount}</strong> / {settings.workoutsPerWeek} treninga
+          <Rich text={t('wo.thisWeek', { n: weekCount, goal: settings.workoutsPerWeek })} />
         </p>
         <div
           className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
           role="progressbar"
           aria-valuenow={weekCount}
           aria-valuemax={settings.workoutsPerWeek}
-          aria-label="Treninzi ove nedelje"
+          aria-label={t('wo.weekAria')}
         >
           <div
             className="h-full bg-orange-500"
@@ -207,22 +216,22 @@ function Training() {
 
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">Novi trening</h2>
+          <h2 className="font-semibold">{t('wo.new')}</h2>
           {last && (
             <Button variant="ghost" onClick={repeatLast}>
-              Ponovi poslednji
+              {t('wo.repeat')}
             </Button>
           )}
         </div>
         {templates.length > 0 && (
           <div className="mb-3 flex flex-wrap items-end gap-2">
             <div className="min-w-40 flex-1">
-              <Field label="Moji šabloni">
+              <Field label={t('wo.templates')}>
                 <Select value={tplId} onChange={(e) => loadTemplate(e.target.value)}>
-                  <option value="">— izaberi šablon —</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.exercises.length})
+                  <option value="">{t('wo.pickTemplate')}</option>
+                  {templates.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name} ({x.exercises.length})
                     </option>
                   ))}
                 </Select>
@@ -231,25 +240,25 @@ function Training() {
             <Button
               variant="ghost"
               disabled={!tplId}
-              aria-label="Obriši izabrani šablon"
+              aria-label={t('wo.deleteTemplateAria')}
               onClick={() => {
                 remove('workoutTemplates', tplId)
                 setTplId('')
               }}
             >
-              Obriši šablon
+              {t('wo.deleteTemplate')}
             </Button>
           </div>
         )}
         <form onSubmit={save} className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
-            <Field label="Tip">
+            <Field label={t('wo.f.type')}>
               <Input value={type} onChange={(e) => setType(e.target.value)} />
             </Field>
-            <Field label="Trajanje (min)">
+            <Field label={t('wo.f.duration')}>
               <NumberInput min={1} max={600} value={duration} onChange={setDuration} />
             </Field>
-            <Field label="Osećaj (1–5)">
+            <Field label={t('wo.f.feeling')}>
               <NumberInput min={1} max={5} value={feeling} onChange={setFeeling} />
             </Field>
           </div>
@@ -257,29 +266,29 @@ function Training() {
             <div key={i} className="grid grid-cols-4 gap-2">
               <div className="col-span-4">
                 <Input
-                  aria-label={`Vežba ${i + 1}`}
+                  aria-label={t('wo.exerciseAria', { n: i + 1 })}
                   list="ex-names"
-                  placeholder="Vežba (npr. Bench press)"
+                  placeholder={t('wo.exercisePlaceholder')}
                   value={r.name}
                   onChange={(e) => setRow(i, { name: e.target.value })}
                 />
               </div>
               <NumberInput
-                aria-label={`Serije ${i + 1}`}
+                aria-label={t('wo.setsAria', { n: i + 1 })}
                 min={1}
                 max={50}
                 value={r.sets}
                 onChange={(v) => setRow(i, { sets: v })}
               />
               <NumberInput
-                aria-label={`Ponavljanja ${i + 1}`}
+                aria-label={t('wo.repsAria', { n: i + 1 })}
                 min={1}
                 max={500}
                 value={r.reps}
                 onChange={(v) => setRow(i, { reps: v })}
               />
               <NumberInput
-                aria-label={`Kilaža ${i + 1}`}
+                aria-label={t('wo.weightAria', { n: i + 1 })}
                 min={0}
                 max={1000}
                 step={0.5}
@@ -289,7 +298,7 @@ function Training() {
               <Button
                 variant="ghost"
                 onClick={() => setRows((x) => x.filter((_, j) => j !== i))}
-                aria-label={`Ukloni vežbu ${i + 1}`}
+                aria-label={t('wo.removeExercise', { n: i + 1 })}
               >
                 ✕
               </Button>
@@ -300,15 +309,15 @@ function Training() {
               <option key={n} value={n} />
             ))}
           </datalist>
-          <p className="text-xs text-slate-500">Polja: serije · ponavljanja · kilaža (kg)</p>
-          <div className="flex gap-2">
+          <p className="text-xs text-slate-500">{t('wo.fieldsHelp')}</p>
+          <div className="flex flex-wrap gap-2">
             <Button variant="soft" onClick={() => setRows((r) => [...r, emptyRow()])}>
-              + Vežba
+              {t('wo.addExercise')}
             </Button>
             <Button variant="soft" onClick={saveTemplate}>
-              📌 Sačuvaj kao šablon
+              {t('wo.saveTemplate')}
             </Button>
-            <Button type="submit">Sačuvaj trening</Button>
+            <Button type="submit">{t('wo.save')}</Button>
           </div>
         </form>
       </Card>
@@ -316,9 +325,9 @@ function Training() {
       {names.length > 0 && (
         <Card>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <h2 className="font-semibold">Napredak kilaže</h2>
+            <h2 className="font-semibold">{t('wo.progressTitle')}</h2>
             <Select
-              aria-label="Vežba za grafikon"
+              aria-label={t('wo.chartAria')}
               className="!w-auto"
               value={chosen}
               onChange={(e) => setChartEx(e.target.value)}
@@ -343,21 +352,31 @@ function Training() {
       )}
 
       <Card>
-        <h2 className="mb-2 font-semibold">Istorija</h2>
-        {workouts.length === 0 && <p className="text-sm text-slate-500">Još nema treninga.</p>}
+        <h2 className="mb-2 font-semibold">{t('wo.history')}</h2>
+        {workouts.length === 0 && <p className="text-sm text-slate-500">{t('wo.noHistory')}</p>}
         <ul className="space-y-2 text-sm">
           {[...workouts]
             .sort((a, b) => b.date.localeCompare(a.date))
             .map((w) => (
               <li key={w.id} className="flex flex-wrap items-center gap-2">
-                <strong>{formatShort(w.date)}</strong> {w.type} · {w.durationMin} min · osećaj{' '}
-                {w.feeling}/5 · {w.exercises.length} vežbi · obim {totalVolume(w)} kg
+                <span>
+                  <Rich
+                    text={t('wo.historyLine', {
+                      date: formatShort(w.date),
+                      type: w.type,
+                      min: w.durationMin,
+                      f: w.feeling,
+                      exercises: t('wo.exercises', { n: w.exercises.length }),
+                      vol: totalVolume(w),
+                    })}
+                  />
+                </span>
                 <Button
                   variant="ghost"
                   onClick={() => remove('workouts', w.id)}
-                  aria-label={`Obriši trening ${w.date}`}
+                  aria-label={t('wo.deleteWorkout', { date: w.date })}
                 >
-                  Obriši
+                  {t('common.delete')}
                 </Button>
               </li>
             ))}
@@ -368,13 +387,14 @@ function Training() {
 }
 
 function Plan() {
+  const { t } = useT()
   const { plan, patch } = useStore(useShallow((s) => ({ plan: s.workoutPlan, patch: s.patch })))
   return (
     <div className="space-y-4">
       <Card>
-        <h2 className="mb-2 font-semibold">Gotovi splitovi</h2>
+        <h2 className="mb-2 font-semibold">{t('wo.splits')}</h2>
         <div className="flex flex-wrap gap-2">
-          {SPLITS.map((s) => (
+          {getSplits().map((s) => (
             <Button
               key={s.name}
               variant={plan?.name === s.name ? 'primary' : 'soft'}
@@ -384,33 +404,30 @@ function Plan() {
             </Button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-500">
-          Plan po tvom cilju i rasporedu faksa pravi AI (stranica 🤖 AI).
-        </p>
+        <p className="mt-2 text-xs text-slate-500">{t('wo.splitsNote')}</p>
       </Card>
-      {plan ? <PlanView plan={plan} /> : <Card className="text-sm">Izaberi split iznad.</Card>}
+      {plan ? <PlanView plan={plan} /> : <Card className="text-sm">{t('wo.pickSplit')}</Card>}
     </div>
   )
 }
 
 function PlanView({ plan }: { plan: WorkoutPlan }) {
+  const { t } = useT()
   return (
     <Card>
       <h2 className="mb-2 font-semibold">
         {plan.name}{' '}
-        <span className="text-xs text-slate-500">({plan.source === 'ai' ? 'AI' : 'šablon'})</span>
+        <span className="text-xs text-slate-500">
+          ({plan.source === 'ai' ? t('wo.sourceAi') : t('wo.sourceTemplate')})
+        </span>
       </h2>
       <ul className="space-y-3 text-sm">
         {plan.days.map((d) => (
           <li key={d.day + d.title}>
-            <strong>
-              {WEEKDAY_NAMES[d.day]} — {d.title}
-            </strong>
+            <strong>{t('wo.planDay', { day: weekdayName(d.day), title: d.title })}</strong>
             <ul className="ml-4 list-disc">
               {d.exercises.map((e) => (
-                <li key={e.name}>
-                  {e.name}: {e.sets} × {e.reps}
-                </li>
+                <li key={e.name}>{t('wo.exLine', { name: e.name, sets: e.sets, reps: e.reps })}</li>
               ))}
             </ul>
           </li>
@@ -421,6 +438,7 @@ function PlanView({ plan }: { plan: WorkoutPlan }) {
 }
 
 function Food() {
+  const { t } = useT()
   const { meals, goal, add, remove } = useStore(
     useShallow((s) => ({
       meals: s.meals,
@@ -444,50 +462,50 @@ function Food() {
     <div className="space-y-4">
       <Card>
         <p className="text-sm">
-          Protein danas: <strong>{total} g</strong> / {goal} g
+          <Rich text={t('wo.proteinToday', { n: total, goal })} />
         </p>
         <div
           className="mt-2 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
           role="progressbar"
           aria-valuenow={total}
           aria-valuemax={goal}
-          aria-label="Protein danas"
+          aria-label={t('wo.proteinAria')}
         >
           <div className="h-full bg-red-500" style={{ width: `${pct}%` }} />
         </div>
-        {total >= goal && <p className="mt-1 text-sm">🎉 Cilj proteina dostignut!</p>}
+        {total >= goal && <p className="mt-1 text-sm">{t('wo.proteinDone')}</p>}
       </Card>
       <Card>
         <form onSubmit={submit} className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <Field label="Obrok">
+            <Field label={t('wo.meal')}>
               <Input
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                placeholder="npr. piletina i pirinač"
+                placeholder={t('wo.mealPlaceholder')}
               />
             </Field>
           </div>
-          <Field label="Protein (g)">
+          <Field label={t('wo.proteinField')}>
             <NumberInput min={0} max={500} value={protein} onChange={setProtein} />
           </Field>
           <Button type="submit" className="col-span-3">
-            Dodaj obrok
+            {t('wo.addMeal')}
           </Button>
         </form>
       </Card>
       <Card>
-        <h2 className="mb-2 font-semibold">Danas</h2>
+        <h2 className="mb-2 font-semibold">{t('wo.todayHeading')}</h2>
         <ul className="space-y-1 text-sm">
           {meals
             .filter((m) => m.date === today)
             .map((m) => (
               <li key={m.id} className="flex items-center gap-2">
-                {m.description} · {m.protein} g
+                {t('wo.mealLine', { desc: m.description, g: m.protein })}
                 <Button
                   variant="ghost"
                   onClick={() => remove('meals', m.id)}
-                  aria-label={`Obriši obrok ${m.description}`}
+                  aria-label={t('wo.deleteMeal', { desc: m.description })}
                 >
                   ✕
                 </Button>

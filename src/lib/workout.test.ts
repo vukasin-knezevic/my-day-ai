@@ -1,5 +1,5 @@
 import {
-  SPLITS,
+  getSplits,
   exerciseHistory,
   exerciseNames,
   maxWeight,
@@ -85,6 +85,6 @@ describe('food and splits', () => {
     expect(proteinOn(meals, 'd1')).toBe(55)
   })
   it('three ready-made splits with the right number of days', () => {
-    expect(SPLITS.map((s) => s.days.length)).toEqual([3, 4, 5])
+    expect(getSplits().map((s) => s.days.length)).toEqual([3, 4, 5])
   })
 })

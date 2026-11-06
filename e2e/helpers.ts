@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test'
 
-/** Walks through the 6-step onboarding. `demo` = load example data. */
+/** Walks through the 7-step onboarding. `demo` = load example data. */
 export async function onboard(page: Page, opts: { demo?: boolean } = {}) {
   await page.goto('/')
   await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  await page.getByRole('button', { name: 'Dalje' }).click() // language step
   await page.getByLabel('Kako da te zovem?').fill('Test')
   for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Dalje' }).click()
   const demo = page.getByLabel(/Učitaj demo podatke/)

@@ -7,6 +7,8 @@ import { makeDemoData } from './lib/demo'
 import { todayStr } from './lib/dates'
 import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
 import { useToast } from './lib/toast'
+import { rewardNameOf } from './lib/labels'
+import { resolveLanguage, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -115,12 +117,15 @@ export const useStore = create<Store>()(
       importAll: (data) => set({ ...normalizeData(data) }),
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
       award: (e) => {
-        const { rewardName: name, rewardEmoji: emoji } = get().settings
-        const r = awardXp(get().progress, e, { name, emoji })
+        const settings = get().settings
+        const r = awardXp(get().progress, e, {
+          name: rewardNameOf(settings),
+          emoji: settings.rewardEmoji,
+        })
         if (r.progress !== get().progress) set({ progress: r.progress })
         useToast.getState().push(r.messages)
       },
-      spendReward: (min, game = get().settings.rewardName) => {
+      spendReward: (min, game = rewardNameOf(get().settings)) => {
         set((s) => ({
           progress: spendTime(s.progress, min),
           games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
@@ -142,3 +147,9 @@ export const useStore = create<Store>()(
     },
   ),
 )
+
+// Keep the UI language in sync with the saved setting ('' = automatic, from the browser).
+const syncLanguage = (s: Pick<AppData, 'settings'>) =>
+  setLanguage(resolveLanguage(s.settings.language))
+syncLanguage(useStore.getState())
+useStore.subscribe(syncLanguage)

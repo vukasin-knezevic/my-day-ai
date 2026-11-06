@@ -2,17 +2,21 @@
 import type { Activity, AppData, Category, Progress } from '../types'
 import { addDaysStr, timeToMin } from './dates'
 import { habitDone, sleepHours } from './life'
+import { t } from '../i18n'
 
+/** XP needed for each level; the names are translated (`level.0` ... `level.7`). */
 export const LEVELS = [
-  { name: 'Brucoš', xp: 0 },
-  { name: 'Student', xp: 100 },
-  { name: 'Vredni student', xp: 300 },
-  { name: 'Kolokvijant', xp: 600 },
-  { name: 'Ispitni borac', xp: 1000 },
-  { name: 'Veteran amfiteatra', xp: 1600 },
-  { name: 'Mentor', xp: 2400 },
-  { name: 'Inženjer', xp: 3500 },
+  { xp: 0 },
+  { xp: 100 },
+  { xp: 300 },
+  { xp: 600 },
+  { xp: 1000 },
+  { xp: 1600 },
+  { xp: 2400 },
+  { xp: 3500 },
 ] as const
+
+const levelName = (i: number) => t(`level.${i}` as 'level.0')
 
 export interface LevelInfo {
   index: number
@@ -31,8 +35,8 @@ export function levelFor(xp: number): LevelInfo {
   const next = LEVELS[index + 1]
   return {
     index,
-    name: LEVELS[index].name,
-    nextName: next?.name ?? null,
+    name: levelName(index),
+    nextName: next ? levelName(index + 1) : null,
     into: xp - LEVELS[index].xp,
     size: next ? next.xp - LEVELS[index].xp : null,
   }
@@ -82,7 +86,7 @@ export interface RewardInfo {
   name: string
   emoji: string
 }
-const DEFAULT_REWARD: RewardInfo = { name: 'Vreme za zabavu', emoji: '🎮' }
+const DEFAULT_REWARD: RewardInfo = { name: 'Reward', emoji: '🎮' }
 
 export function award(
   p: Progress,
@@ -103,9 +107,10 @@ export function award(
   }
   const after = levelFor(progress.xp)
   const messages: string[] = []
-  if (e.xp > 0) messages.push(`+${e.xp} XP · ${e.reason}`)
-  if (e.rewardMin) messages.push(`${reward.emoji} +${e.rewardMin} min: ${reward.name}`)
-  if (after.index > before.index) messages.push(`🎉 Novi nivo: ${after.name}!`)
+  if (e.xp > 0) messages.push(t('xp.gain', { xp: e.xp, reason: e.reason }))
+  if (e.rewardMin)
+    messages.push(t('xp.reward', { emoji: reward.emoji, n: e.rewardMin, name: reward.name }))
+  if (after.index > before.index) messages.push(t('xp.levelUp', { name: after.name }))
   return { progress, messages }
 }
 
@@ -124,13 +129,8 @@ export function rewardForDone(
 
 /** Streak milestone messages for all streaks (e.g. "🔥 7 dana treninga zaredom!"). */
 export function streakMessages(s: Streaks): string[] {
-  const names: [keyof Streaks, string][] = [
-    ['study', 'učenja'],
-    ['workout', 'treninga'],
-    ['sleep', 'dobrog sna'],
-    ['habits', 'navika'],
-  ]
-  return names.filter(([k]) => isMilestone(s[k])).map(([k, n]) => `🔥 ${s[k]} dana ${n} zaredom!`)
+  const keys: (keyof Streaks)[] = ['study', 'workout', 'sleep', 'habits']
+  return keys.filter((k) => isMilestone(s[k])).map((k) => t(`streak.${k}`, { n: s[k] }))
 }
 
 export function spendReward(p: Progress, minutes: number): Progress {

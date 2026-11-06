@@ -5,9 +5,12 @@ import KeyScope from '../components/KeyScope'
 import { exportJson, importJson } from '../lib/dataIO'
 import { downloadText } from '../lib/ics'
 import type { AppData } from '../types'
+import { useT } from '../i18n'
+import Rich from '../i18n/Rich'
 
 /** Export / import / delete everything. Confirmations are inside the page (no confirm() popups). */
 export default function DataCard() {
+  const { t } = useT()
   const [paste, setPaste] = useState('')
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
@@ -19,9 +22,9 @@ export default function DataCard() {
   async function copy() {
     try {
       await navigator.clipboard.writeText(exportJson(current()))
-      setMsg('📋 JSON je kopiran.')
+      setMsg(t('data.copied'))
     } catch {
-      setErr('Kopiranje nije uspelo, koristi „Preuzmi fajl".')
+      setErr(t('data.copyFail'))
     }
   }
   function check() {
@@ -44,18 +47,16 @@ export default function DataCard() {
     })
     setPending(null)
     setPaste('')
-    setMsg('✅ Podaci su uvezeni.')
+    setMsg(t('data.imported'))
   }
 
   return (
     <Card className="space-y-3">
-      <h2 className="font-semibold">💾 Podaci</h2>
-      <p className="text-xs text-slate-600 dark:text-slate-400">
-        Izvoz ne sadrži API ključ. Sve je sačuvano samo na ovom uređaju.
-      </p>
+      <h2 className="font-semibold">{t('data.title')}</h2>
+      <p className="text-xs text-slate-600 dark:text-slate-400">{t('data.note')}</p>
       <div className="flex flex-wrap gap-2">
         <Button variant="soft" onClick={copy}>
-          Kopiraj JSON
+          {t('data.copy')}
         </Button>
         <Button
           variant="soft"
@@ -63,11 +64,11 @@ export default function DataCard() {
             downloadText('my-day-ai-backup.json', exportJson(current()), 'application/json')
           }
         >
-          Preuzmi fajl
+          {t('data.download')}
         </Button>
       </div>
       <label className="block text-sm font-medium" htmlFor="import-json">
-        Uvoz: nalepi JSON
+        {t('data.importLabel')}
       </label>
       <textarea
         id="import-json"
@@ -76,7 +77,7 @@ export default function DataCard() {
         onChange={(e) => setPaste(e.target.value)}
       />
       <Button variant="soft" onClick={check}>
-        Proveri uvoz
+        {t('data.check')}
       </Button>
       {pending && (
         <KeyScope
@@ -84,18 +85,22 @@ export default function DataCard() {
           onEnter={applyImport}
           onEscape={() => setPending(null)}
           role="alertdialog"
-          aria-label="Potvrda uvoza"
+          aria-label={t('data.importDialog')}
           className="rounded-xl bg-amber-100 p-3 text-sm text-amber-900"
         >
-          Uvoz će <strong>zameniti sve trenutne podatke</strong> ({pending.subjects.length}{' '}
-          predmeta, {pending.activities.length} aktivnosti, {pending.workouts.length} treninga).
-          Nastaviti?
+          <Rich
+            text={t('data.importWarn', {
+              subjects: pending.subjects.length,
+              activities: pending.activities.length,
+              workouts: pending.workouts.length,
+            })}
+          />
           <div className="mt-2 flex gap-2">
             <Button variant="danger" onClick={applyImport}>
-              Da, uvezi
+              {t('data.yesImport')}
             </Button>
             <Button variant="soft" onClick={() => setPending(null)}>
-              Odustani
+              {t('common.giveUp')}
             </Button>
           </div>
         </KeyScope>
@@ -114,7 +119,7 @@ export default function DataCard() {
       <hr className="border-slate-200 dark:border-slate-800" />
       {!confirmDelete ? (
         <Button variant="danger" onClick={() => setConfirmDelete(true)}>
-          Obriši sve podatke
+          {t('data.deleteAll')}
         </Button>
       ) : (
         <KeyScope
@@ -125,11 +130,10 @@ export default function DataCard() {
           }}
           onEscape={() => setConfirmDelete(false)}
           role="alertdialog"
-          aria-label="Potvrda brisanja"
+          aria-label={t('data.deleteDialog')}
           className="rounded-xl bg-red-100 p-3 text-sm text-red-900"
         >
-          Ovo briše <strong>sve</strong> (predmete, treninge, troškove, XP…) i ne može da se vrati.
-          Sigurno?
+          <Rich text={t('data.deleteWarn')} />
           <div className="mt-2 flex gap-2">
             <Button
               variant="danger"
@@ -138,10 +142,10 @@ export default function DataCard() {
                 setConfirmDelete(false)
               }}
             >
-              Da, obriši sve
+              {t('data.yesDelete')}
             </Button>
             <Button variant="soft" onClick={() => setConfirmDelete(false)}>
-              Odustani
+              {t('common.giveUp')}
             </Button>
           </div>
         </KeyScope>

@@ -4,52 +4,45 @@ export type Category = 'study' | 'workout' | 'sleep' | 'games' | 'food' | 'money
 
 export const CATEGORY_META: Record<
   Category,
-  { label: string; emoji: string; color: string; bg: string; text: string }
+  { emoji: string; color: string; bg: string; text: string }
 > = {
   study: {
-    label: 'Faks i učenje',
     emoji: '📚',
     color: '#2563eb',
     bg: 'bg-blue-100 dark:bg-blue-950',
     text: 'text-blue-700 dark:text-blue-300',
   },
   workout: {
-    label: 'Trening',
     emoji: '🏋️',
     color: '#f97316',
     bg: 'bg-orange-100 dark:bg-orange-950',
     text: 'text-orange-700 dark:text-orange-300',
   },
   sleep: {
-    label: 'San i odmor',
     emoji: '😴',
     color: '#8b5cf6',
     bg: 'bg-violet-100 dark:bg-violet-950',
     text: 'text-violet-700 dark:text-violet-300',
   },
   games: {
-    label: 'Igre',
     emoji: '🎮',
     color: '#16a34a',
     bg: 'bg-green-100 dark:bg-green-950',
     text: 'text-green-700 dark:text-green-300',
   },
   food: {
-    label: 'Ishrana',
     emoji: '🍗',
     color: '#dc2626',
     bg: 'bg-red-100 dark:bg-red-950',
     text: 'text-red-700 dark:text-red-300',
   },
   money: {
-    label: 'Novac',
     emoji: '💰',
     color: '#eab308',
     bg: 'bg-yellow-100 dark:bg-yellow-950',
     text: 'text-yellow-700 dark:text-yellow-300',
   },
   habits: {
-    label: 'Navike',
     emoji: '✅',
     color: '#14b8a6',
     bg: 'bg-teal-100 dark:bg-teal-950',
@@ -251,6 +244,10 @@ export interface Settings {
   studyHoursPerDay: number
   proteinGoal: number
   theme: 'system' | 'light' | 'dark'
+  /** UI language code ('sr-Latn', 'en', ...). '' = automatic, from the browser. */
+  language: string
+  /** Currency shown next to amounts, e.g. RSD, EUR, $ */
+  currency: string
   aiMode: 'api' | 'manual'
   apiKey: string
   modelFast: string

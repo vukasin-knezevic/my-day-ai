@@ -179,11 +179,12 @@ test('14. nema horizontalnog skrola na 390 / 800 / 1920 px', async ({ page }) =>
 test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  await page.keyboard.press('Enter') // the language field is focused automatically
   await page.getByLabel('Kako da te zovem?').fill('Tasta')
   for (let i = 0; i < 5; i++) await page.keyboard.press('Enter')
-  await expect(page.getByText(/Korak 6 od 6/)).toBeVisible()
+  await expect(page.getByText(/Korak 7 od 7/)).toBeVisible()
   await page.keyboard.press('Escape')
-  await expect(page.getByText(/Korak 5 od 6/)).toBeVisible()
+  await expect(page.getByText(/Korak 6 od 7/)).toBeVisible()
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
   await expect(page.getByLabel('Brzi unos')).toBeVisible()
@@ -239,4 +240,56 @@ test.describe('pristupačnost (axe, WCAG A/AA)', () => {
       }
     })
   }
+})
+
+test.describe('jezici', () => {
+  test('20. engleski u onboardingu i podešavanjima, izbor se pamti', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+    await page.getByLabel('Jezik').selectOption('en')
+    await expect(page.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByLabel('What should I call you?').fill('Alex')
+    for (let i = 0; i < 5; i++) await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Finish' }).click()
+    await expect(page.getByLabel('Quick entry')).toBeVisible()
+    await page.getByLabel('Quick entry').fill('coffee 200')
+    await page.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.getByText(/Expense 200 USD/)).toBeVisible()
+    await page.reload()
+    await expect(page.getByLabel('Quick entry')).toBeVisible()
+    await page.goto('/#/podesavanja')
+    await expect(page.getByRole('heading', { name: /Settings/ })).toBeVisible()
+    await page.getByLabel('Language').selectOption('sr-Cyrl')
+    await expect(page.getByRole('heading', { name: /Подешавања/ })).toBeVisible()
+    await page.getByLabel('Језик').selectOption('sr-Latn')
+    await expect(page.getByRole('heading', { name: /Podešavanja/ })).toBeVisible()
+  })
+
+  test('21. engleski i ćirilica bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+    await onboard(page, { demo: true })
+    for (const lang of ['en', 'sr-Cyrl']) {
+      await page.goto('/#/podesavanja')
+      await page.getByLabel(/Jezik|Language|Језик/).selectOption(lang)
+      for (const route of [
+        '/',
+        '/faks',
+        '/trening',
+        '/zivot',
+        '/planer',
+        '/pregled',
+        '/ai',
+        '/podesavanja',
+      ]) {
+        await page.goto(`/#${route}`)
+        await page.waitForTimeout(120)
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        )
+        expect(overflow, `${lang} ${route} overflow`).toBeLessThanOrEqual(0)
+        const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+        expect(r.violations.map((v) => `${lang} ${route}: ${v.id}`)).toEqual([])
+      }
+    }
+  })
 })

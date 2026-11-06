@@ -1,15 +1,16 @@
 import type { Activity, Assessment, Habit, Meal, Subject, Workout, AppData } from '../types'
 import { addDaysStr } from './dates'
 import { uid } from './defaults'
+import { t } from '../i18n'
 
-/** Example data, clearly marked as "(primer)". Not my real courses or schedule. */
+/** Example data, clearly marked as an example. Not real courses or a real schedule. */
 export function makeDemoData(today: string): Partial<AppData> {
   const s1 = uid()
   const s2 = uid()
   const subjects: Subject[] = [
     {
       id: s1,
-      name: 'Matematika 1 (primer)',
+      name: t('demo.math'),
       color: '#2563eb',
       espb: 8,
       passMark: 51,
@@ -21,7 +22,7 @@ export function makeDemoData(today: string): Partial<AppData> {
     },
     {
       id: s2,
-      name: 'Programiranje (primer)',
+      name: t('demo.prog'),
       color: '#0d9488',
       espb: 6,
       passMark: 51,
@@ -36,7 +37,7 @@ export function makeDemoData(today: string): Partial<AppData> {
       id: uid(),
       subjectId: s1,
       type: 'kolokvijum',
-      title: 'Prvi kolokvijum (primer)',
+      title: t('demo.midterm'),
       date: addDaysStr(today, 6),
       time: '10:00',
       registrationDeadline: addDaysStr(today, 3),
@@ -51,7 +52,7 @@ export function makeDemoData(today: string): Partial<AppData> {
       id: uid(),
       subjectId: s2,
       type: 'domaci',
-      title: 'Domaći 1 (primer)',
+      title: t('demo.homework'),
       date: addDaysStr(today, 9),
       registration: 'ne-treba',
       maxPoints: 10,
@@ -64,7 +65,7 @@ export function makeDemoData(today: string): Partial<AppData> {
   const activities: Activity[] = [
     {
       id: uid(),
-      title: 'Trening (primer)',
+      title: t('demo.workout'),
       category: 'workout',
       date: today,
       start: '18:00',
@@ -76,7 +77,7 @@ export function makeDemoData(today: string): Partial<AppData> {
     },
     {
       id: uid(),
-      title: 'Učenje: Matematika (primer)',
+      title: t('demo.study'),
       category: 'study',
       date: today,
       start: '15:00',
@@ -91,13 +92,13 @@ export function makeDemoData(today: string): Partial<AppData> {
     {
       id: uid(),
       date: addDaysStr(today, -2),
-      type: 'Gornji deo (primer)',
+      type: t('demo.upper'),
       durationMin: 70,
       feeling: 4,
       demo: true,
       exercises: [
         {
-          name: 'Bench press',
+          name: t('ex.bench'),
           sets: [
             { reps: 8, weight: 60 },
             { reps: 8, weight: 60 },
@@ -108,10 +109,10 @@ export function makeDemoData(today: string): Partial<AppData> {
     },
   ]
   const meals: Meal[] = [
-    { id: uid(), date: today, description: 'Piletina i pirinač (primer)', protein: 40, demo: true },
+    { id: uid(), date: today, description: t('demo.meal'), protein: 40, demo: true },
   ]
   const habits: Habit[] = [
-    { id: uid(), name: 'Voda (primer)', emoji: '💧', goal: 2, unit: 'L', entries: {}, demo: true },
+    { id: uid(), name: t('demo.habit'), emoji: '💧', goal: 2, unit: 'L', entries: {}, demo: true },
   ]
   return { subjects, assessments, activities, workouts, meals, habits }
 }

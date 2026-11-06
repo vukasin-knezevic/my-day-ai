@@ -60,7 +60,7 @@ describe('migration of older data (PS5 -> reward)', () => {
     expect('ps5EarnedMin' in d.progress).toBe(false)
     expect('ps5MinPerStudyHour' in d.settings).toBe(false)
     // new fields get their defaults
-    expect(d.settings.rewardName).toBe('Vreme za zabavu')
+    expect(d.settings.rewardName).toBe('') // empty = the default name of the current language
     expect(d.settings.rewardEmoji).toBe('🎮')
   })
   it('is safe to run twice and does not overwrite new fields', () => {

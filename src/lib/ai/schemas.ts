@@ -1,8 +1,9 @@
 // Zod schemas for everything the AI may return. One shared validation for API mode and manual mode.
 import { z } from 'zod'
+import { t } from '../../i18n'
 
-const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'datum mora biti YYYY-MM-DD')
-const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'vreme mora biti HH:mm')
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => t('zod.date') })
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, { error: () => t('zod.time') })
 const category = z.enum(['study', 'workout', 'sleep', 'games', 'food', 'money', 'habits'])
 
 export const ActivityItem = z.object({
@@ -70,31 +71,5 @@ export type ImportResult = z.infer<typeof ExamImportSchema>
 export type WorkoutPlanResult = z.infer<typeof WorkoutPlanSchema>
 export type AiResult = PlanResult | SummaryResult | ImportResult | WorkoutPlanResult
 
-/** Human-readable schema shown to the model (same for API and manual mode). */
-export const SCHEMA_TEXT: Record<AiKind, string> = {
-  'plan-dana': `{
-  "summary": "jedna rečenica o danu",
-  "activities": [ { "title": "string", "category": "study|workout|sleep|games|food|money|habits", "date": "YYYY-MM-DD", "start": "HH:mm", "end": "HH:mm", "note": "opciono" } ],
-  "notes": ["opciono: kratka objašnjenja"]
-}`,
-  'plan-nedelje': `{
-  "summary": "jedna rečenica o nedelji",
-  "activities": [ { "title": "string", "category": "study|workout|sleep|games|food|money|habits", "date": "YYYY-MM-DD", "start": "HH:mm", "end": "HH:mm", "note": "opciono" } ],
-  "notes": ["opciono: kratka objašnjenja"]
-}`,
-  unos: `{
-  "summary": "šta si razumeo",
-  "activities": [ { "title": "string", "category": "study|workout|sleep|games|food|money|habits", "date": "YYYY-MM-DD", "start": "HH:mm", "end": "HH:mm" } ]
-}`,
-  rezime: `{
-  "summary": "kratak rezime nedelje (2-4 rečenice)",
-  "tips": ["savet 1", "savet 2", "savet 3"]
-}`,
-  uvoz: `{
-  "assessments": [ { "subject": "naziv predmeta", "type": "kolokvijum|ispit|domaci|lab", "title": "string", "date": "YYYY-MM-DD", "time": "HH:mm (opciono)", "registrationDeadline": "YYYY-MM-DD (opciono)" } ]
-}`,
-  trening: `{
-  "name": "naziv plana",
-  "days": [ { "day": 1, "title": "npr. Push", "exercises": [ { "name": "Bench press", "sets": 4, "reps": "6-8" } ] } ]
-}`,
-}
+/** Human-readable schema shown to the model (same for API and manual mode). The JSON keys never change. */
+export const schemaText = (kind: AiKind) => t(`schema.${kind}`)

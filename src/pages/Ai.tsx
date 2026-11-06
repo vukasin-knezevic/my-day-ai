@@ -4,7 +4,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card, Field, Input, PageTitle } from '../components/ui'
 import { todayStr, monthOf } from '../lib/dates'
-import { buildContext, buildPrompt, KIND_LABEL, SYSTEM_PROMPT } from '../lib/ai/prompt'
+import { buildContext, buildPrompt, kindLabel, systemPrompt } from '../lib/ai/prompt'
+import { useT } from '../i18n'
 import { parseAiResponse } from '../lib/ai/extract'
 import { runApi, runChat } from '../lib/ai/run'
 import { applyAiResult } from '../lib/ai/apply'
@@ -20,12 +21,13 @@ import type {
 } from '../lib/ai/schemas'
 
 const KINDS: AiKind[] = ['plan-dana', 'plan-nedelje', 'unos', 'uvoz', 'rezime', 'trening']
-const NEEDS_TEXT: Partial<Record<AiKind, string>> = {
-  unos: 'Npr. „sutra posle vežbi teretana pa učim OS 2 sata"',
-  uvoz: 'Nalepi raspored kolokvijuma sa sajta fakulteta',
+const NEEDS_TEXT: Partial<Record<AiKind, 'ai.needs.unos' | 'ai.needs.uvoz'>> = {
+  unos: 'ai.needs.unos',
+  uvoz: 'ai.needs.uvoz',
 }
 
 function Preview({ kind, data }: { kind: AiKind; data: AiResult }) {
+  const { t } = useT()
   if (kind === 'rezime') {
     const r = data as SummaryResult
     return (
@@ -58,7 +60,11 @@ function Preview({ kind, data }: { kind: AiKind; data: AiResult }) {
         <ul className="list-disc pl-5">
           {w.days.map((d) => (
             <li key={d.day + d.title}>
-              Dan {d.day}: {d.title} ({d.exercises.length} vežbi)
+              {t('ai.day', {
+                d: d.day,
+                title: d.title,
+                exercises: t('ai.exercises', { n: d.exercises.length }),
+              })}
             </li>
           ))}
         </ul>
@@ -86,6 +92,7 @@ function Preview({ kind, data }: { kind: AiKind; data: AiResult }) {
 }
 
 export default function Ai() {
+  const { t } = useT()
   const data = useStore(useShallow(selectData))
   const store = useStore()
   const today = todayStr()
@@ -108,9 +115,9 @@ export default function Ai() {
   async function copy(content: string) {
     try {
       await navigator.clipboard.writeText(content)
-      setInfo('📋 Kopirano! Nalepi u Claude chat (dugme ispod otvara claude.ai).')
+      setInfo(t('ai.copied'))
     } catch {
-      setInfo('Kopiranje nije uspelo. Obeleži tekst ispod i kopiraj ručno.')
+      setInfo(t('ai.copyFail'))
       setPasted((p) => p)
     }
   }
@@ -136,7 +143,7 @@ export default function Ai() {
       })
       handleParsed(r.parsed)
     } catch (e) {
-      setError(e instanceof AiError ? e.message : 'Neočekivana greška. Probaj ručni režim.')
+      setError(e instanceof AiError ? e.message : t('ai.unexpected'))
     } finally {
       setBusy(false)
     }
@@ -150,15 +157,7 @@ export default function Ai() {
 
   return (
     <>
-      <PageTitle
-        sub={
-          apiReady
-            ? '🟢 API režim'
-            : '📋 Ručni režim (besplatno): kopiraš prompt u Claude chat i nalepiš odgovor'
-        }
-      >
-        🤖 AI
-      </PageTitle>
+      <PageTitle sub={apiReady ? t('ai.sub.api') : t('ai.sub.manual')}>🤖 AI</PageTitle>
 
       <div className="mb-4 flex flex-wrap gap-2">
         {KINDS.map((k) => (
@@ -173,14 +172,14 @@ export default function Ai() {
             }}
             className={`min-h-10 rounded-xl px-3 text-sm font-medium ${kind === k ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
           >
-            {KIND_LABEL[k]}
+            {kindLabel(k)}
           </button>
         ))}
       </div>
 
       <Card className="mb-4 space-y-3">
         {needsText && (
-          <Field label={needsText}>
+          <Field label={t(needsText)}>
             <textarea
               className="min-h-24 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
               value={text}
@@ -191,7 +190,7 @@ export default function Ai() {
         <div className="flex flex-wrap gap-2">
           {apiReady && (
             <Button onClick={sendApi} disabled={busy || (!!needsText && !text.trim())}>
-              {busy ? 'Šaljem…' : '🤖 Pošalji Claude-u (API)'}
+              {busy ? t('ai.sending') : t('ai.send')}
             </Button>
           )}
           <Button
@@ -199,7 +198,7 @@ export default function Ai() {
             onClick={() => copy(manualPrompt())}
             disabled={!!needsText && !text.trim()}
           >
-            📋 Kopiraj za Claude
+            {t('ai.copy')}
           </Button>
           <a
             href="https://claude.ai/new"
@@ -207,19 +206,19 @@ export default function Ai() {
             rel="noreferrer"
             className="inline-flex min-h-10 items-center rounded-xl px-4 text-sm font-medium text-blue-700 underline dark:text-blue-300"
           >
-            Otvori claude.ai ↗
+            {t('ai.open')}
           </a>
         </div>
-        <Field label="📥 Nalepi odgovor">
+        <Field label={t('ai.pasteLabel')}>
           <textarea
-            aria-label="Nalepi odgovor"
+            aria-label={t('ai.pasteAria')}
             className="min-h-28 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm dark:border-slate-700 dark:bg-slate-800"
-            placeholder="Nalepi ceo odgovor iz chata, JSON blok se pronalazi sam."
+            placeholder={t('ai.pastePlaceholder')}
             value={pasted}
             onChange={(e) => setPasted(e.target.value)}
           />
         </Field>
-        <Button onClick={() => handleParsed(parseAiResponse(kind, pasted))}>Proveri odgovor</Button>
+        <Button onClick={() => handleParsed(parseAiResponse(kind, pasted))}>{t('ai.check')}</Button>
         {info && (
           <p role="status" className="text-sm">
             {info}
@@ -234,11 +233,11 @@ export default function Ai() {
 
       {result && (
         <Card className="mb-4">
-          <h2 className="mb-2 font-semibold">Predlog</h2>
+          <h2 className="mb-2 font-semibold">{t('ai.suggestion')}</h2>
           <Preview kind={result.kind} data={result.data} />
           {result.kind !== 'rezime' && (
             <Button className="mt-3" onClick={accept}>
-              Prihvati
+              {t('today.accept')}
             </Button>
           )}
         </Card>
@@ -250,6 +249,7 @@ export default function Ai() {
 }
 
 function Chat({ apiReady }: { apiReady: boolean }) {
+  const { t } = useT()
   const data = useStore(useShallow(selectData))
   const store = useStore()
   const today = todayStr()
@@ -264,12 +264,12 @@ function Chat({ apiReady }: { apiReady: boolean }) {
     if (!q.trim()) return
     const question = q.trim()
     if (!apiReady) {
-      const prompt = `${SYSTEM_PROMPT}\n\n--- MOJI PODACI ---\n${buildContext(data, today)}\n\nPITANJE: ${question}`
+      const prompt = `${systemPrompt()}\n\n${t('prompt.dataHeader')}\n${buildContext(data, today)}\n\n${t('prompt.chat.question')}: ${question}`
       try {
         await navigator.clipboard.writeText(prompt)
         setCopied(true)
       } catch {
-        setErr('Kopiranje nije uspelo.')
+        setErr(t('ai.chat.copyFail'))
       }
       return
     }
@@ -287,7 +287,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
       ])
       setQ('')
     } catch (e2) {
-      setErr(e2 instanceof AiError ? e2.message : 'Greška. Probaj ručni režim.')
+      setErr(e2 instanceof AiError ? e2.message : t('ai.chat.error'))
     } finally {
       setBusy(false)
     }
@@ -295,7 +295,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
 
   return (
     <Card>
-      <h2 className="mb-2 font-semibold">💬 Chat asistent</h2>
+      <h2 className="mb-2 font-semibold">{t('ai.chat.title')}</h2>
       <ul className="mb-3 space-y-2 text-sm">
         {log.map((m, i) => (
           <li
@@ -310,18 +310,18 @@ function Chat({ apiReady }: { apiReady: boolean }) {
       </ul>
       <form onSubmit={send} className="flex gap-2">
         <Input
-          aria-label="Pitanje asistentu"
-          placeholder="Šta da radim sad? Kako da stignem sve do petka?"
+          aria-label={t('ai.chat.aria')}
+          placeholder={t('ai.chat.placeholder')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
         <Button type="submit" disabled={busy}>
-          {apiReady ? 'Pošalji' : 'Kopiraj pitanje'}
+          {apiReady ? t('ai.chat.send') : t('ai.chat.copyQuestion')}
         </Button>
       </form>
       {copied && !apiReady && (
         <p role="status" className="mt-2 text-sm">
-          📋 Pitanje sa tvojim podacima je kopirano, nalepi ga u Claude chat.
+          {t('ai.chat.copied')}
         </p>
       )}
       {err && (
@@ -329,11 +329,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
           {err}
         </p>
       )}
-      {!apiReady && (
-        <p className="mt-2 text-xs text-slate-500">
-          Bez API ključa chat radi ručno: kopiraš pitanje + podatke u claude.ai.
-        </p>
-      )}
+      {!apiReady && <p className="mt-2 text-xs text-slate-500">{t('ai.chat.manualNote')}</p>}
     </Card>
   )
 }

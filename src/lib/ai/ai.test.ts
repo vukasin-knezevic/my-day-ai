@@ -1,5 +1,5 @@
 import { extractJson, parseAiResponse } from './extract'
-import { buildContext, buildPrompt, toneHint, MANUAL_QUESTIONS, SYSTEM_PROMPT } from './prompt'
+import { buildContext, buildPrompt, toneHint, manualQuestions, systemPrompt } from './prompt'
 import { AiError, API_URL, callClaude } from './client'
 import { addUsage, estimateCost } from './usage'
 import { modelFor, runApi } from './run'
@@ -113,13 +113,13 @@ describe('prompt generation', () => {
     const { manualText } = buildPrompt('plan-nedelje', data, TODAY, { manual: true })
     expect(manualText).toContain('Matematika 1 (primer)')
     expect(manualText).toContain('"activities"')
-    expect(manualText).toContain(SYSTEM_PROMPT.slice(0, 40))
-    expect(manualText).toContain(MANUAL_QUESTIONS)
+    expect(manualText).toContain(systemPrompt().slice(0, 40))
+    expect(manualText).toContain(manualQuestions())
     expect(manualText).toContain('JSON')
   })
   it('API prompt does not ask questions first', () => {
     const { user } = buildPrompt('plan-dana', data, TODAY)
-    expect(user).not.toContain(MANUAL_QUESTIONS)
+    expect(user).not.toContain(manualQuestions())
   })
   it('import prompt carries the pasted text', () => {
     const { user } = buildPrompt('uvoz', data, TODAY, {

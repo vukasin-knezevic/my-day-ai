@@ -5,8 +5,10 @@ import { Button, Card, PageTitle } from '../components/ui'
 import { CATEGORY_META } from '../types'
 import { addDaysStr, formatLong, todayStr, weekdayOf } from '../lib/dates'
 import { planWeek, type Adjustment } from '../lib/planner'
+import { useT } from '../i18n'
 
 export default function Planner() {
+  const { t } = useT()
   const { activities, subjects, assessments, settings, add, update, remove } = useStore(
     useShallow((s) => ({
       activities: s.activities,
@@ -51,11 +53,9 @@ export default function Planner() {
 
   return (
     <>
-      <PageTitle sub="Bez AI-ja: pravila za učenje, trening, odmor i igre. Predlozi imaju isprekidanu ivicu dok ih ne prihvatiš.">
-        🧠 Planer
-      </PageTitle>
+      <PageTitle sub={t('pl.sub')}>{t('pl.title')}</PageTitle>
       <div className="mb-4 flex flex-wrap gap-2">
-        <Button onClick={generate}>Predloži plan</Button>
+        <Button onClick={generate}>{t('pl.generate')}</Button>
         {suggested.length > 0 && (
           <>
             <Button
@@ -64,13 +64,13 @@ export default function Planner() {
                 suggested.forEach((a) => update('activities', a.id, { suggested: false }))
               }
             >
-              Prihvati sve
+              {t('pl.acceptAll')}
             </Button>
             <Button
               variant="ghost"
               onClick={() => suggested.forEach((a) => remove('activities', a.id))}
             >
-              Odbaci sve
+              {t('pl.rejectAll')}
             </Button>
           </>
         )}
@@ -78,7 +78,7 @@ export default function Planner() {
 
       {notes.length > 0 && (
         <Card className="mb-4">
-          <h2 className="mb-2 font-semibold">Objašnjenje</h2>
+          <h2 className="mb-2 font-semibold">{t('pl.explain')}</h2>
           <ul className="space-y-1 text-sm">
             {notes.map((n) => (
               <li key={n}>{n}</li>
@@ -90,16 +90,14 @@ export default function Planner() {
         <Card key={a.activityId + a.date} className="mb-4 border-amber-300">
           <p className="text-sm">{a.reason}</p>
           <Button className="mt-2" variant="soft" onClick={() => applyAdjustment(a)}>
-            Skrati trening do {a.newEnd}
+            {t('pl.shorten', { end: a.newEnd })}
           </Button>
         </Card>
       ))}
 
       {suggested.length === 0 ? (
         <Card>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Nema predloga. Klikni „Predloži plan".
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{t('pl.none')}</p>
         </Card>
       ) : (
         <ul className="space-y-2">
@@ -121,12 +119,12 @@ export default function Planner() {
                   variant="soft"
                   onClick={() => update('activities', a.id, { suggested: false })}
                 >
-                  Prihvati
+                  {t('today.accept')}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => remove('activities', a.id)}
-                  aria-label={`Odbaci ${a.title}`}
+                  aria-label={t('pl.reject', { title: a.title })}
                 >
                   ✕
                 </Button>

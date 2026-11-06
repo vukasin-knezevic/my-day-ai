@@ -8,6 +8,7 @@ import Planner from './pages/Planner'
 import Ai from './pages/Ai'
 import Shortcuts from './components/Shortcuts'
 import { useReminders } from './lib/useReminders'
+import { useT } from './i18n'
 import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
@@ -19,6 +20,7 @@ const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
 
 export default function App() {
+  const { t } = useT()
   const hydrated = useStore((s) => s.hydrated)
   const onboarded = useStore((s) => s.settings.onboarded)
   const theme = useStore((s) => s.settings.theme)
@@ -31,13 +33,13 @@ export default function App() {
     return watchSystemTheme(() => applyTheme('system'))
   }, [theme])
 
-  if (!hydrated) return <p className="p-6">Učitavanje…</p>
+  if (!hydrated) return <p className="p-6">{t('common.loading')}</p>
   if (!onboarded) return <Onboarding />
 
   return (
     <HashRouter>
       <Shortcuts />
-      <Suspense fallback={<p className="p-6">Učitavanje…</p>}>
+      <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Today />} />

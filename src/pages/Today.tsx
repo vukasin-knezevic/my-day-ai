@@ -19,6 +19,8 @@ import { computeStreaks, rewardForDone, streakMessages } from '../lib/xp'
 import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
+import { useT } from '../i18n'
+import Rich from '../i18n/Rich'
 import type { Activity } from '../types'
 
 const PX_PER_HOUR = 44
@@ -34,6 +36,7 @@ function Timeline({
   bed: string
   nowMin: number
 }) {
+  const { t } = useT()
   const w = timeToMin(wake)
   let b = timeToMin(bed)
   if (b <= w) b += 1440
@@ -42,7 +45,7 @@ function Timeline({
   const hours: number[] = []
   for (let m = Math.ceil(w / 60) * 60; m <= b; m += 60) hours.push(m)
   return (
-    <div className="relative ml-12" style={{ height }} aria-label="Vremenska linija dana">
+    <div className="relative ml-12" style={{ height }} aria-label={t('today.timelineAria')}>
       {hours.map((m) => (
         <div
           key={m}
@@ -84,6 +87,7 @@ function Timeline({
 }
 
 export default function Today() {
+  const { t } = useT()
   const data = useStore(useShallow(selectData))
   const store = useStore()
   const [now, setNow] = useState(new Date())
@@ -136,12 +140,12 @@ export default function Today() {
       {now.getDay() === 0 && now.getHours() >= 18 && (
         <Card className="mb-4">
           <p className="text-sm">
-            📝 Nedelja uveče: vreme je za rezime nedelje i 3 saveta.{' '}
+            {t('today.sunday')}{' '}
             <Link
               to="/ai?k=rezime"
               className="font-medium text-blue-700 underline dark:text-blue-300"
             >
-              Napravi rezime
+              {t('today.makeSummary')}
             </Link>
           </p>
         </Card>
@@ -151,7 +155,7 @@ export default function Today() {
 
       {alerts.length > 0 && (
         <Card className="mb-4 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950">
-          <h2 className="mb-2 font-semibold text-red-800 dark:text-red-200">⚠️ Pazi</h2>
+          <h2 className="mb-2 font-semibold text-red-800 dark:text-red-200">{t('today.alerts')}</h2>
           <ul className="space-y-1 text-sm">
             {alerts.map((a) => (
               <li
@@ -168,15 +172,15 @@ export default function Today() {
       <form onSubmit={submit} className="mb-4 flex gap-2" role="search">
         <Input
           id="quick-input"
-          aria-label="Brzi unos"
-          placeholder="trening 18-19:30 · sutra učenje mata 2h · kafa 200 · legao 1:30"
+          aria-label={t('today.quick')}
+          placeholder={t('today.quickPlaceholder')}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Escape') setText('')
           }}
         />
-        <Button type="submit">Dodaj</Button>
+        <Button type="submit">{t('common.add')}</Button>
       </form>
       {msg && (
         <p role="status" className="mb-4 text-sm text-slate-700 dark:text-slate-300">
@@ -187,16 +191,25 @@ export default function Today() {
       <Card className="mb-4">
         {current ? (
           <p>
-            <strong>Sada:</strong> {CATEGORY_META[current.category].emoji} {current.title} (do{' '}
-            {current.end})
+            <Rich
+              text={t('today.now', {
+                emoji: CATEGORY_META[current.category].emoji,
+                title: current.title,
+                end: current.end,
+              })}
+            />
           </p>
         ) : (
-          <p className="text-slate-600 dark:text-slate-400">Trenutno nema aktivnosti.</p>
+          <p className="text-slate-600 dark:text-slate-400">{t('today.nothing')}</p>
         )}
         {next && (
           <p className="mt-1 text-sm">
-            Sledeće: {next.title} u {next.start} (za {Math.floor(minutesToNext! / 60)} h{' '}
-            {minutesToNext! % 60} min)
+            {t('today.next', {
+              title: next.title,
+              start: next.start,
+              h: Math.floor(minutesToNext! / 60),
+              m: minutesToNext! % 60,
+            })}
           </p>
         )}
       </Card>
@@ -212,14 +225,12 @@ export default function Today() {
 
       <Card className="mb-4">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold">Obaveze</h2>
+          <h2 className="font-semibold">{t('today.duties')}</h2>
           <Button variant="soft" onClick={() => setEditing('new')}>
-            + Nova aktivnost
+            {t('today.newActivity')}
           </Button>
         </div>
-        {occ.length === 0 && (
-          <p className="text-sm text-slate-500">Nema obaveza. Dodaj nešto gore. ☝️</p>
-        )}
+        {occ.length === 0 && <p className="text-sm text-slate-500">{t('today.empty')}</p>}
         <ul className="space-y-2">
           {occ.map((o) => (
             <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
@@ -229,32 +240,34 @@ export default function Today() {
               <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
                 {CATEGORY_META[o.category].emoji} {o.title}
               </span>
-              {o.suggested && <Badge className="bg-amber-100 text-amber-800">predlog</Badge>}
+              {o.suggested && (
+                <Badge className="bg-amber-100 text-amber-800">{t('today.badge.suggested')}</Badge>
+              )}
               {o.status === 'done' && (
-                <Badge className="bg-green-100 text-green-800">urađeno</Badge>
+                <Badge className="bg-green-100 text-green-800">{t('today.badge.done')}</Badge>
               )}
               {o.status === 'skipped' && (
-                <Badge className="bg-slate-200 text-slate-700">preskočeno</Badge>
+                <Badge className="bg-slate-200 text-slate-700">{t('today.badge.skipped')}</Badge>
               )}
               {o.type === 'activity' && o.suggested && (
                 <Button variant="soft" onClick={() => accept(o)}>
-                  Prihvati
+                  {t('today.accept')}
                 </Button>
               )}
               {o.type === 'activity' && !o.suggested && o.status === 'planned' && (
                 <span className="ml-auto flex gap-1">
                   <Button variant="soft" onClick={() => mark(o, 'done')}>
-                    ✔ Urađeno
+                    {t('today.markDone')}
                   </Button>
                   <Button variant="ghost" onClick={() => mark(o, 'skipped')}>
-                    Preskoči
+                    {t('today.skip')}
                   </Button>
                 </span>
               )}
               {o.type === 'activity' && o.activityId && (
                 <Button
                   variant="ghost"
-                  aria-label={`Izmeni ${o.title}`}
+                  aria-label={t('today.edit', { title: o.title })}
                   onClick={() => {
                     const a = data.activities.find((x) => x.id === o.activityId)
                     if (a) setEditing(a)
@@ -266,7 +279,7 @@ export default function Today() {
               {o.type === 'activity' && o.activityId && (
                 <Button
                   variant="ghost"
-                  aria-label={`Obriši ${o.title}`}
+                  aria-label={t('today.delete', { title: o.title })}
                   onClick={() => store.remove('activities', o.activityId!)}
                 >
                   ✕
@@ -278,7 +291,7 @@ export default function Today() {
       </Card>
 
       <Card>
-        <h2 className="mb-3 font-semibold">Vremenska linija</h2>
+        <h2 className="mb-3 font-semibold">{t('today.timeline')}</h2>
         <Timeline
           occ={occ}
           wake={data.settings.wakeTime}

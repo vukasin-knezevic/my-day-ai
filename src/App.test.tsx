@@ -12,7 +12,7 @@ test('prvo otvaranje prikazuje onboarding, pa glavnu aplikaciju', async () => {
   const user = userEvent.setup()
   render(<App />)
   expect(screen.getByRole('heading', { name: /Dobrodošao/ })).toBeInTheDocument()
-  for (let i = 0; i < 5; i++) await user.click(screen.getByRole('button', { name: 'Dalje' }))
+  for (let i = 0; i < 6; i++) await user.click(screen.getByRole('button', { name: 'Dalje' }))
   await user.click(screen.getByRole('button', { name: 'Završi' }))
   expect(useStore.getState().settings.onboarded).toBe(true)
   expect(useStore.getState().hasDemo()).toBe(true)
