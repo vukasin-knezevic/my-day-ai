@@ -5,7 +5,7 @@
 - [x] Faza 0 — Priprema računara (Node, Git, repo, SETUP.md)
 - [x] Faza 1 — Osnova i model podataka (tipovi, store, onboarding)
 - [x] Faza 2 — Ekran „Danas" + brzi unos (quickParse, 25+ testova)
-- [ ] Faza 3 — Faks (predmeti, raspored, kolokvijumi, prijave, poeni)
+- [x] Faza 3 — Faks (predmeti, raspored, kolokvijumi, prijave, poeni)
 - [ ] Faza 4 — Planer bez AI-ja (planWeek, 20+ testova)
 - [ ] Faza 5 — Trening i ishrana
 - [ ] Faza 6 — San, novac, navike (+ docs/HUAWEI.md)

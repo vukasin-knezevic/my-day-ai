@@ -5,6 +5,7 @@ import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
 import Onboarding from './pages/Onboarding'
 import Placeholder from './pages/Placeholder'
+import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
 import Settings from './pages/Settings'
@@ -28,7 +29,7 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Today />} />
-          <Route path="faks" element={<Placeholder title="📚 Faks" phase="fazi 3" />} />
+          <Route path="faks" element={<Study />} />
           <Route path="planer" element={<Placeholder title="🧠 Planer" phase="fazi 4" />} />
           <Route path="trening" element={<Placeholder title="🏋️ Trening" phase="fazi 5" />} />
           <Route path="zivot" element={<Placeholder title="💰 Život" phase="fazi 6" />} />

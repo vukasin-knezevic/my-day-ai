@@ -8,3 +8,6 @@ Svi podaci aplikacije opisani su u `src/types.ts`: to je kao da u Pythonu defini
 
 ## Faza 2 — Ekran „Danas"
 Parser `quickParse.ts` pretvara rečenicu poput „sutra učenje mata 2h" u strukturu (datum, kategorija, početak, kraj). Radi preko regularnih izraza (regex), a isti princip imaš u Pythonovom modulu `re`. Napisao sam 34 testa, jer parser ima mnogo graničnih slučajeva (npr. „18h" je vreme, a „2h" trajanje). Ekran Danas sklapa obaveze iz aktivnosti i rasporeda faksa, računa upozorenja (neprijavljen kolokvijum) i crta vremensku liniju. Naučio si da se logika drži u čistim funkcijama (`lib/`), a React samo prikazuje rezultat.
+
+## Faza 3 — Faks
+Dodao sam predmete, nedeljni raspored i pitanje „idem / ne idem / ponekad" za svaki termin. Termini „ne idem" postaju slobodno vreme koje planer kasnije koristi. Kolokvijumi imaju odbrojavanje u boji, čeklistu prijava i pregled „Novembar: prijave". Računanje ocene (`gradeFor`) je obična funkcija sa tabelom testova, slično kao `pytest.mark.parametrize` u Pythonu.
