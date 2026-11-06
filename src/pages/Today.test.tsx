@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Today from './Today'
@@ -11,7 +12,11 @@ beforeEach(() => {
 
 test('brzi unos dodaje trening i može da se označi kao urađen', async () => {
   const user = userEvent.setup()
-  render(<Today />)
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
   await user.type(screen.getByLabelText('Brzi unos'), 'trening 18-19:30')
   await user.click(screen.getByRole('button', { name: 'Dodaj' }))
   expect(useStore.getState().activities).toHaveLength(1)
@@ -21,7 +26,11 @@ test('brzi unos dodaje trening i može da se označi kao urađen', async () => {
 
 test('brzi unos troška', async () => {
   const user = userEvent.setup()
-  render(<Today />)
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
   await user.type(screen.getByLabelText('Brzi unos'), 'kafa 200')
   await user.click(screen.getByRole('button', { name: 'Dodaj' }))
   expect(useStore.getState().expenses[0]).toMatchObject({ amount: 200, category: 'hrana' })
@@ -46,6 +55,10 @@ test('neprijavljen kolokvijum se vidi kao upozorenje', () => {
     difficulty: 3,
     studyHours: 4,
   })
-  render(<Today />)
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
   expect(screen.getByText(/Neprijavljen: Kol test/)).toBeInTheDocument()
 })

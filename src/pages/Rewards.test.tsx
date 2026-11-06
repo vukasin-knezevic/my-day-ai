@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Today from './Today'
@@ -22,7 +23,11 @@ test('urađeno daje XP i PS5 vreme, samo jednom', async () => {
     status: 'planned',
     source: 'me',
   })
-  render(<Today />)
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
   await user.click(screen.getByRole('button', { name: /Urađeno/ }))
   const p = useStore.getState().progress
   expect(p.xp).toBe(40)
@@ -34,7 +39,11 @@ test('urađeno daje XP i PS5 vreme, samo jednom', async () => {
 
 test('igranje troši PS5 vreme bez prekora', async () => {
   const user = userEvent.setup()
-  render(<Today />)
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
   await user.click(screen.getByRole('button', { name: 'Igrao 30 min' }))
   expect(useStore.getState().progress.ps5SpentMin).toBe(30)
   expect(useStore.getState().games).toHaveLength(1)

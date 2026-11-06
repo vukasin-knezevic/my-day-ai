@@ -109,7 +109,7 @@ export default function Planner() {
               className={`flex flex-wrap items-center gap-2 rounded-xl border-2 border-dashed p-3 text-sm ${CATEGORY_META[a.category].bg} ${CATEGORY_META[a.category].text}`}
               style={{ borderColor: CATEGORY_META[a.category].color }}
             >
-              <span className="font-medium capitalize">{formatLong(a.date)}</span>
+              <span className="font-medium">{formatLong(a.date)}</span>
               <span>
                 {a.start}–{a.end}
               </span>

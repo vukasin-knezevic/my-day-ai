@@ -65,7 +65,8 @@ export const WEEKDAY_SHORT: Record<Weekday, string> = {
 }
 
 export function formatLong(s: string): string {
-  return format(fromDateStr(s), 'EEEE, d. MMMM', { locale: LOCALE })
+  const text = format(fromDateStr(s), 'EEEE, d. MMMM', { locale: LOCALE })
+  return text.charAt(0).toUpperCase() + text.slice(1) // "Petak, 6. novembar"
 }
 export function formatShort(s: string): string {
   return format(fromDateStr(s), 'd. MMM', { locale: LOCALE })

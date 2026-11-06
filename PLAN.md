@@ -14,7 +14,7 @@
 - [x] Faza 9 — Podsetnici i pregledi
 - [x] Faza 10 — Podaci i kvalitet (e2e, pokrivenost, pristupačnost)
 - [x] Faza 11 — Portfolio (README, arhitektura, CI, Pages)
-- [ ] Faza 12 — Završetak (IZVESTAJ, UCENJE, ideje za v2)
+- [x] Faza 12 — Završetak (IZVESTAJ, UCENJE, ideje za v2)
 
 ## Napomene
 - Folder projekta je `C:\Projects\my-ai-app` (ne `C:\Projekti\my-day-ai`), jer je Claude Code već pokrenut ovde.

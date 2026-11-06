@@ -35,3 +35,6 @@ Dodao sam izvoz i uvoz svih podataka kao JSON (izvoz namerno ne sadrži API klju
 
 ## Faza 11 — Portfolio
 Napisao sam README na srpskom i engleskom, `docs/ARHITEKTURA.md` sa Mermaid dijagramom toka podataka i dodao MIT licencu. GitHub Actions (`ci.yml`) na svaki push pokreće lint, typecheck, unit i e2e testove, a `deploy.yml` objavljuje aplikaciju na GitHub Pages. Ključna stvar na razgovoru: možeš da objasniš zašto je logika u čistim funkcijama i zašto AI nikad direktno ne menja podatke, nego pravi predlog koji ti prihvatiš.
+
+## Faza 12 — Završetak
+Napisao sam `IZVESTAJ.md` sa poštenim spiskom šta radi, šta nije urađeno i šta nisam mogao da proverim (npr. pravi API poziv i Huawei format). `UCENJE.md` je tvoj vodič: poređenje sa Pythonom, redosled čitanja fajlova i 10 pitanja sa razgovora. Najvažnija lekcija projekta: kad ne možeš nešto da proveriš, to napišeš, a ne pretvaraš se da radi. Sledeći korak je da sam uključiš GitHub Pages (uputstvo je u README-u) i probaš AI sa pravim ključem.

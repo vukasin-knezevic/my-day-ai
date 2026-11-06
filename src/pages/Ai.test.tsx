@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Ai from './Ai'
@@ -20,7 +21,11 @@ const plan = (date: string) =>
 
 test('ručni režim: nalepi odgovor, proveri, prihvati kao predlog', async () => {
   const user = userEvent.setup()
-  render(<Ai />)
+  render(
+    <MemoryRouter>
+      <Ai />
+    </MemoryRouter>,
+  )
   fireEvent.change(screen.getByLabelText('Nalepi odgovor'), { target: { value: plan(todayStr()) } })
   await user.click(screen.getByRole('button', { name: 'Proveri odgovor' }))
   expect(screen.getByText('Fokus')).toBeInTheDocument()
@@ -31,7 +36,11 @@ test('ručni režim: nalepi odgovor, proveri, prihvati kao predlog', async () =>
 
 test('neispravan odgovor daje jasnu poruku', async () => {
   const user = userEvent.setup()
-  render(<Ai />)
+  render(
+    <MemoryRouter>
+      <Ai />
+    </MemoryRouter>,
+  )
   fireEvent.change(screen.getByLabelText('Nalepi odgovor'), {
     target: { value: '```json\n{ nije json }\n```' },
   })
@@ -40,7 +49,11 @@ test('neispravan odgovor daje jasnu poruku', async () => {
 })
 
 test('bez ključa nema API dugmeta', () => {
-  render(<Ai />)
+  render(
+    <MemoryRouter>
+      <Ai />
+    </MemoryRouter>,
+  )
   expect(screen.queryByRole('button', { name: /Pošalji Claude-u/ })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: /Kopiraj za Claude/ })).toBeInTheDocument()
 })

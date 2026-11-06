@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card, Field, Input, PageTitle } from '../components/ui'
@@ -88,7 +89,11 @@ export default function Ai() {
   const data = useStore(useShallow(selectData))
   const store = useStore()
   const today = todayStr()
-  const [kind, setKind] = useState<AiKind>('plan-dana')
+  const [params] = useSearchParams()
+  const initial = params.get('k') as AiKind | null
+  const [kind, setKind] = useState<AiKind>(
+    initial && KINDS.includes(initial) ? initial : 'plan-dana',
+  )
   const [text, setText] = useState('')
   const [pasted, setPasted] = useState('')
   const [busy, setBusy] = useState(false)

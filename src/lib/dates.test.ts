@@ -41,6 +41,6 @@ describe('dates', () => {
     expect(minToTime(-30)).toBe('23:30')
   })
   it('formats in Serbian', () => {
-    expect(formatLong('2026-11-06').toLowerCase()).toContain('petak')
+    expect(formatLong('2026-11-06')).toBe('Petak, 6. novembar')
   })
 })

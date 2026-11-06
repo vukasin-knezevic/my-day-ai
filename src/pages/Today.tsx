@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, selectData } from '../store'
 import { Badge, Button, Card, Input } from '../components/ui'
@@ -122,12 +123,26 @@ export default function Today() {
   return (
     <>
       <header className="mb-4">
-        <h1 className="text-2xl font-bold capitalize">🌅 {formatLong(today)}</h1>
+        <h1 className="text-2xl font-bold">🌅 {formatLong(today)}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           {data.settings.name ? `${data.settings.name}, ` : ''}
           {daySummary(occ)}
         </p>
       </header>
+
+      {now.getDay() === 0 && now.getHours() >= 18 && (
+        <Card className="mb-4">
+          <p className="text-sm">
+            📝 Nedelja uveče: vreme je za rezime nedelje i 3 saveta.{' '}
+            <Link
+              to="/ai?k=rezime"
+              className="font-medium text-blue-700 underline dark:text-blue-300"
+            >
+              Napravi rezime
+            </Link>
+          </p>
+        </Card>
+      )}
 
       <ProgressCard />
 
@@ -215,6 +230,15 @@ export default function Today() {
                     Preskoči
                   </Button>
                 </span>
+              )}
+              {o.type === 'activity' && o.activityId && (
+                <Button
+                  variant="ghost"
+                  aria-label={`Obriši ${o.title}`}
+                  onClick={() => store.remove('activities', o.activityId!)}
+                >
+                  ✕
+                </Button>
               )}
             </li>
           ))}
