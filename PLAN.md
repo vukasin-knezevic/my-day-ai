@@ -8,7 +8,7 @@
 - [x] Faza 3 — Faks (predmeti, raspored, kolokvijumi, prijave, poeni)
 - [x] Faza 4 — Planer bez AI-ja (planWeek, 20+ testova)
 - [x] Faza 5 — Trening i ishrana
-- [ ] Faza 6 — San, novac, navike (+ docs/HUAWEI.md)
+- [x] Faza 6 — San, novac, navike (+ docs/HUAWEI.md)
 - [ ] Faza 7 — Motivacija (XP, nivoi, nizovi, PS5 vreme)
 - [ ] Faza 8 / 8b — AI (API + ručni režim)
 - [ ] Faza 9 — Podsetnici i pregledi

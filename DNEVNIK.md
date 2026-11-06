@@ -17,3 +17,6 @@ Dodao sam predmete, nedeljni raspored i pitanje „idem / ne idem / ponekad" za 
 
 ## Faza 5 — Trening i ishrana
 Unosiš vežbe kao serije × ponavljanja × kilaža, a aplikacija pamti najveću kilažu po vežbi i javlja 🎉 kad je pobediš (`newRecords`). Prvi put kad radiš neku vežbu to nije rekord, jer nema šta da se pobedi. Grafikon (Recharts) crta napredak kilaže kroz vreme. Za ishranu postoji traka napretka do dnevnog cilja proteina. Naučio si šta je `Map`/rečnik po ključu i kako se isti podaci prikazuju na više načina.
+
+## Faza 6 — San, novac, navike
+San se beleži sa dva klika (Legao / Ustao), a aplikacija računa prosek 7 dana i predlaže vreme spavanja prema sutrašnjoj prvoj obavezi. Novac ima mesečni budžet po kategoriji i upozorenje na 80%. Navike imaju niz dana: niz se ne prekida ako današnja još nije urađena. Za Huawei sat sam istraživao i zapisao u `docs/HUAWEI.md` šta je potvrđeno, a šta ne; format fajla nisam izmišljao. Naučio si da je „ne znam" pošten odgovor kad nešto nije proverljivo.
