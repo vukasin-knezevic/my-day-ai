@@ -8,6 +8,7 @@ import Placeholder from './pages/Placeholder'
 import Planner from './pages/Planner'
 import Workout from './pages/Workout'
 import Life from './pages/Life'
+import Ai from './pages/Ai'
 import Study from './pages/Study'
 import Today from './pages/Today'
 import More from './pages/More'
@@ -37,7 +38,7 @@ export default function App() {
           <Route path="trening" element={<Workout />} />
           <Route path="zivot" element={<Life />} />
           <Route path="pregled" element={<Placeholder title="📊 Pregled" phase="fazi 9" />} />
-          <Route path="ai" element={<Placeholder title="🤖 AI" phase="fazi 8" />} />
+          <Route path="ai" element={<Ai />} />
           <Route path="vise" element={<More />} />
           <Route path="podesavanja" element={<Settings />} />
         </Route>

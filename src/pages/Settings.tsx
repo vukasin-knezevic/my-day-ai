@@ -1,4 +1,5 @@
 import { useStore } from '../store'
+import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 
 export default function Settings() {
@@ -7,6 +8,9 @@ export default function Settings() {
   const loadDemo = useStore((s) => s.loadDemo)
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
+  const aiUsage = useStore((s) => s.aiUsage)
+  // rough estimate: all tokens at the strong model price (upper bound)
+  const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
   const num = (v: string) => (v === '' ? 0 : Number(v))
 
   return (
@@ -91,6 +95,51 @@ export default function Settings() {
               />
             </Field>
           </div>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">🤖 AI</h2>
+          <Field label="AI režim">
+            <Select
+              value={settings.aiMode}
+              onChange={(e) => setSettings({ aiMode: e.target.value as typeof settings.aiMode })}
+            >
+              <option value="manual">Ručni (besplatno, kopiraš u Claude chat)</option>
+              <option value="api">API (direktno, košta po upotrebi)</option>
+            </Select>
+          </Field>
+          <Field label="Anthropic API ključ">
+            <Input
+              type="password"
+              autoComplete="off"
+              placeholder="sk-ant-…"
+              value={settings.apiKey}
+              onChange={(e) => setSettings({ apiKey: e.target.value })}
+            />
+          </Field>
+          <p className="rounded-xl bg-amber-100 p-3 text-xs text-amber-900">
+            ⚠️ Ključ se čuva samo na ovom uređaju, ali je vidljiv u pregledaču (alati za
+            programere). Nikome ga ne deli, ne stavljaj ga na tuđ računar i postavi mesečni limit
+            potrošnje u Anthropic konzoli.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Brži model (unos, uvoz)">
+              <Input
+                value={settings.modelFast}
+                onChange={(e) => setSettings({ modelFast: e.target.value })}
+              />
+            </Field>
+            <Field label="Jači model (planiranje)">
+              <Input
+                value={settings.modelStrong}
+                onChange={(e) => setSettings({ modelStrong: e.target.value })}
+              />
+            </Field>
+          </div>
+          <p className="text-sm" data-testid="ai-usage">
+            Potrošnja ovog meseca ({aiUsage.month || '—'}): {aiUsage.calls} poziva,{' '}
+            {aiUsage.inputTokens} ulaznih i {aiUsage.outputTokens} izlaznih tokena
+            {cost !== null && ` ≈ $${cost.toFixed(4)}`}.
+          </p>
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">Demo podaci</h2>

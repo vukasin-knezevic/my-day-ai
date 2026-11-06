@@ -23,3 +23,6 @@ San se beleži sa dva klika (Legao / Ustao), a aplikacija računa prosek 7 dana 
 
 ## Faza 7 — Motivacija
 Urađena obaveza daje XP (učenje 10 XP na 30 min, trening 30, prijava 20, navika 5), a svaki događaj ima jedinstven `id`, pa ista stvar nikad ne plati dvaput. Nivoi idu od Brucoša do Inženjera. Svaki sat učenja zarađuje PS5 minute (podesivo), a aplikacija samo prikazuje stanje, bez zamerki. Nizovi dana se računaju čistom funkcijom `streakOf`, a milestone-ovi (3, 7, 14, 30 dana) javljaju se kratkom porukom. Naučio si ideju idempotentnosti: ponovljen poziv ne menja rezultat.
+
+## Faza 8 — AI (API i ručni režim)
+Postoje dva režima sa istim kodom iza njih (`src/lib/ai/`): u API režimu aplikacija šalje zahtev Anthropic-u iz pregledača običnim `fetch`-om, a u ručnom režimu kopiraš gotov prompt u Claude chat i nalepiš odgovor. Oba puta prolaze kroz isti `parseAiResponse`: pronađe JSON u tekstu pun priče i proveri ga `zod` šemom, kao što u Pythonu proveravaš podatke sa `pydantic`. Model uvek može da vrati loš JSON, zato svaka AI funkcija ima jasnu poruku šta da tražiš i rezervu bez AI-ja. Testovi koriste lažni (mock) `fetch`, pa ne troše pravi novac.
