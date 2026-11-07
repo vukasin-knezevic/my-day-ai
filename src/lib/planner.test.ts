@@ -149,10 +149,9 @@ describe('planWeek: study', () => {
     const v = [...byDay.entries()].sort().map((x) => x[1])
     expect(v[v.length - 1]).toBeGreaterThanOrEqual(v[0])
   })
-  it('a single block is never longer than 3 h (limit is 2 h)', () => {
+  it('a single block respects the limit', () => {
     const r = study(planWeek(input({ assessments: [exam({ studyHours: 12 })] })))
-    expect(Math.max(...r.map(mins))).toBeLessThanOrEqual(MAX_STUDY_BLOCK)
-    expect(MAX_STUDY_BLOCK).toBeLessThanOrEqual(180)
+    expect(Math.max(...r.map(mins))).toBe(MAX_STUDY_BLOCK)
   })
   it('breaks between study blocks on the same day', () => {
     const r = study(planWeek(input({ assessments: [exam({ studyHours: 12 })] })))
@@ -385,6 +384,11 @@ describe('planWeek: easy day and games', () => {
         .reduce((n, s) => n + mins(s), 0),
     ).toBeLessThanOrEqual(60)
     expect(r.suggestions.some((s) => s.date === d && s.category === 'workout')).toBe(false)
+  })
+  it('the easy day never allows more than the daily limit', () => {
+    const settings = { ...input().settings, studyHoursPerDay: 0 }
+    const r = planWeek(input({ settings, assessments: [exam({ studyHours: 20 })] }))
+    expect(study(r)).toHaveLength(0)
   })
   it('no easy day when planning fewer than 3 days', () => {
     expect(planWeek(input({ days: 2 })).easyDay).toBeNull()

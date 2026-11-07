@@ -330,7 +330,8 @@ function placeStudy(plan: Plan, demand: Map<string, StudyTask[]>) {
   const { dates, exams, input, easyDay } = plan
   const carry = new Map<string, number>() // exam id -> minutes
   for (const date of dates) {
-    const cap = date === easyDay ? EASY_DAY_STUDY : input.settings.studyHoursPerDay * 60
+    const dailyLimit = input.settings.studyHoursPerDay * 60
+    const cap = date === easyDay ? Math.min(EASY_DAY_STUDY, dailyLimit) : dailyLimit
     const st = plan.day.get(date)!
     let room = Math.max(0, cap - st.existingStudy)
     for (const task of tasksFor(date, demand, carry, exams)) {
