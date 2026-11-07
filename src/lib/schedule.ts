@@ -13,6 +13,7 @@ import {
 } from './dates'
 import { t } from '../i18n'
 import { slotKindLabel } from './labels'
+import { isExamType } from './kinds'
 
 export interface Occurrence {
   key: string
@@ -192,7 +193,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
   const subjName = (id: string) =>
     data.subjects.find((s) => s.id === id)?.name ?? t('subject.fallback')
   for (const a of data.assessments) {
-    if (a.type === 'domaci' || a.type === 'lab') {
+    if (!isExamType(a.type)) {
       const d = daysUntil(a.date, today)
       if (!a.done && d >= 0 && d <= 1)
         alerts.push({

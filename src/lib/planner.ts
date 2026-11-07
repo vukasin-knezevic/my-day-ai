@@ -2,6 +2,7 @@
 // It creates *suggestions* (dashed border in the UI) that the user accepts or ignores.
 import type { Activity, Assessment, Category, Settings, Subject } from '../types'
 import { addDaysStr, daysUntil, formatDuration, minToTime, timeToMin, weekdayOf } from './dates'
+import { isExamType } from './kinds'
 import { freeSlots, occurrencesOn } from './schedule'
 import { t as tr } from '../i18n'
 import { rewardNameOf } from './labels'
@@ -101,7 +102,7 @@ export function planWeek(input: PlanInput): PlanResult {
   const window: Iv = { s: wake, e: windowEnd }
 
   const exams = assessments.filter(
-    (a) => (a.type === 'kolokvijum' || a.type === 'ispit') && a.date >= from,
+    (a) => isExamType(a.type) && a.date >= from,
   )
   const examDays = new Set(exams.map((e) => e.date))
   const eveDays = new Set(exams.map((e) => addDaysStr(e.date, -1)))

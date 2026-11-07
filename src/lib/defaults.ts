@@ -1,4 +1,5 @@
 ﻿import type { AppData, Settings } from '../types'
+import { messageIn, resolveLanguage } from '../i18n'
 
 export const DEFAULT_SETTINGS: Settings = {
   name: '',
@@ -10,6 +11,8 @@ export const DEFAULT_SETTINGS: Settings = {
   proteinGoal: 120,
   theme: 'system',
   timeFormat: '24h',
+  customAssessmentKinds: [],
+  customSlotKinds: [],
   language: '',
   currency: '',
   aiMode: 'manual',
@@ -75,10 +78,37 @@ function clampReward(p: AppData['progress']): AppData['progress'] {
   return p.rewardSpentMin > p.rewardEarnedMin ? { ...p, rewardSpentMin: p.rewardEarnedMin } : p
 }
 
+/**
+ * v2 -> v3: "homework" and "lab" were built-in kinds of obligations; now only exam and midterm
+ * are built in, so those two become kinds the user "named" (in the language of the saved settings).
+ */
+function migrateKinds(r: Partial<AppData>): Partial<AppData> {
+  const legacy: Record<string, 'assess.domaci' | 'assess.lab'> = {
+    domaci: 'assess.domaci',
+    lab: 'assess.lab',
+  }
+  const assessments = r.assessments ?? []
+  if (!assessments.some((a) => a.type in legacy)) return r
+  const lang = resolveLanguage(r.settings?.language)
+  const names = new Set(r.settings?.customAssessmentKinds ?? [])
+  const moved = assessments.map((a) => {
+    const key = legacy[a.type]
+    if (!key) return a
+    const name = messageIn(lang, key)
+    names.add(name)
+    return { ...a, type: name }
+  })
+  return {
+    ...r,
+    assessments: moved,
+    settings: { ...(r.settings as AppData['settings']), customAssessmentKinds: [...names] },
+  }
+}
+
 /** Fills in missing fields of (older / imported) data with defaults. */
 export function normalizeData(input: Partial<AppData> | null | undefined): AppData {
   const base = emptyData()
-  const r = migrateData(input)
+  const r = migrateKinds(migrateData(input))
   return {
     ...base,
     ...r,

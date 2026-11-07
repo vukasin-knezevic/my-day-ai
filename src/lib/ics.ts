@@ -3,6 +3,7 @@ import type { AppData } from '../types'
 import { addDaysStr, todayStr } from './dates'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
+import { isExamType } from './kinds'
 
 const esc = (s: string) =>
   s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
@@ -83,7 +84,7 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
     const sub = data.subjects.find((s) => s.id === a.subjectId)?.name ?? ''
     events.push({
       uid: `as-${a.id}`,
-      summary: `${a.type === 'domaci' || a.type === 'lab' ? '📝' : '🎓'} ${a.title}${sub ? ` (${sub})` : ''}`,
+      summary: `${isExamType(a.type) ? '🎓' : '📝'} ${a.title}${sub ? ` (${sub})` : ''}`,
       date: a.date,
       start: a.time,
       end: a.time ? addMinutes(a.time, 90) : undefined,

@@ -57,7 +57,8 @@ export type Attendance = 'idem' | 'ne-idem' | 'ponekad'
 
 export interface ClassSlot {
   id: string
-  kind: 'predavanje' | 'vezbe'
+  /** 'predavanje' / 'vezbe' are built in; anything else is a kind the user named (lab, seminar...) */
+  kind: string
   day: Weekday
   start: string
   end: string
@@ -79,7 +80,8 @@ export interface Subject {
   demo?: boolean
 }
 
-export type AssessmentType = 'kolokvijum' | 'ispit' | 'domaci' | 'lab'
+/** 'ispit' and 'kolokvijum' are built in; anything else is a kind the user named (homework, lab...). */
+export type AssessmentType = string
 export type RegistrationStatus = 'nije-prijavljen' | 'prijavljen' | 'ne-treba'
 
 export interface Assessment {
@@ -250,6 +252,9 @@ export interface Settings {
   theme: 'system' | 'light' | 'dark'
   /** 24h (13:00) or 12h (1:00 PM) */
   timeFormat: '24h' | '12h'
+  /** Kinds of obligations / class slots the user added (the built-in ones are not listed here) */
+  customAssessmentKinds: string[]
+  customSlotKinds: string[]
   /** UI language code ('sr-Latn', 'en', ...). '' = automatic, from the browser. */
   language: string
   /** Currency shown next to amounts, e.g. RSD, EUR, $ */

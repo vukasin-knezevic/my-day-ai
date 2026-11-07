@@ -36,7 +36,7 @@ export const ExamImportSchema = z.object({
   assessments: z.array(
     z.object({
       subject: z.string().min(1),
-      type: z.enum(['kolokvijum', 'ispit', 'domaci', 'lab']),
+      type: z.string().min(1),
       title: z.string().min(1),
       date,
       time: time.optional(),

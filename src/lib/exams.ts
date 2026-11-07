@@ -1,6 +1,7 @@
 import type { Assessment, Subject } from '../types'
 import { addDaysStr, daysUntil, monthOf, weekStartStr } from './dates'
 import { t } from '../i18n'
+import { isExamType } from './kinds'
 
 export type Urgency = 'past' | 'red' | 'orange' | 'yellow' | 'green'
 
@@ -32,7 +33,7 @@ export function countdownLabel(date: string, today: string): string {
 /** Exams that need registration (kolokvijum / ispit) of a month with their status - shown as "<month>: registrations". */
 export function monthRegistrations(assessments: Assessment[], month: string) {
   return assessments
-    .filter((a) => (a.type === 'kolokvijum' || a.type === 'ispit') && monthOf(a.date) === month)
+    .filter((a) => isExamType(a.type) && monthOf(a.date) === month)
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 

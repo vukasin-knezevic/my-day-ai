@@ -100,6 +100,12 @@ export function t(key: BaseKey, params?: Params): string {
   return fill(text, params)
 }
 
+/** A message in a specific language (used when old data is migrated: names stay in the user's language). */
+export function messageIn(code: string, key: MessageKey): string {
+  const msgs = (byCode(code) ?? current).messages as Record<string, string>
+  return msgs[key] ?? key
+}
+
 /** Hook: re-renders the component when the language changes. */
 export function useT() {
   const lang = useSyncExternalStore(subscribe, getLanguage, getLanguage)

@@ -87,3 +87,27 @@ test('an old negative reward balance is repaired on load', () => {
   const d = normalizeData({ progress: { rewardEarnedMin: 30, rewardSpentMin: 930 } } as never)
   expect(d.progress.rewardSpentMin).toBe(30)
 })
+
+test('old "domaci" and "lab" become kinds the user named, in the language of the data', () => {
+  const asm = (type: string) =>
+    ({
+      id: type,
+      subjectId: 's',
+      type,
+      title: 'T',
+      date: '2026-11-20',
+      registration: 'ne-treba',
+      maxPoints: 10,
+      points: null,
+      difficulty: 3,
+      studyHours: 2,
+    }) as never
+  const d = normalizeData({
+    assessments: [asm('domaci'), asm('lab'), asm('kolokvijum')],
+    settings: { language: 'en' },
+  } as never)
+  expect(d.assessments.map((a) => a.type)).toEqual(['Homework', 'Lab', 'kolokvijum'])
+  expect(d.settings.customAssessmentKinds).toEqual(['Homework', 'Lab'])
+  // running it again changes nothing
+  expect(normalizeData(d).assessments.map((a) => a.type)).toEqual(['Homework', 'Lab', 'kolokvijum'])
+})

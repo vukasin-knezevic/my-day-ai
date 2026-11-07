@@ -51,7 +51,7 @@ export function makeDemoData(today: string): Partial<AppData> {
     {
       id: uid(),
       subjectId: s2,
-      type: 'domaci',
+      type: t('assess.domaci'),
       title: t('demo.homework'),
       date: addDaysStr(today, 9),
       registration: 'ne-treba',

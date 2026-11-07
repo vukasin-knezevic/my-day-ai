@@ -2,6 +2,7 @@ import type { Store } from '../../store'
 import type { Assessment } from '../../types'
 import { t } from '../../i18n'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
+import { isExamType } from '../kinds'
 
 type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'>
 
@@ -43,7 +44,7 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
           x.title.toLowerCase() === a.title.toLowerCase(),
       )
       if (duplicate) continue
-      const exam = a.type === 'kolokvijum' || a.type === 'ispit'
+      const exam = isExamType(a.type)
       const item: Omit<Assessment, 'id'> = {
         subjectId: sub.id,
         type: a.type,

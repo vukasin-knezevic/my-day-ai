@@ -84,10 +84,19 @@ describe('parseAiResponse (shared by API and manual mode)', () => {
       parseAiResponse(
         'uvoz',
         fence({
-          assessments: [{ subject: 'Mata', type: 'test', title: 'K1', date: '2026-11-20' }],
+          assessments: [{ subject: 'Mata', type: '', title: 'K1', date: '2026-11-20' }],
         }),
       ).ok,
     ).toBe(false)
+    // a kind the student named (homework, lab...) is fine
+    expect(
+      parseAiResponse(
+        'uvoz',
+        fence({
+          assessments: [{ subject: 'Mata', type: 'Seminarski', title: 'S1', date: '2026-11-20' }],
+        }),
+      ).ok,
+    ).toBe(true)
     expect(
       parseAiResponse(
         'trening',

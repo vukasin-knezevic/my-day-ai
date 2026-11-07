@@ -1,3 +1,4 @@
+import { addKind, assessmentKinds, isExamType, slotKinds } from '../lib/kinds'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
@@ -33,7 +34,6 @@ import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
 type Tab = 'raspored' | 'ispiti' | 'poeni'
-const ASSESSMENT_TYPES: AssessmentType[] = ['kolokvijum', 'ispit', 'domaci', 'lab']
 const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 
 export default function Study() {
@@ -234,7 +234,18 @@ function SubjectCard({
 }) {
   const { t } = useT()
   const update = useStore((s) => s.update)
-  const [kind, setKind] = useState<'predavanje' | 'vezbe'>('predavanje')
+  const settings = useStore((s) => s.settings)
+  const setSettings = useStore((s) => s.setSettings)
+  const [kind, setKind] = useState('predavanje')
+  const [newSlotKind, setNewSlotKind] = useState('')
+  const kinds = slotKinds(settings, subject.slots)
+  function addSlotKind() {
+    const r = addKind(settings.customSlotKinds, newSlotKind)
+    if (!r.name) return
+    setSettings({ customSlotKinds: r.list })
+    setKind(r.name)
+    setNewSlotKind('')
+  }
   const [day, setDay] = useState<Weekday>(1)
   const [start, setStart] = useState('10:00')
   const [end, setEnd] = useState('12:00')
@@ -357,14 +368,37 @@ function SubjectCard({
           {slotMsg}
         </p>
       )}
+      <div className="mb-2 flex items-end gap-2">
+        <div className="flex-1">
+          <Field label={t('study.newSlotKind')} optional>
+            <Input
+              value={newSlotKind}
+              placeholder={t('study.newSlotKindPlaceholder')}
+              onChange={(e) => setNewSlotKind(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addSlotKind()
+                }
+              }}
+            />
+          </Field>
+        </div>
+        <Button variant="soft" onClick={addSlotKind}>
+          {t('study.addKind')}
+        </Button>
+      </div>
       <form onSubmit={addSlot} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <Select
           aria-label={t('study.kindAria')}
           value={kind}
-          onChange={(e) => setKind(e.target.value as typeof kind)}
+          onChange={(e) => setKind(e.target.value)}
         >
-          <option value="predavanje">{slotKindLabel('predavanje')}</option>
-          <option value="vezbe">{slotKindLabel('vezbe')}</option>
+          {kinds.map((k) => (
+            <option key={k} value={k}>
+              {slotKindLabel(k)}
+            </option>
+          ))}
         </Select>
         <Select
           aria-label={t('study.dayAria')}
@@ -400,17 +434,29 @@ function SubjectCard({
 /* ---------------- Exams ---------------- */
 function Assessments() {
   const { t } = useT()
-  const { subjects, assessments, add, update, remove, award, revoke } = useStore(
-    useShallow((s) => ({
-      subjects: s.subjects,
-      assessments: s.assessments,
-      award: s.award,
-      revoke: s.revoke,
-      add: s.add,
-      update: s.update,
-      remove: s.remove,
-    })),
-  )
+  const { subjects, assessments, add, update, remove, award, revoke, settings, setSettings } =
+    useStore(
+      useShallow((s) => ({
+        settings: s.settings,
+        setSettings: s.setSettings,
+        subjects: s.subjects,
+        assessments: s.assessments,
+        award: s.award,
+        revoke: s.revoke,
+        add: s.add,
+        update: s.update,
+        remove: s.remove,
+      })),
+    )
+  const [newKind, setNewKind] = useState('')
+  const kinds = assessmentKinds(settings, assessments)
+  function addAssessmentKind() {
+    const r = addKind(settings.customAssessmentKinds, newKind)
+    if (!r.name) return
+    setSettings({ customAssessmentKinds: r.list })
+    setF((x) => ({ ...x, type: r.name }))
+    setNewKind('')
+  }
   const [titleError, setTitleError] = useState('')
   const today = todayStr()
   const month = monthOf(today)
@@ -436,7 +482,7 @@ function Assessments() {
       return
     }
     setTitleError('')
-    const needsReg = f.type === 'kolokvijum' || f.type === 'ispit'
+    const needsReg = isExamType(f.type)
     add('assessments', {
       subjectId,
       type: f.type,
@@ -483,7 +529,7 @@ function Assessments() {
 
       {sortAssessments(assessments, today).map((a) => {
         const u = urgency(a.date, today)
-        const exam = a.type === 'kolokvijum' || a.type === 'ispit'
+        const exam = isExamType(a.type)
         return (
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">
@@ -583,13 +629,34 @@ function Assessments() {
                   value={f.type}
                   onChange={(e) => setF({ ...f, type: e.target.value as AssessmentType })}
                 >
-                  {ASSESSMENT_TYPES.map((x) => (
+                  {kinds.map((x) => (
                     <option key={x} value={x}>
                       {assessmentLabel(x)}
                     </option>
                   ))}
                 </Select>
               </Field>
+              <div className="col-span-2 flex items-end gap-2">
+                <div className="flex-1">
+                  <Field label={t('study.newKind')} optional>
+                    <Input
+                      value={newKind}
+                      placeholder={t('study.newKindPlaceholder')}
+                      onChange={(e) => setNewKind(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          addAssessmentKind()
+                        }
+                      }}
+                    />
+                  </Field>
+                </div>
+                <Button variant="soft" onClick={addAssessmentKind}>
+                  {t('study.addKind')}
+                </Button>
+              </div>
               <div className="col-span-2">
                 <Field label={t('study.f.title')} required error={titleError}>
                   <Input
