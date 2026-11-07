@@ -133,6 +133,15 @@ export const useStore = create<Store>()(
             )
           }
           // assessments of removed demo subjects are demo too, so nothing is left dangling
+          // the XP / reward minutes the demo items paid out go with them
+          const gone = COLLECTIONS.flatMap((k) =>
+            (s[k] as { id: string; demo?: boolean }[])
+              .filter((x) => x.demo)
+              .map((x) => REWARD_IDS[k]?.(x.id))
+              .filter((m) => m !== undefined),
+          )
+          const progress = revokeWhere(s.progress, (id) => gone.some((m) => m(id)))
+          if (progress !== s.progress) next.progress = progress
           return next
         }),
       hasDemo: () =>

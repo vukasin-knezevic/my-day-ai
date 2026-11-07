@@ -50,6 +50,25 @@ describe('store', () => {
     useStore.getState().revoke('habit-h1-', { prefix: true })
     expect(useStore.getState().progress.xp).toBe(0)
   })
+  it('clearing the demo also takes back the XP and reward minutes of demo items', () => {
+    const s = useStore.getState()
+    s.loadDemo()
+    const demoWorkout = useStore.getState().workouts.find((w) => w.demo)!
+    const own = s.add('workouts', {
+      date: '2026-11-07',
+      type: 'Moj',
+      durationMin: 30,
+      exercises: [],
+      feeling: 3,
+    })
+    const ev = { date: '2026-11-07', reason: 'r', category: 'workout' as const, xp: 30 }
+    useStore.getState().award({ ...ev, id: `workout-${demoWorkout.id}` })
+    useStore.getState().award({ ...ev, id: `workout-${own}` })
+    expect(useStore.getState().progress.xp).toBe(60)
+    useStore.getState().clearDemo()
+    expect(useStore.getState().progress.xp).toBe(30)
+    expect(useStore.getState().progress.awarded).toEqual([`workout-${own}`])
+  })
   it('selectData has no functions', () => {
     const d = selectData(useStore.getState())
     expect(Object.values(d).some((v) => typeof v === 'function')).toBe(false)
