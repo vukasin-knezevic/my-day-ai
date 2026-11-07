@@ -19,7 +19,7 @@
 
 Počeo sam da je pravim kao student, za svoj dan: da faks, kolokvijumi, trening i san ne budu razbacani po kalendaru, porukama i glavi. Posle sam je pretvorio u opštu aplikaciju koju može da koristi **svaki student**: ti sam podešavaš ritam dana, ciljeve, nagradu i jezik.
 
-**My Day AI** je planer dana za studente: faks, kolokvijumi, trening, ishrana, san, novac i navike na jednom mestu. Radi na telefonu i laptopu, instalira se kao aplikacija (PWA) i radi offline (osim AI dela). Dostupna je na srpskom (latinica i ćirilica) i engleskom.
+**My Day AI** je planer dana za studente: faks, kolokvijumi, trening, ishrana, san, novac i navike na jednom mestu. Radi na telefonu i laptopu, instalira se kao aplikacija (PWA) i radi offline (osim AI dela). Dostupna je na srpskom (latinica i ćirilica), engleskom, francuskom, španskom, nemačkom i ruskom.
 
 ### Verzije
 Do zvanične objave sve verzije su **0.x**: **0.1** (prva cela aplikacija), **0.2** (opšta verzija, noćne popravke i pregled koda), **0.3** (popravke posle prvog stvarnog korišćenja na telefonu, nova podešavanja, iPhone). Verzija **1.0** je rezervisana za prvu zvaničnu objavu (kolege + Google Play).
@@ -52,7 +52,7 @@ Student ima predavanja, kolokvijume sa rokovima za prijavu, trening, zabavu i sa
 Sve slike su u [`docs/screenshots/`](docs/screenshots/): telefon i laptop, svetla i tamna tema, srpski i engleski (i ćirilica).
 
 ### Jezici
-Aplikacija je prevedena na **srpski (latinica)**, **srpski (ćirilica)** i **engleski**. Jezik biraš u prvom koraku podešavanja pri prvom pokretanju, a kasnije u **Podešavanja → Izgled → Jezik**. Podrazumevano se uzima jezik pregledača. Datumi, nazivi dana i meseci i format brojeva prate izabrani jezik, a AI prompt i odgovori takođe. Brzi unos razume srpski i engleski.
+Aplikacija je prevedena na **srpski (latinica)**, **srpski (ćirilica)**, **engleski**, **francuski**, **španski**, **nemački** i **ruski**. Prevodi na engleski, francuski, španski, nemački i ruski nisu prošli izvornog govornika. Jezik biraš u prvom koraku podešavanja pri prvom pokretanju, a kasnije u **Podešavanja → Izgled → Jezik**. Podrazumevano se uzima jezik pregledača. Datumi, nazivi dana i meseci i format brojeva prate izabrani jezik, a AI prompt i odgovori takođe. Brzi unos razume srpski i engleski.
 
 ### Kako dodati jezik
 Dodavanje jezika je **samo jedan novi fajl**, bez menjanja koda:
@@ -141,7 +141,7 @@ MIT, vidi [LICENSE](LICENSE).
 
 I started building it as a student, for my own day: so that classes, exams, workouts and sleep would stop being scattered across calendars, chats and my head. Then I turned it into a general app that **any student** can use: you set your own daily rhythm, goals, reward and language.
 
-**My Day AI** is a day planner for students: classes, exams, workouts, nutrition, sleep, money and habits in one place. It is a mobile-first PWA that installs on a phone or laptop and works offline (except the AI part). It is available in Serbian (Latin and Cyrillic) and English.
+**My Day AI** is a day planner for students: classes, exams, workouts, nutrition, sleep, money and habits in one place. It is a mobile-first PWA that installs on a phone or laptop and works offline (except the AI part). It is available in Serbian (Latin and Cyrillic), English, French, Spanish, German and Russian.
 
 ### Versions
 Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone). **1.0** is reserved for the first official release (colleagues + Google Play).
@@ -167,7 +167,7 @@ A student juggles lectures, exams with registration deadlines, workouts, fun and
 </p>
 
 ### Languages
-Serbian (Latin), Serbian (Cyrillic) and English. Pick the language in the first onboarding step and change it any time under **Settings → Appearance → Language**. By default the browser language is used. Dates, weekday and month names and number formats follow the language, and so do the AI prompts and answers. The quick entry understands Serbian and English.
+Serbian (Latin), Serbian (Cyrillic), English, French, Spanish, German and Russian (the last four were not reviewed by native speakers). Pick the language in the first onboarding step and change it any time under **Settings → Appearance → Language**. By default the browser language is used. Dates, weekday and month names and number formats follow the language, and so do the AI prompts and answers. The quick entry understands Serbian and English.
 
 ### How to add a language
 One new file, no code changes:

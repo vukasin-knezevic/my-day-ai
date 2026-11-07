@@ -282,11 +282,12 @@ test.describe('jezici', () => {
     await expect(page.getByRole('heading', { name: /Podešavanja/ })).toBeVisible()
   })
 
-  test('21. engleski i ćirilica bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+  test('21. svi jezici bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+    test.setTimeout(150_000) // 6 languages x 8 screens, each with an axe scan
     await onboard(page, { demo: true })
-    for (const lang of ['en', 'sr-Cyrl']) {
+    for (const lang of ['en', 'sr-Cyrl', 'de', 'ru', 'fr', 'es']) {
       await page.goto('/#/podesavanja')
-      await choose(page, /Jezik|Language|Језик/, lang)
+      await choose(page, /Jezik|Language|Језик|Sprache|Язык|Langue|Idioma/, lang)
       for (const route of [
         '/',
         '/faks',

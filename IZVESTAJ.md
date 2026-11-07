@@ -104,6 +104,13 @@ Cilj: kolege sa iPhone-om mogu besplatno da testiraju (Safari → Deli → „Do
    - **Proverio sam:** gore navedeno u WebKit-u; unit testovi za prepoznavanje iPhone-a/iPad-a.
    - **Mora na pravom iPhone-u:** pravo „Dodaj na početni ekran" i izgled ikonice; da li se prikazuje početni ekran (iOS ga ponekad preskoči ako veličina ne odgovara tačno); status traka i notch/donja traka (WebKit u Playwright-u nema njih); notifikacije posle instalacije (dozvola, stvarno prikazivanje); Web Share sa kalendarom; ponašanje birača datuma i vremena sa pravim prstom; automatsko ažuriranje (service worker se ponaša drugačije na iOS-u).
 
+### Novi jezici (stavka 21): francuski, španski, nemački, ruski
+`src/i18n/locales/fr.ts`, `es.ts`, `de.ts`, `ru.ts` — isti sistem kao ostali jezici, bez izmena koda: jezik se sam pojavi u izboru, a datumi, nazivi dana i meseci prate izabrani jezik. TypeScript (`fromEnglish`) traži prevod svakog teksta, a testovi proveravaju da nijedan ključ ne fali, da su `{parametri}` isti i da prevod nije prekopirani engleski. Ruski ima tri oblika množine. Provereno e2e testom (Chromium, telefon 390 px): nema horizontalnog skrola ni axe grešaka na svih 8 ekrana, u svih 6 jezika.
+- **Iskreno:** prevodi su pisani mašinski (kao engleski) i nije ih pregledao izvorni govornik. Uputstva za AI (`prompt.*`) i JSON šeme (`schema.*`) ostaju na engleskom namerno (model ih razume u svakom jeziku, a JSON ključevi ne smeju da se menjaju); pravilo „odgovori na jeziku …" je prevedeno.
+- Brzi unos razume samo srpski i engleski, pa su primeri u polju (`workout 18-19:30 · coffee 200`) i u ovim jezicima na engleskom.
+- Vokativ i rod važe samo za srpski; u ostalim jezicima se ime i rod ne menjaju (polja se ne prikazuju).
+- Zbog redosleda rada, ovi jezici su urađeni posle faza E i F, da bi odmah imali sve ključeve.
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.

@@ -247,3 +247,59 @@ describe('gender (feminine forms)', () => {
         expect(Object.keys(lang.messages)).toContain(k)
   })
 })
+
+describe('French, Spanish, German and Russian', () => {
+  const NEW = ['fr', 'es', 'de', 'ru']
+  const en = LANGUAGES.find((l) => l.code === 'en')!
+
+  it('are there and are picked from the phone language', () => {
+    expect(LANGUAGES.map((l) => l.code)).toEqual(expect.arrayContaining(NEW))
+    expect(detectLanguage('fr-FR')).toBe('fr')
+    expect(detectLanguage('es-MX')).toBe('es')
+    expect(detectLanguage('de-AT')).toBe('de')
+    expect(detectLanguage('ru-RU')).toBe('ru')
+  })
+
+  it('are really translated (not English copied): only prompts, schemas and a few names stay', () => {
+    for (const code of NEW) {
+      const lang = LANGUAGES.find((l) => l.code === code)!
+      const keys = Object.keys(lang.messages).filter((k) => !/^(prompt|schema)\./.test(k))
+      const same = keys.filter(
+        (k) =>
+          (lang.messages as Record<string, string>)[k] ===
+          (en.messages as Record<string, string>)[k],
+      )
+      // identical texts are fine when they are only placeholders and symbols, or the quick-entry
+      // example (the parser understands English and Serbian only, so the example stays English)
+      const words = (k: string) =>
+        (en.messages as Record<string, string>)[k].replace(/\{\w+\}/g, '').replace(/[^\p{L}]/gu, '')
+      // a few real cognates remain (Transport, Description, Suggestion...), a copied file would have hundreds
+      const copied = same.filter((k) => k !== 'today.quickPlaceholder' && words(k).length > 8)
+      expect(copied.length, `${code}: ${copied.join(', ')}`).toBeLessThan(15)
+    }
+  })
+
+  it('format dates, weekdays and durations in each language', () => {
+    for (const code of NEW) {
+      setLanguage(code)
+      expect(formatLong('2026-11-07').length).toBeGreaterThan(5)
+      expect(formatShort('2026-11-07')).toMatch(/\d/)
+      expect(weekdayName(1).length).toBeGreaterThan(2)
+      expect(monthName(11).length).toBeGreaterThan(2)
+    }
+  })
+
+  it('Russian has the three plural forms', () => {
+    setLanguage('ru')
+    expect(t('when.inDays', { n: 1 })).toBe('через 1 день')
+    expect(t('when.inDays', { n: 3 })).toBe('через 3 дня')
+    expect(t('when.inDays', { n: 5 })).toBe('через 5 дней')
+  })
+
+  it('the AI is told to answer in the language', () => {
+    expect(LANGUAGES.find((l) => l.code === 'de')!.messages['prompt.langRule']).toContain('Deutsch')
+    expect(LANGUAGES.find((l) => l.code === 'fr')!.messages['prompt.chat.instruction']).toContain(
+      'français',
+    )
+  })
+})
