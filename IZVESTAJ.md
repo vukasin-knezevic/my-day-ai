@@ -80,6 +80,19 @@ Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zel
 18. **Idem / Ne idem / Ponekad** stoji odmah pored svakog termina u kartici predmeta; nema kartice na vrhu. Novi termin počinje kao „Idem" (stari termini bez odgovora ostaju bez izbora dok se ne klikne). Nedeljno pitanje za „Ponekad" je ostalo.
 19. **Planer uvek odgovara** („Sve je već isplanirano ✅" ili „Učenje za Matematika 1 počinje od pon 16. 11. (kolokvijum 23. 11.)") i ima izbor „Ova nedelja / Sledeća nedelja" (vikendom je podrazumevana sledeća). Stari predlozi se menjaju samo za planirane dane.
 
+### Faza D — Jezik i obraćanje (urađeno, osim stavke 21 koja je na kraju)
+20. Opcija jezika je „Automatski (jezik telefona)" / „Automatic (phone language)".
+22. **Vokativ** (`src/lib/vocative.ts`, latinica i ćirilica, sa testovima): Vukašin→Vukašine, Petar→Petre, Milica→Milice, Marko→Marko, Ana→Ana… Uvod pita **„Kako da ti se obraćam?"** i unapred popuni predlog; dok korisnik ne ispravi ručno, predlog prati ime. Ekran Danas: „Vukašine, danas: …".
+23. **Rod** (srpski): izbor u uvodu i podešavanjima; tekstovi koji zavise od roda (Legao/Legla, Ustao/Ustala, Iskoristio/Iskoristila, „Da li si prijavio/prijavila?", „Spavala si samo…") imaju ženske oblike u `feminine` delu `sr-Latn.ts` (ćirilica se izvodi sama). Ostali jezici ne menjaju ime ni rod.
+24. Demo primeri su opšti: „Predmet 1 (primer)", „Predmet 2 (primer)", „Kolokvijum 1 · Predmet 1 (primer)".
+21. **Novi jezici (francuski, španski, nemački, ruski):** vidi dole, sekcija „Novi jezici".
+
+### Faza E — Update, kalendar, XP istorija, README (urađeno)
+25. **Automatsko ažuriranje:** `registerType: 'prompt'`; nova verzija se preuzima u pozadini, na vrhu stoji **„Novi update"** sa trakom 0–100% i na kraju dugme **„Restartuj aplikaciju"**. Iskreno: pregledač ne javlja stvarne bajtove preuzimanja, pa traka do 90% *procenjuje* tok, a 100% pokazuje tek kad je nova verzija stvarno spremna. Podešavanje (uvod i podešavanja): uključeno = kad korisnik izađe iz aplikacije, spremna verzija se sama uključuje; isključeno = samo kad korisnik pritisne dugme. Ne može da se proveri na pravom uređaju iz ovog okruženja: probati na telefonu posle sledećeg objavljivanja.
+26. **„Dodaj u kalendar"** (reč „.ics" se ne prikazuje); diskretna traka napretka u aplikaciji; fajl ide kroz Web Share (`text/calendar`), a bez podrške običan download. Zatvaranje share panela nije greška i ništa ne preuzima.
+27. **Istorija XP-a:** klik na broj XP-a otvara listu (šta, koliko, datum i sat); događaji sada pamte vreme, stari prikazuju samo datum.
+28. **README:** korake za Anthropic API ključ (console.anthropic.com → API Keys) i šema verzija (0.x do zvanične 1.0). `package.json` je 0.3.0, verzija se vidi na dnu podešavanja.
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.
