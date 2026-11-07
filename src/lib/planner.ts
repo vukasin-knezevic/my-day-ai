@@ -3,6 +3,7 @@
 import type { Activity, Assessment, Category, Settings, Subject } from '../types'
 import { addDaysStr, daysUntil, formatDuration, minToTime, timeToMin, weekdayOf } from './dates'
 import { isExamType } from './kinds'
+import { studyHoursOf } from './exams'
 import { freeSlots, occurrencesOn } from './schedule'
 import { t as tr } from '../i18n'
 import { rewardNameOf } from './labels'
@@ -101,9 +102,7 @@ export function planWeek(input: PlanInput): PlanResult {
   const windowEnd = Math.min(bed, 1439) // activities cannot cross midnight in this model
   const window: Iv = { s: wake, e: windowEnd }
 
-  const exams = assessments.filter(
-    (a) => isExamType(a.type) && a.date >= from,
-  )
+  const exams = assessments.filter((a) => isExamType(a.type) && a.date >= from)
   const examDays = new Set(exams.map((e) => e.date))
   const eveDays = new Set(exams.map((e) => addDaysStr(e.date, -1)))
 
@@ -203,7 +202,15 @@ export function planWeek(input: PlanInput): PlanResult {
     const sum = weights.reduce((a, b) => a + b, 0)
     prepDays.forEach((d, i) => {
       if (!state.has(d)) return
-      const m = round15((ex.studyHours * 60 * weights[i]) / sum)
+      const m = round15(
+        (studyHoursOf(
+          ex,
+          subjects.find((s) => s.id === ex.subjectId),
+        ) *
+          60 *
+          weights[i]) /
+          sum,
+      )
       if (m <= 0) return
       demand.set(d, [...(demand.get(d) ?? []), { exam: ex, minutes: m }])
     })

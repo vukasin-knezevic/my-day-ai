@@ -471,6 +471,8 @@ const messages: Record<MessageKey, string> = {
   'study.addKind': 'Add kind',
   'study.newSlotKind': 'New kind of class',
   'study.newSlotKindPlaceholder': 'e.g. Lab, Seminar',
+  'study.hoursLabel': 'Hours of study (the planner assumes {d})',
+  'study.hoursAuto': 'automatic',
   'study.addSlot': '+ Class',
   'study.monthRegs': '{month}: registrations',
   'study.noMonthExams': 'No midterms or exams this month.',

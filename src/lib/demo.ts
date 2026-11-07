@@ -45,7 +45,6 @@ export function makeDemoData(today: string): Partial<AppData> {
       maxPoints: 30,
       points: null,
       difficulty: 4,
-      studyHours: 10,
       demo: true,
     },
     {
@@ -58,7 +57,6 @@ export function makeDemoData(today: string): Partial<AppData> {
       maxPoints: 10,
       points: null,
       difficulty: 2,
-      studyHours: 3,
       demo: true,
     },
   ]

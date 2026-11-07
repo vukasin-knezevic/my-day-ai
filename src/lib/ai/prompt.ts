@@ -1,3 +1,4 @@
+import { studyHoursOf } from '../exams'
 import type { AppData } from '../../types'
 import { t } from '../../i18n'
 import { categoryLabel, rewardNameOf } from '../labels'
@@ -100,7 +101,10 @@ export function buildContext(data: AppData, today: string, nowMin = nowMinutes()
         subject: sub,
         type: a.type,
         d: a.difficulty,
-        h: a.studyHours,
+        h: studyHoursOf(
+          a,
+          data.subjects.find((s) => s.id === a.subjectId),
+        ),
         reg: a.registration,
       }) +
         (a.registrationDeadline ? t('prompt.ctx.deadline', { date: a.registrationDeadline }) : ''),

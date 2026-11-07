@@ -70,26 +70,28 @@ export function Field({
       ? 'after:ml-1 after:font-normal after:text-slate-500 after:content-[var(--suffix)]'
       : ''
   return (
-    <label className="block text-sm">
-      <span
-        className={`mb-1 block font-medium text-slate-700 dark:text-slate-300 ${mark}`}
-        style={
-          optional
-            ? ({ '--suffix': JSON.stringify(`(${t('common.optional')})`) } as React.CSSProperties)
-            : undefined
-        }
-      >
-        {label}
-      </span>
-      <FieldContext.Provider value={{ required: !!required, invalid: !!error }}>
-        {children}
-      </FieldContext.Provider>
+    <div className="block text-sm">
+      <label className="block">
+        <span
+          className={`mb-1 block font-medium text-slate-700 dark:text-slate-300 ${mark}`}
+          style={
+            optional
+              ? ({ '--suffix': JSON.stringify(`(${t('common.optional')})`) } as React.CSSProperties)
+              : undefined
+          }
+        >
+          {label}
+        </span>
+        <FieldContext.Provider value={{ required: !!required, invalid: !!error }}>
+          {children}
+        </FieldContext.Provider>
+      </label>
       {error && (
         <span role="alert" className="mt-1 block text-xs text-red-700 dark:text-red-400">
           {error}
         </span>
       )}
-    </label>
+    </div>
   )
 }
 

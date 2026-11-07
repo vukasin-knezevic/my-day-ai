@@ -56,7 +56,6 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
         maxPoints: 30,
         points: null,
         difficulty: 3,
-        studyHours: 6,
       }
       st.add('assessments', item)
       n++

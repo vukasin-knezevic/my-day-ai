@@ -96,7 +96,8 @@ export interface Assessment {
   maxPoints: number
   points: number | null
   difficulty: 1 | 2 | 3 | 4 | 5
-  studyHours: number
+  /** Hours of study set by hand; empty = the planner estimates them (see lib/exams.ts) */
+  studyHours?: number
   done?: boolean // for homework / lab
   demo?: boolean
 }

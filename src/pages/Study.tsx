@@ -7,6 +7,7 @@ import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
 import {
+  formatHours,
   formatShort,
   formatTimeOfDay,
   monthName,
@@ -27,6 +28,7 @@ import {
 } from '../lib/exams'
 import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
+import { autoTitle, estimateStudyHours } from '../lib/exams'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
@@ -471,22 +473,23 @@ function Assessments() {
     regDeadline: '',
     maxPoints: 30,
     difficulty: 3,
-    studyHours: 6,
   })
 
   function submit(e?: React.FormEvent) {
     e?.preventDefault()
-    const subjectId = f.subjectId || subjects[0]?.id
-    if (!subjectId || !f.title.trim()) {
+    const subject = subjects.find((s) => s.id === f.subjectId) ?? subjects[0]
+    const needsReg = isExamType(f.type)
+    // exam and midterm get their name from the app; other kinds are named by the student
+    if (!subject || (!needsReg && !f.title.trim())) {
       setTitleError(t('common.required'))
       return
     }
     setTitleError('')
-    const needsReg = isExamType(f.type)
+    const subjectId = subject.id
     add('assessments', {
       subjectId,
       type: f.type,
-      title: f.title.trim(),
+      title: needsReg ? autoTitle(f.type, subject, assessments) : f.title.trim(),
       date: f.date,
       time: f.time || undefined,
       registrationDeadline: needsReg && f.regDeadline ? f.regDeadline : undefined,
@@ -494,7 +497,6 @@ function Assessments() {
       maxPoints: f.maxPoints,
       points: null,
       difficulty: f.difficulty as Assessment['difficulty'],
-      studyHours: f.studyHours,
     })
     setF({ ...f, title: '' })
   }
@@ -582,6 +584,28 @@ function Assessments() {
                 {t('study.submitted')}
               </label>
             )}
+            {exam && (
+              <div className="mt-2 text-sm">
+                <Field
+                  label={t('study.hoursLabel', {
+                    d: formatHours(
+                      estimateStudyHours(a.type, a.difficulty, subj(a.subjectId)?.espb ?? 6),
+                    ),
+                  })}
+                  optional
+                >
+                  <NumberInput
+                    min={0}
+                    max={200}
+                    step={0.5}
+                    value={a.studyHours ?? null}
+                    placeholder={t('study.hoursAuto')}
+                    onChange={(v) => update('assessments', a.id, { studyHours: v })}
+                    onEmpty={() => update('assessments', a.id, { studyHours: undefined })}
+                  />
+                </Field>
+              </div>
+            )}
             <div className="mt-2 flex items-center gap-2 text-sm">
               <Field label={t('study.pointsLabel', { max: a.maxPoints })}>
                 <NumberInput
@@ -657,17 +681,19 @@ function Assessments() {
                   {t('study.addKind')}
                 </Button>
               </div>
-              <div className="col-span-2">
-                <Field label={t('study.f.title')} required error={titleError}>
-                  <Input
-                    value={f.title}
-                    onChange={(e) => {
-                      setF({ ...f, title: e.target.value })
-                      setTitleError('')
-                    }}
-                  />
-                </Field>
-              </div>
+              {!isExamType(f.type) && (
+                <div className="col-span-2">
+                  <Field label={t('study.f.title')} required error={titleError}>
+                    <Input
+                      value={f.title}
+                      onChange={(e) => {
+                        setF({ ...f, title: e.target.value })
+                        setTitleError('')
+                      }}
+                    />
+                  </Field>
+                </div>
+              )}
               <Field label={t('study.f.date')} required>
                 <Input
                   type="date"
@@ -703,15 +729,6 @@ function Assessments() {
                   max={5}
                   value={f.difficulty}
                   onChange={(v) => setF({ ...f, difficulty: v })}
-                />
-              </Field>
-              <Field label={t('study.f.hours')}>
-                <NumberInput
-                  min={0}
-                  max={200}
-                  step={0.5}
-                  value={f.studyHours}
-                  onChange={(v) => setF({ ...f, studyHours: v })}
                 />
               </Field>
               <Button type="submit" className="col-span-2">

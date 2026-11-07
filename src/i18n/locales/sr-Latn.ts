@@ -468,6 +468,8 @@ const messages = {
   'study.addKind': 'Dodaj vrstu',
   'study.newSlotKind': 'Nova vrsta termina',
   'study.newSlotKindPlaceholder': 'npr. Lab, Seminar',
+  'study.hoursLabel': 'Sati učenja (planer računa {d})',
+  'study.hoursAuto': 'automatski',
   'study.addSlot': '+ Termin',
   'study.monthRegs': '{month}: prijave',
   'study.noMonthExams': 'Nema kolokvijuma ni ispita ovog meseca.',
