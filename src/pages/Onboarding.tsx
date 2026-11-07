@@ -71,7 +71,7 @@ export default function Onboarding() {
             </>
           )}
           {step === 1 && (
-            <Field label={t('ob.name.label')}>
+            <Field label={t('ob.name.label')} optional>
               <Input
                 value={draft.name}
                 onChange={(e) => set('name', e.target.value)}
@@ -137,7 +137,7 @@ export default function Onboarding() {
               <p className="text-sm">{t('ob.reward.intro')}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <Field label={t('set.reward.name')}>
+                  <Field label={t('set.reward.name')} optional>
                     <Input
                       value={draft.rewardName}
                       onChange={(e) => set('rewardName', e.target.value)}
@@ -223,7 +223,7 @@ export default function Onboarding() {
               </a>
               {draft.aiMode === 'api' && (
                 <>
-                  <Field label={t('ob.ai.keyLabel')}>
+                  <Field label={t('ob.ai.keyLabel')} optional>
                     <Input
                       type="password"
                       autoComplete="off"

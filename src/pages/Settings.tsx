@@ -69,7 +69,7 @@ export default function Settings() {
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.rhythm')}</h2>
-          <Field label={t('set.name')}>
+          <Field label={t('set.name')} optional>
             <Input value={settings.name} onChange={(e) => setSettings({ name: e.target.value })} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -133,7 +133,7 @@ export default function Settings() {
           <p className="text-sm text-slate-600 dark:text-slate-400">{t('set.reward.desc')}</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <Field label={t('set.reward.name')}>
+              <Field label={t('set.reward.name')} optional>
                 <Input
                   value={settings.rewardName}
                   onChange={(e) => setSettings({ rewardName: e.target.value })}
@@ -215,7 +215,7 @@ export default function Settings() {
               <option value="api">{t('set.aiApi')}</option>
             </Select>
           </Field>
-          <Field label={t('set.apiKey')}>
+          <Field label={t('set.apiKey')} optional>
             <Input
               type="password"
               autoComplete="off"

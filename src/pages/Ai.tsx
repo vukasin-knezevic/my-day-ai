@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card, Field, Input, PageTitle } from '../components/ui'
+import { FieldContext, invalidCls } from '../components/fieldContext'
 import { todayStr, monthOf } from '../lib/dates'
 import { buildContext, buildPrompt, kindLabel, systemPrompt } from '../lib/ai/prompt'
 import { useT } from '../i18n'
@@ -102,6 +103,7 @@ export default function Ai() {
     initial && KINDS.includes(initial) ? initial : 'plan-dana',
   )
   const [text, setText] = useState('')
+  const [textError, setTextError] = useState('')
   const [pasted, setPasted] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -132,7 +134,15 @@ export default function Ai() {
     }
   }
 
+  /** The text this kind of request needs is empty: say so instead of doing nothing. */
+  function textMissing() {
+    if (!needsText || text.trim()) return false
+    setTextError(t('common.required'))
+    return true
+  }
+
   async function sendApi() {
+    if (textMissing()) return
     setBusy(true)
     setError('')
     setInfo('')
@@ -179,24 +189,29 @@ export default function Ai() {
 
       <Card className="mb-4 space-y-3">
         {needsText && (
-          <Field label={t(needsText)}>
+          <Field label={t(needsText)} required error={textError}>
             <textarea
-              className="min-h-24 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
+              aria-invalid={!!textError || undefined}
+              className={`min-h-24 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-800 ${textError ? invalidCls : ''}`}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value)
+                setTextError('')
+              }}
             />
           </Field>
         )}
         <div className="flex flex-wrap gap-2">
           {apiReady && (
-            <Button onClick={sendApi} disabled={busy || (!!needsText && !text.trim())}>
+            <Button onClick={sendApi} disabled={busy}>
               {busy ? t('ai.sending') : t('ai.send')}
             </Button>
           )}
           <Button
             variant="soft"
-            onClick={() => copy(manualPrompt())}
-            disabled={!!needsText && !text.trim()}
+            onClick={() => {
+              if (!textMissing()) copy(manualPrompt())
+            }}
           >
             {t('ai.copy')}
           </Button>
@@ -254,6 +269,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
   const store = useStore()
   const today = todayStr()
   const [q, setQ] = useState('')
+  const [qError, setQError] = useState('')
   const [log, setLog] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -261,7 +277,11 @@ function Chat({ apiReady }: { apiReady: boolean }) {
 
   async function send(e: React.FormEvent) {
     e.preventDefault()
-    if (!q.trim()) return
+    if (!q.trim()) {
+      setQError(t('common.required'))
+      return
+    }
+    setQError('')
     const question = q.trim()
     if (!apiReady) {
       const prompt = `${systemPrompt()}\n\n${t('prompt.dataHeader')}\n${buildContext(data, today)}\n\n${t('prompt.chat.question')}: ${question}`
@@ -309,12 +329,24 @@ function Chat({ apiReady }: { apiReady: boolean }) {
         ))}
       </ul>
       <form onSubmit={send} className="flex gap-2">
-        <Input
-          aria-label={t('ai.chat.aria')}
-          placeholder={t('ai.chat.placeholder')}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+        <div className="flex-1">
+          <FieldContext.Provider value={{ required: false, invalid: !!qError }}>
+            <Input
+              aria-label={t('ai.chat.aria')}
+              placeholder={t('ai.chat.placeholder')}
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value)
+                setQError('')
+              }}
+            />
+          </FieldContext.Provider>
+          {qError && (
+            <p role="alert" className="mt-1 text-xs text-red-700 dark:text-red-400">
+              {qError}
+            </p>
+          )}
+        </div>
         <Button type="submit" disabled={busy}>
           {apiReady ? t('ai.chat.send') : t('ai.chat.copyQuestion')}
         </Button>
