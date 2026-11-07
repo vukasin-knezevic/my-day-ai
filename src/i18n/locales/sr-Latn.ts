@@ -470,6 +470,8 @@ const messages = {
   'wo.pickTemplate': '— izaberi šablon —',
   'wo.deleteTemplate': 'Obriši šablon',
   'wo.deleteTemplateAria': 'Obriši izabrani šablon',
+  'wo.renameTemplate': 'Preimenuj šablon u naziv iz polja Vrsta',
+  'wo.tplRenamed': 'Šablon je preimenovan u „{name}“.',
   'wo.f.type': 'Tip',
   'wo.f.duration': 'Trajanje (min)',
   'wo.f.feeling': 'Osećaj (1–5)',

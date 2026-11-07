@@ -473,6 +473,8 @@ const messages: Record<MessageKey, string> = {
   'wo.pickTemplate': '— pick a template —',
   'wo.deleteTemplate': 'Delete template',
   'wo.deleteTemplateAria': 'Delete the selected template',
+  'wo.renameTemplate': 'Rename template to the type above',
+  'wo.tplRenamed': 'Template renamed to "{name}".',
   'wo.f.type': 'Type',
   'wo.f.duration': 'Duration (min)',
   'wo.f.feeling': 'Feeling (1–5)',

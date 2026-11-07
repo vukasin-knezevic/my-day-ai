@@ -72,7 +72,7 @@ const emptyRow = (): Row => ({ name: '', sets: 3, reps: 8, weight: 0 })
 
 function Training() {
   const { t } = useT()
-  const { workouts, templates, settings, add, remove, award } = useStore(
+  const { workouts, templates, settings, add, remove, update, award } = useStore(
     useShallow((s) => ({
       award: s.award,
       workouts: s.workouts,
@@ -80,6 +80,7 @@ function Training() {
       settings: s.settings,
       add: s.add,
       remove: s.remove,
+      update: s.update,
     })),
   )
   const today = todayStr()
@@ -162,6 +163,13 @@ function Training() {
     const id = add('workoutTemplates', { name, type: type.trim() || name, exercises })
     setTplId(id)
     setMsg(t('wo.tplSaved', { name }))
+  }
+  function renameTemplate() {
+    const name = type.trim()
+    const tpl = templates.find((x) => x.id === tplId)
+    if (!tpl || !name) return
+    update('workoutTemplates', tpl.id, { name })
+    setMsg(t('wo.tplRenamed', { name }))
   }
   function loadTemplate(id: string) {
     setTplId(id)
@@ -247,6 +255,9 @@ function Training() {
               }}
             >
               {t('wo.deleteTemplate')}
+            </Button>
+            <Button variant="ghost" disabled={!tplId || !type.trim()} onClick={renameTemplate}>
+              {t('wo.renameTemplate')}
             </Button>
           </div>
         )}
