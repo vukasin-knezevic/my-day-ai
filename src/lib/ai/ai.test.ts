@@ -120,7 +120,7 @@ describe('prompt generation', () => {
   data.settings = { ...data.settings, name: 'Vuk', wakeTime: '09:00', bedTime: '01:00' }
   it('includes my data, schema, tone rules and the ask-questions-first request', () => {
     const { manualText } = buildPrompt('plan-nedelje', data, TODAY, { manual: true })
-    expect(manualText).toContain('Matematika 1 (primer)')
+    expect(manualText).toContain('Predmet 1 (primer)')
     expect(manualText).toContain('"activities"')
     expect(manualText).toContain(systemPrompt().slice(0, 40))
     expect(manualText).toContain(manualQuestions())

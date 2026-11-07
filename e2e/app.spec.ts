@@ -99,7 +99,7 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Kopiraj JSON' }).click()
   await expect(page.getByText('JSON je kopiran')).toBeVisible()
   const json = await page.evaluate(() => navigator.clipboard.readText())
-  expect(json).toContain('Matematika 1 (primer)')
+  expect(json).toContain('Predmet 1 (primer)')
   expect(json).not.toContain('sk-ant')
   // delete everything (confirmation is inside the page), then import back
   await page.getByRole('button', { name: 'Obriši sve podatke' }).click()
@@ -128,7 +128,7 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Da, uvezi' }).click()
   await expect(page.getByText('Podaci su uvezeni')).toBeVisible()
   await page.goto('/#/faks')
-  await expect(page.getByText('Matematika 1 (primer)').first()).toBeVisible()
+  await expect(page.getByText('Predmet 1 (primer)').first()).toBeVisible()
 })
 
 test('11. tamna tema', async ({ page }) => {
