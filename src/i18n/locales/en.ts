@@ -7,6 +7,7 @@ const messages: Record<MessageKey, string> = {
   'date.long': 'EEEE, MMMM d',
   'date.short': 'MMM d',
   'common.loading': 'Loading…',
+  'common.choose': 'Choose',
   'common.close': 'Close',
   'common.back': 'Back',
   'common.next': 'Next',

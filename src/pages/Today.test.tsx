@@ -5,6 +5,7 @@ import Today from './Today'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { todayStr } from '../lib/dates'
+import { pick } from '../test/pick'
 
 beforeEach(() => {
   const d = emptyData()
@@ -46,7 +47,7 @@ test('nova aktivnost iz forme, ponavljanje radnim danima, Enter čuva', async ()
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
   await user.type(screen.getByLabelText('Naziv'), 'Teretana')
-  await user.selectOptions(screen.getByLabelText('Ponavljanje'), 'weekdays')
+  await pick(user, 'Ponavljanje', 'weekdays')
   await user.click(screen.getByLabelText('Naziv'))
   await user.keyboard('{Enter}')
   const a = useStore.getState().activities

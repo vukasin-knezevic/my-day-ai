@@ -4,6 +4,7 @@ import Onboarding from './Onboarding'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { getLanguage } from '../i18n'
+import { pick } from '../test/pick'
 
 beforeEach(() => {
   useStore.setState({ ...emptyData(), hydrated: true })
@@ -66,7 +67,7 @@ test('izbor AI režima i imena nagrade u onboardingu', async () => {
 test('izbor jezika u prvom koraku odmah menja jezik i pamti se', async () => {
   const user = userEvent.setup()
   render(<Onboarding />)
-  await user.selectOptions(screen.getByLabelText('Jezik'), 'en')
+  await pick(user, 'Jezik', 'en')
   expect(getLanguage()).toBe('en')
   expect(screen.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeInTheDocument()
   expect(useStore.getState().settings.language).toBe('en')
@@ -74,6 +75,6 @@ test('izbor jezika u prvom koraku odmah menja jezik i pamti se', async () => {
   expect(screen.getByLabelText('What should I call you?')).toBeInTheDocument()
   // back to Serbian so that the other tests are not affected
   await user.click(screen.getByRole('button', { name: 'Back' }))
-  await user.selectOptions(screen.getByLabelText('Language'), 'sr-Latn')
+  await pick(user, 'Language', 'sr-Latn')
   expect(getLanguage()).toBe('sr-Latn')
 })

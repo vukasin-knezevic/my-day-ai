@@ -7,6 +7,7 @@ const messages = {
   'date.long': 'EEEE, d. MMMM',
   'date.short': 'd. MMM',
   'common.loading': 'Učitavanje…',
+  'common.choose': 'Izaberi',
   'common.close': 'Zatvori',
   'common.back': 'Nazad',
   'common.next': 'Dalje',

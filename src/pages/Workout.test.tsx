@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import Workout from './Workout'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
+import { pick } from '../test/pick'
 
 beforeEach(() => {
   useStore.setState({ ...emptyData(), hydrated: true })
@@ -45,7 +46,7 @@ test('sopstveni šablon treninga: sačuvaj i učitaj', async () => {
   expect(tpl).toHaveLength(1)
   expect(tpl[0]).toMatchObject({ name: 'Push dan' })
   await user.clear(screen.getByLabelText('Vežba 1'))
-  await user.selectOptions(screen.getByLabelText('Moji šabloni'), tpl[0].id)
+  await pick(user, 'Moji šabloni', tpl[0].id)
   expect(screen.getByLabelText('Vežba 1')).toHaveValue('Bench press')
   await user.clear(screen.getByLabelText('Tip'))
   await user.type(screen.getByLabelText('Tip'), 'Pull dan')

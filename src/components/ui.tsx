@@ -1,9 +1,15 @@
-import type {
-  ButtonHTMLAttributes,
-  InputHTMLAttributes,
-  ReactNode,
-  SelectHTMLAttributes,
+import {
+  Children,
+  isValidElement,
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+  type SelectHTMLAttributes,
 } from 'react'
+import Sheet from './Sheet'
+import { useT } from '../i18n'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -46,10 +52,95 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 const inputCls =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-800'
 export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...p} className={`${inputCls} ${p.className ?? ''}`} />
+  // no browser suggestions in the fields unless a field asks for them
+  return <input autoComplete="off" {...p} className={`${inputCls} ${p.className ?? ''}`} />
 }
-export function Select(p: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...p} className={`${inputCls} ${p.className ?? ''}`} />
+
+type OptionProps = { value?: string | number; children?: ReactNode; disabled?: boolean }
+type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> & {
+  value?: string | number
+  onChange?: (e: { target: { value: string } }) => void
+}
+
+/** Text of a React node (for the label of an option). */
+function textOf(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === 'boolean') return ''
+  if (typeof node === 'string' || typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(textOf).join('')
+  if (isValidElement(node)) return textOf((node.props as { children?: ReactNode }).children)
+  return ''
+}
+
+/**
+ * A drop-down list that opens the app's own bottom panel instead of the system menu.
+ * Same use as <select>: `<Select value onChange={(e) => e.target.value}><option value="a">A</option></Select>`.
+ */
+export function Select({
+  value,
+  onChange,
+  children,
+  className = '',
+  disabled,
+  id,
+  ...rest
+}: SelectProps) {
+  const { t } = useT()
+  const [open, setOpen] = useState(false)
+  const options = Children.toArray(children)
+    .filter((c): c is ReactElement<OptionProps> => isValidElement(c) && c.type === 'option')
+    .map((c) => ({
+      value: String(c.props.value ?? textOf(c.props.children)),
+      label: textOf(c.props.children),
+      disabled: c.props.disabled,
+    }))
+  const current = options.find((o) => o.value === String(value ?? ''))
+  const title = rest['aria-label'] ?? t('common.choose')
+  return (
+    <>
+      <button
+        type="button"
+        id={id}
+        disabled={disabled}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={rest['aria-label']}
+        data-value={String(value ?? '')}
+        onClick={() => setOpen(true)}
+        className={`${inputCls} flex items-center justify-between gap-2 text-left disabled:opacity-50 ${className}`}
+      >
+        <span className="truncate">{current?.label ?? ' '}</span>
+        <span aria-hidden className="text-slate-500">
+          ▾
+        </span>
+      </button>
+      <Sheet open={open} onClose={() => setOpen(false)} title={title}>
+        <div role="listbox" aria-label={title} className="space-y-1">
+          {options.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              role="option"
+              aria-selected={o.value === String(value ?? '')}
+              data-value={o.value}
+              disabled={o.disabled}
+              onClick={() => {
+                onChange?.({ target: { value: o.value } })
+                setOpen(false)
+              }}
+              className={`flex min-h-12 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base transition active:scale-[0.99] ${
+                o.value === String(value ?? '')
+                  ? 'bg-blue-100 font-semibold text-blue-900 dark:bg-blue-950 dark:text-blue-200'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              {o.label}
+              {o.value === String(value ?? '') && <span aria-hidden>✓</span>}
+            </button>
+          ))}
+        </div>
+      </Sheet>
+    </>
+  )
 }
 
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: string }) {

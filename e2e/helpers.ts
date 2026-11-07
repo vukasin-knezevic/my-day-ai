@@ -19,3 +19,9 @@ export const isoDate = (offsetDays = 0) => {
   d.setDate(d.getDate() + offsetDays)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
+
+/** Chooses an option in the app's own drop-down (bottom panel). */
+export async function choose(page: Page, label: string | RegExp, value: string) {
+  await page.getByLabel(label).click()
+  await page.locator(`[role=option][data-value="${value}"]`).click()
+}

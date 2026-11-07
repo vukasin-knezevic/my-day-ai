@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { isoDate, onboard } from './helpers'
+import { choose, isoDate, onboard } from './helpers'
 
 test('1. onboarding vodi do ekrana Danas', async ({ page }) => {
   await onboard(page)
@@ -134,9 +134,9 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
 test('11. tamna tema', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/podesavanja')
-  await page.getByLabel('Tema').selectOption('dark')
+  await choose(page, 'Tema', 'dark')
   await expect(page.locator('html')).toHaveClass(/dark/)
-  await page.getByLabel('Tema').selectOption('light')
+  await choose(page, 'Tema', 'light')
   await expect(page.locator('html')).not.toHaveClass(/dark/)
 })
 
@@ -220,7 +220,7 @@ test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
   await onboard(page)
   await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
   await page.getByLabel('Naziv').fill('Šetnja')
-  await page.getByLabel('Ponavljanje').selectOption('daily')
+  await choose(page, 'Ponavljanje', 'daily')
   await page.keyboard.press('Enter')
   await expect(page.getByText('Šetnja').first()).toBeVisible()
   await page.getByRole('button', { name: 'Izmeni Šetnja' }).click()
@@ -234,7 +234,7 @@ test.describe('pristupačnost (axe, WCAG A/AA)', () => {
     test(`15. bez povreda na svim ekranima, ${theme} tema`, async ({ page }) => {
       await onboard(page, { demo: true })
       await page.goto('/#/podesavanja')
-      await page.getByLabel('Tema').selectOption(theme)
+      await choose(page, 'Tema', theme)
       for (const route of [
         '/',
         '/faks',
@@ -262,7 +262,7 @@ test.describe('jezici', () => {
   test('20. engleski u onboardingu i podešavanjima, izbor se pamti', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
-    await page.getByLabel('Jezik').selectOption('en')
+    await choose(page, 'Jezik', 'en')
     await expect(page.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByLabel('What should I call you?').fill('Alex')
@@ -276,9 +276,9 @@ test.describe('jezici', () => {
     await expect(page.getByLabel('Quick entry')).toBeVisible()
     await page.goto('/#/podesavanja')
     await expect(page.getByRole('heading', { name: /Settings/ })).toBeVisible()
-    await page.getByLabel('Language').selectOption('sr-Cyrl')
+    await choose(page, 'Language', 'sr-Cyrl')
     await expect(page.getByRole('heading', { name: /Подешавања/ })).toBeVisible()
-    await page.getByLabel('Језик').selectOption('sr-Latn')
+    await choose(page, 'Језик', 'sr-Latn')
     await expect(page.getByRole('heading', { name: /Podešavanja/ })).toBeVisible()
   })
 
@@ -286,7 +286,7 @@ test.describe('jezici', () => {
     await onboard(page, { demo: true })
     for (const lang of ['en', 'sr-Cyrl']) {
       await page.goto('/#/podesavanja')
-      await page.getByLabel(/Jezik|Language|Језик/).selectOption(lang)
+      await choose(page, /Jezik|Language|Језик/, lang)
       for (const route of [
         '/',
         '/faks',
