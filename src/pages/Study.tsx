@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
-import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import { Badge, Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
 import ConfirmButton from '../components/ConfirmButton'
@@ -30,7 +30,6 @@ import {
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
-import type { BaseKey } from '../i18n'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
@@ -41,29 +40,15 @@ const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 export default function Study() {
   const { t } = useT()
   const [tab, setTab] = useState<Tab>('raspored')
-  const tabs: [Tab, BaseKey][] = [
-    ['raspored', 'study.tab.schedule'],
-    ['ispiti', 'study.tab.exams'],
-    ['poeni', 'study.tab.points'],
+  const tabs: [Tab, string][] = [
+    ['raspored', t('study.tab.schedule')],
+    ['ispiti', t('study.tab.exams')],
+    ['poeni', t('study.tab.points')],
   ]
   return (
     <>
       <PageTitle>📚 {t('nav.study')}</PageTitle>
-      <div role="tablist" className="mb-4 flex gap-2">
-        {tabs.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            aria-selected={tab === k}
-            onClick={() => setTab(k)}
-            className={`min-h-10 rounded-xl px-3 text-sm font-medium ${
-              tab === k ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
-            }`}
-          >
-            {t(label)}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} active={tab} activeClass="bg-blue-600" onChange={setTab} />
       {tab === 'raspored' && <Schedule />}
       {tab === 'ispiti' && <Assessments />}
       {tab === 'poeni' && <Points />}

@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import { useStore } from '../store'
 import { tooltipProps } from '../components/chart'
-import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import { Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
 import { formatShort, todayStr, weekdayName } from '../lib/dates'
@@ -26,7 +26,6 @@ import {
 } from '../lib/workout'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
-import type { BaseKey } from '../i18n'
 import Rich from '../i18n/Rich'
 
 type Tab = 'trening' | 'plan' | 'ishrana'
@@ -34,27 +33,15 @@ type Tab = 'trening' | 'plan' | 'ishrana'
 export default function Workout() {
   const { t } = useT()
   const [tab, setTab] = useState<Tab>('trening')
-  const tabs: [Tab, BaseKey][] = [
-    ['trening', 'wo.tab.training'],
-    ['plan', 'wo.tab.plan'],
-    ['ishrana', 'wo.tab.food'],
+  const tabs: [Tab, string][] = [
+    ['trening', t('wo.tab.training')],
+    ['plan', t('wo.tab.plan')],
+    ['ishrana', t('wo.tab.food')],
   ]
   return (
     <>
       <PageTitle>{t('wo.title')}</PageTitle>
-      <div role="tablist" className="mb-4 flex gap-2">
-        {tabs.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            aria-selected={tab === k}
-            onClick={() => setTab(k)}
-            className={`min-h-10 rounded-xl px-3 text-sm font-medium ${tab === k ? 'bg-orange-700 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
-          >
-            {t(label)}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} active={tab} activeClass="bg-orange-700" onChange={setTab} />
       {tab === 'trening' && <Training />}
       {tab === 'plan' && <Plan />}
       {tab === 'ishrana' && <Food />}
