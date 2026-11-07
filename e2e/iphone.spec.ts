@@ -73,3 +73,36 @@ test('4. u podešavanjima piše da notifikacije na iPhone-u traže početni ekra
   await expect(page.getByRole('note').filter({ hasText: 'početni ekran' })).toBeVisible()
   await expect(page.getByLabel(/Notifikacije pregledača/)).toHaveCount(0)
 })
+
+test('5. donji panel prati prevlačenje: preko praga se zatvara, ispod se vraća', async ({
+  page,
+}) => {
+  await onboard(page)
+  await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
+  await page.getByLabel('Ponavljanje').click()
+  const dialog = page.getByRole('dialog').filter({ has: page.getByTestId('sheet-grab') })
+  await expect(dialog).toBeVisible()
+  const grab = dialog.getByTestId('sheet-grab')
+  await page.waitForTimeout(500) // the opening animation
+  const box = (await grab.boundingBox())!
+  const height = (await dialog.boundingBox())!.height
+  const x = box.x + box.width / 2
+  const y = box.y + 10
+
+  // short drag: follows the finger, then comes back
+  await page.mouse.move(x, y)
+  await page.mouse.down()
+  await page.mouse.move(x, y + height * 0.1, { steps: 5 })
+  const during = (await dialog.boundingBox())!.y - box.y + 0
+  expect(during).toBeGreaterThan(height * 0.05)
+  await page.waitForTimeout(400) // slow release: no flick
+  await page.mouse.up()
+  await expect.poll(async () => Math.abs((await dialog.boundingBox())!.y - box.y)).toBeLessThan(2)
+
+  // long drag: closes
+  await page.mouse.move(x, y)
+  await page.mouse.down()
+  await page.mouse.move(x, y + height * 0.6, { steps: 8 })
+  await page.mouse.up()
+  await expect(dialog).toBeHidden()
+})

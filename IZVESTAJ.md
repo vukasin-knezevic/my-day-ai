@@ -2,6 +2,13 @@
 
 Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
+
+- **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).
+- **Puštanje:** više od ~30% visine ili brz pokret nadole zatvara glatko; inače se panel vraća gore (220 ms, ease-out). Otvaranje je isto 220 ms. `prefers-reduced-motion` isključuje animaciju.
+- **Pozadina miruje:** skrol stranice je zaključan dok je panel otvoren, `overscroll-behavior: contain` na panelu i listi. Skrol duge liste radi normalno.
+- Tap na pozadinu i Esc i dalje zatvaraju. Testovi: komponentni (`Sheet.test.tsx`: prag, brzina, zaključan skrol) i e2e na iPhone profilu (WebKit, prevlačenje mišem; pravi dodir na telefonu ovim nije zamenjen).
+
 ## Šta je novo u verziji 0.2 (ranije 1.1)
 
 **Popravke**
