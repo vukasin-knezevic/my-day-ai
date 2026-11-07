@@ -166,3 +166,44 @@ describe('edge cases', () => {
     expect(p('TRENING 18-19:30')).toMatchObject({ category: 'workout', start: '18:00' })
   })
 })
+
+describe('activities: recurrence', () => {
+  it('every day', () => {
+    expect(p('trening svaki dan u 18')).toMatchObject({
+      kind: 'activity',
+      title: 'Trening',
+      start: '18:00',
+      recurrence: 'daily',
+    })
+    expect(p('walk every day at 7')).toMatchObject({ recurrence: 'daily', start: '07:00' })
+  })
+  it('working days', () => {
+    expect(p('učenje radnim danima 10-12')).toMatchObject({ recurrence: 'weekdays' })
+    expect(p('study weekdays 10-12')).toMatchObject({ recurrence: 'weekdays' })
+  })
+  it('a named weekday is weekly and starts on that day', () => {
+    expect(p('trening svakog ponedeljka u 18')).toMatchObject({
+      recurrence: 'weekly',
+      date: '2026-11-09',
+    })
+    expect(p('trening svake srede u 18')).toMatchObject({
+      recurrence: 'weekly',
+      date: '2026-11-11',
+    })
+    expect(p('gym every saturday at 10')).toMatchObject({
+      recurrence: 'weekly',
+      date: '2026-11-07',
+    })
+  })
+  it('"svake nedelje" is weekly from today, not Sunday', () => {
+    expect(p('trening svake nedelje u 18')).toMatchObject({
+      recurrence: 'weekly',
+      date: '2026-11-06',
+      title: 'Trening',
+    })
+  })
+  it('plain sentences stay one-off', () => {
+    expect(p('trening u ponedeljak u 18')).not.toHaveProperty('recurrence')
+    expect(p('svaki put trening u 18')).not.toHaveProperty('recurrence')
+  })
+})

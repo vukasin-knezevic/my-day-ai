@@ -87,6 +87,7 @@ const messages: Record<MessageKey, string> = {
   'day.prefix': 'Today: {parts}',
   'quick.expense': 'Expense',
   'apply.added': '{emoji} Added: {title}, {date} {start}–{end}',
+  'apply.repeats': '(repeats)',
   'apply.expense': '💰 Expense {amount} {currency} ({category}) saved',
   'apply.bed': '😴 Went to bed at {time}. Good night!',
   'apply.wake': '🌅 Woke up at {time}. Good morning!',

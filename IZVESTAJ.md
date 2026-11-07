@@ -49,6 +49,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **Provereno na pravom API-ju, bez ključa:** preflight sa našim zaglavljima vraća `access-control-allow-origin: *`, a zahtev sa lažnim ključem običan 401, pa pozivi iz pregledača nisu blokirani. Sam odgovor modela i dalje nije proban.
 - **Planer:** više ne predlaže termine koji su danas već prošli i ne preklapa AI predloge na čekanju.
 - **AI rezultati:** odbijaju se aktivnosti koje se završavaju pre početka i nepostojeći datumi; model sada zna koliko je sati; ponovni uvoz istog rasporeda ne duplira kolokvijume.
+- **Brzi unos razume ponavljanje:** „trening svaki dan u 18", „učenje radnim danima 10-12", „svakog ponedeljka", „every monday".
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
@@ -58,7 +59,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 5. **GitHub Actions:** `ci.yml` i `deploy.yml` su provereni preko GitHub API-ja. Oba rade; jedan povremeni pad e2e testa opisan je u popravkama.
 6. **Notifikacije nisu probane na telefonu.** Logika (`dueReminders`) je testirana, ali prikaz notifikacija zavisi od pregledača. `.ics` izvoz je pouzdaniji.
 7. **Ograničenja funkcija:**
-   - Izmena ponavljajuće aktivnosti kroz formu menja ceo niz; „samo ovaj dan" postoji za uklanjanje i za skraćenje pred ispit. Brzi unos ne pravi ponavljajuće aktivnosti, samo forma.
+   - Izmena ponavljajuće aktivnosti kroz formu menja ceo niz; „samo ovaj dan" postoji za uklanjanje i za skraćenje pred ispit.
    - Šabloni treninga: sopstveni se čuvaju po nazivu (isti naziv ga prepisuje); nema promene redosleda.
    - Rezime nedelje se ne generiše sam: u nedelju uveče na ekranu Danas stoji link ka AI stranici.
    - Planer je pravilima vođen, ne optimizator; dnevni limit učenja je tvrd (višak prelazi na sledeći dan ili se prijavljuje porukom).

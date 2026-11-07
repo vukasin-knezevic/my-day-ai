@@ -1,7 +1,7 @@
 // Offline quick-entry parser. Turns a short sentence (Serbian or English) into a structured entry.
 // Examples: "trening 18-19:30", "sutra učenje mata 2h", "kafa 200", "legao 1:30",
 // "gym tomorrow 18-19:30", "study math 2h", "coffee 200", "slept 1:30".
-import type { Category, ExpenseCategory, Weekday } from '../types'
+import type { Category, ExpenseCategory, Recurrence, Weekday } from '../types'
 import { t as tr } from '../i18n'
 import { categoryLabel } from './labels'
 import { addDaysStr, minToTime, timeToMin, todayStr, weekdayOf } from './dates'
@@ -14,6 +14,8 @@ export type Parsed =
       date: string
       start: string
       end: string
+      /** Only set when the sentence asks for a repeat ("svaki dan", "every monday") */
+      recurrence?: Recurrence
     }
   | {
       kind: 'expense'
@@ -38,10 +40,10 @@ export function normalize(s: string): string {
 const WEEKDAY_WORDS: [RegExp, Weekday][] = [
   [/\b(ponedeljak|ponedeljka|pon)\b/, 1],
   [/\b(utorak|utorka|uto|uto\.)\b/, 2],
-  [/\b(sreda|sredu|sre)\b/, 3],
+  [/\b(sreda|sredu|srede|sre)\b/, 3],
   [/\b(cetvrtak|cetvrtka|cet)\b/, 4],
   [/\b(petak|petka|pet)\b/, 5],
-  [/\b(subota|subotu|sub)\b/, 6],
+  [/\b(subota|subotu|subote|sub)\b/, 6],
   [/\b(nedelja|nedelju|ned)\b/, 7],
   // English
   [/\b(monday|mon)\b/, 1],
@@ -111,6 +113,18 @@ class Text {
   }
 }
 
+function parseRecurrence(t: Text): Recurrence | null {
+  if (t.cut(/\b(radnim danima|svakog radnog dana|every weekday|weekdays)\b/)) return 'weekdays'
+  if (t.cut(/\b(svaki dan|svakog dana|svakim danom|every day|everyday|daily)\b/)) return 'daily'
+  // "svake nedelje" means every week here; Sunday is the first word of "every sunday"
+  if (t.cut(/\b(svake nedelje|svaku nedelju|nedeljno|every week|weekly)\b/)) return 'weekly'
+  // "svakog ponedeljka", "every monday": the weekday itself is left for parseDate
+  const days = 'pon|uto|sre|cet|pet|sub|ned|mon|tue|wed|thu|fri|sat|sun'
+  if (t.cut(new RegExp(String.raw`\b(svakog|svake|svaki|svaku|every)\b(?=\s+(?:${days}))`)))
+    return 'weekly'
+  return null
+}
+
 function parseDate(t: Text, now: Date): string | null {
   const today = todayStr(now)
   if (t.cut(/\b(prekosutra|day after tomorrow)\b/)) return addDaysStr(today, 2)
@@ -162,6 +176,7 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     }
   }
 
+  const recurrence = parseRecurrence(t)
   const date = parseDate(t, now)
 
   // ---- time range: "18-19:30" / "18:00 - 19:30" ----
@@ -269,6 +284,7 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     date: targetDate,
     start: minToTime(start),
     end: minToTime(Math.max(end, timeToMin(minToTime(start)) + 5)),
+    ...(recurrence ? { recurrence } : {}),
   }
 }
 

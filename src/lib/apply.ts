@@ -20,17 +20,19 @@ export function applyParsed(p: Parsed, st: Actions): string {
         date: p.date,
         start: p.start,
         end: p.end,
-        recurrence: 'none',
+        recurrence: p.recurrence ?? 'none',
         status: 'planned',
         source: 'me',
       })
-      return t('apply.added', {
-        emoji: CATEGORY_META[p.category].emoji,
-        title: p.title,
-        date: formatShort(p.date),
-        start: p.start,
-        end: p.end,
-      })
+      return (
+        t('apply.added', {
+          emoji: CATEGORY_META[p.category].emoji,
+          title: p.title,
+          date: formatShort(p.date),
+          start: p.start,
+          end: p.end,
+        }) + (p.recurrence ? ' ' + t('apply.repeats') : '')
+      )
     case 'expense':
       st.add('expenses', {
         date: p.date,

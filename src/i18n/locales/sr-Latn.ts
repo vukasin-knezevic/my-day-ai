@@ -87,6 +87,7 @@ const messages = {
   'day.prefix': 'Danas: {parts}',
   'quick.expense': 'Trošak',
   'apply.added': '{emoji} Dodato: {title}, {date} {start}–{end}',
+  'apply.repeats': '(ponavlja se)',
   'apply.expense': '💰 Trošak {amount} {currency} ({category}) sačuvan',
   'apply.bed': '😴 Legao u {time}. Laku noć!',
   'apply.wake': '🌅 Ustao u {time}. Dobro jutro!',
