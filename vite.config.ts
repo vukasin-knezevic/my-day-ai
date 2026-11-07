@@ -18,8 +18,9 @@ export default defineConfig({
         name: 'My Day AI',
         short_name: 'My Day',
         description: 'A daily planner for students',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
+        // the same dark colour as the app background: no blue bars, dark splash screen
+        theme_color: '#020617',
+        background_color: '#020617',
         display: 'standalone',
         start_url: base,
         lang: 'en',
