@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: Settings = {
   proteinGoal: 120,
   theme: 'system',
   timeFormat: '24h',
+  autoUpdate: true,
   customAssessmentKinds: [],
   customSlotKinds: [],
   language: '',

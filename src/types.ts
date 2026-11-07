@@ -255,6 +255,8 @@ export interface Settings {
   studyHoursPerDay: number
   proteinGoal: number
   theme: 'system' | 'light' | 'dark'
+  /** Switch to a downloaded new version by itself when the app is out of sight (otherwise the user restarts it) */
+  autoUpdate: boolean
   /** 24h (13:00) or 12h (1:00 PM) */
   timeFormat: '24h' | '12h'
   /** Kinds of obligations / class slots the user added (the built-in ones are not listed here) */

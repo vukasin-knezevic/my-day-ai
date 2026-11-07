@@ -197,6 +197,19 @@ export default function Settings() {
           </div>
         </Card>
         <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.updates')}</h2>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-5"
+              checked={settings.autoUpdate}
+              onChange={(e) => setSettings({ autoUpdate: e.target.checked })}
+            />
+            {t('set.autoUpdate')}
+          </label>
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.autoUpdateNote')}</p>
+        </Card>
+        <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.reminders')}</h2>
           <label className="flex items-center gap-2 text-sm">
             <input

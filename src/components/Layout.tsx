@@ -1,3 +1,4 @@
+import UpdateBanner from './UpdateBanner'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
@@ -58,6 +59,7 @@ export default function Layout() {
         </nav>
       </aside>
       <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-24 md:p-8 md:pb-8">
+        <UpdateBanner />
         <div key={pathname} className="anim-page">
           <Outlet />
         </div>

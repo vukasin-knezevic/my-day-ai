@@ -226,6 +226,15 @@ export default function Onboarding() {
           )}
           {step === 6 && (
             <>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={draft.autoUpdate}
+                  onChange={(e) => set('autoUpdate', e.target.checked)}
+                />
+                {t('set.autoUpdate')}
+              </label>
               <p className="text-sm">{t('ob.ai.intro')}</p>
               <fieldset className="space-y-2">
                 <legend className="sr-only">{t('ob.ai.legend')}</legend>

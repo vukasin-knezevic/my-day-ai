@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath } from 'node:url'
 
 // On GitHub Pages the app lives under /my-day-ai/ (the deploy workflow sets VITE_BASE). Locally it is '/'.
 const base = process.env.VITE_BASE ?? '/'
@@ -13,7 +14,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // a new version is downloaded in the background, the app shows "New update" and restarts when the user agrees
+      registerType: 'prompt',
       manifest: {
         name: 'My Day AI',
         short_name: 'My Day',
@@ -35,6 +37,10 @@ export default defineConfig({
     }),
   ],
   test: {
+    // the virtual module of vite-plugin-pwa does not exist in tests
+    alias: {
+      'virtual:pwa-register': fileURLToPath(new URL('./src/test/pwa-register.ts', import.meta.url)),
+    },
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
