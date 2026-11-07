@@ -245,6 +245,7 @@ const messages = {
   'update.readyAuto': 'Nova verzija je spremna. Uključiće se sama kad izađeš iz aplikacije.',
   'update.readyManual': 'Nova verzija je spremna. Restartuj kad ti odgovara.',
   'update.restart': 'Restartuj aplikaciju',
+  'set.version': 'My Day AI, verzija {v}',
   'set.updates': '🔄 Ažuriranje',
   'set.autoUpdate': 'Automatsko ažuriranje',
   'set.autoUpdateNote': 'Uključeno: nova verzija se preuzme u pozadini i uključi kad izađeš iz aplikacije. Isključeno: ti biraš kad ćeš da restartuješ. U oba slučaja vidiš poruku „Novi update".',

@@ -1,8 +1,8 @@
 # IZVEŠTAJ — My Day AI
 
-Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
+Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
-## Šta je novo u verziji 1.1
+## Šta je novo u verziji 0.2 (ranije 1.1)
 **Popravke**
 - **Tastatura svuda:** `Enter` = Dalje / Sačuvaj / Potvrdi, `Esc` = Nazad / Otkaži / zatvori (onboarding, forme, dijalozi). U višeredom polju Enter pravi novi red (potvrda je `Ctrl+Enter`). Posle promene koraka fokus ide na prvo polje, pa se celo podešavanje može proći bez miša.
 - **Polja za brojeve:** jedna zajednička komponenta `NumberInput`; polje sme da bude prazno, nema vodeće nule (`03`), decimale rade gde treba (tačka ili zarez), min/max se primenjuju pri kucanju i pri napuštanju polja.
@@ -36,11 +36,11 @@ Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: htt
 | Playwright e2e | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
 | `npm run build` | bez upozorenja |
 
-## Šta je urađeno u verziji 1.0 (faze 0–12)
+## Šta je urađeno u verziji 0.1 (ranije 1.0, faze 0–12)
 Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `PLAN.md`):
 0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
 
-## Popravke posle verzije 1.1
+## Popravke u verziji 0.2 (noćne popravke i pregled koda)
 - **Šablon treninga se može preimenovati** (naziv iz polja Tip).
 - **„Samo danas" za ponavljajuće aktivnosti:** uklanja jedan dan, niz ostaje; važi i za `.ics`.
 - **Greška u planeru ispravljena:** skraćenje treninga pred ispit menjalo je ceo ponavljajući niz, sada menja samo taj dan.

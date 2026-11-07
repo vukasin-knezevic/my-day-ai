@@ -4,12 +4,16 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 
 // On GitHub Pages the app lives under /my-day-ai/ (the deploy workflow sets VITE_BASE). Locally it is '/'.
 const base = process.env.VITE_BASE ?? '/'
+// the version shown in the settings comes from package.json
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8')) as { version: string }
 
 export default defineConfig({
   base,
+  define: { __APP_VERSION__: JSON.stringify(version) },
   plugins: [
     react(),
     tailwindcss(),

@@ -341,6 +341,9 @@ export default function Settings() {
             </Button>
           </div>
         </Card>
+        <p className="text-center text-xs text-slate-600 dark:text-slate-400">
+          {t('set.version', { v: __APP_VERSION__ })}
+        </p>
       </div>
     </>
   )

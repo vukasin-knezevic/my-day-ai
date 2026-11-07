@@ -246,6 +246,7 @@ const messages: Record<MessageKey, string> = {
   'update.readyAuto': 'The new version is ready. It will switch on by itself when you leave the app.',
   'update.readyManual': 'The new version is ready. Restart whenever it suits you.',
   'update.restart': 'Restart the app',
+  'set.version': 'My Day AI, version {v}',
   'set.updates': '🔄 Updates',
   'set.autoUpdate': 'Automatic updates',
   'set.autoUpdateNote': 'On: a new version is downloaded in the background and switched on when you leave the app. Off: you decide when to restart. Either way you see a “New update” message.',

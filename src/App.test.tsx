@@ -18,3 +18,8 @@ test('prvo otvaranje prikazuje onboarding, pa glavnu aplikaciju', async () => {
   expect(useStore.getState().hasDemo()).toBe(true)
   expect(screen.getAllByText(/Danas/).length).toBeGreaterThan(0)
 })
+
+test('verzija iz package.json je 0.x do zvanične objave', () => {
+  expect(__APP_VERSION__).toMatch(/^0\.\d+\.\d+$/)
+  expect(__APP_VERSION__).toBe('0.3.0')
+})

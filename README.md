@@ -21,6 +21,9 @@ Počeo sam da je pravim kao student, za svoj dan: da faks, kolokvijumi, trening 
 
 **My Day AI** je planer dana za studente: faks, kolokvijumi, trening, ishrana, san, novac i navike na jednom mestu. Radi na telefonu i laptopu, instalira se kao aplikacija (PWA) i radi offline (osim AI dela). Dostupna je na srpskom (latinica i ćirilica) i engleskom.
 
+### Verzije
+Do zvanične objave sve verzije su **0.x**: **0.1** (prva cela aplikacija), **0.2** (opšta verzija, noćne popravke i pregled koda), **0.3** (popravke posle prvog stvarnog korišćenja na telefonu, nova podešavanja, iPhone). Verzija **1.0** je rezervisana za prvu zvaničnu objavu (kolege + Google Play).
+
 ### Problem koji rešava
 Student ima predavanja, kolokvijume sa rokovima za prijavu, trening, zabavu i san, a sve to je razbacano. Najveći rizik je banalan: **zaboraviš da prijaviš kolokvijum**. Aplikacija zato to stavlja crveno na prvi ekran, a ostatak dana slaže oko obaveza.
 
@@ -32,7 +35,7 @@ Student ima predavanja, kolokvijume sa rokovima za prijavu, trening, zabavu i sa
 - 🏋️ **Trening i ishrana**: serije × ponavljanja × kilaža, grafikon napretka, automatski **lični rekordi 🎉**, gotovi splitovi i **sopstveni šabloni treninga**, dnevni cilj proteina.
 - 😴💰✅ **San, novac, navike**: „Legao / Ustao", prosek sna, predlog vremena spavanja; budžet po kategoriji sa upozorenjem na 80% (valuta po izboru); navike sa nizom dana.
 - 🎁 **Motivacija**: XP, nivoi (Brucoš → Inženjer), nizovi 🔥 i **nagrada koju sam biraš** (npr. vreme za igrice, epizoda serije, izlazak) koju zarađuješ učenjem. Aplikacija je samo broji, bez zamerki.
-- 🔔 **Podsetnici i pregled**: notifikacije pregledača + **izvoz u .ics**, pregled nedelje i meseca sa grafikonima.
+- 🔔 **Podsetnici i pregled**: notifikacije pregledača + **„Dodaj u kalendar“**, pregled nedelje i meseca sa grafikonima.
 - 💾 Izvoz/uvoz svih podataka (JSON, bez API ključa), tamna tema, prečice na tastaturi (`N`, `T`, `W`, `/`, `?`; `Enter` potvrđuje, `Esc` otkazuje).
 
 ### Izgled
@@ -66,8 +69,15 @@ Dodavanje jezika je **samo jedan novi fajl**, bez menjanja koda:
 
 Režim biraš u onboardingu, a možeš da ga promeniš u podešavanjima. Ključ se čuva **samo lokalno** u pregledaču tog uređaja; vidljiv je u alatima pregledača, zato ga nikome ne deli i postavi mesečni limit potrošnje u Anthropic konzoli.
 
+### Kako da dobiješ Anthropic API ključ (samo za API režim)
+Ručni režim ne traži ključ. Za API režim:
+1. Napravi nalog na [console.anthropic.com](https://console.anthropic.com) i prijavi se.
+2. U **Billing** dodaj način plaćanja i postavi mesečni limit potrošnje.
+3. Otvori **API Keys** → **Create Key**, daj mu ime (npr. „My Day AI") i **kopiraj ključ** (počinje sa `sk-ant-`). Prikazuje se samo jednom.
+4. U aplikaciji: **Podešavanja → AI**: izaberi API režim i nalepi ključ u polje **API ključ**. Ključ ostaje samo na tom uređaju.
+
 ### Podsetnici: šta radi, a šta ne
-Nema servera, pa notifikacije na telefonu rade pouzdano samo dok je aplikacija otvorena ili nedavno korišćena. Zato postoji **izvoz u .ics**: uvezi ga u kalendar telefona i on će sam podsećati.
+Nema servera, pa notifikacije na telefonu rade pouzdano samo dok je aplikacija otvorena ili nedavno korišćena. Zato postoji **„Dodaj u kalendar“**: telefon odmah ponudi Kalendar i on će sam podsećati.
 
 ### Tehnologije (i zašto)
 | Alat | Zašto |
@@ -133,6 +143,9 @@ I started building it as a student, for my own day: so that classes, exams, work
 
 **My Day AI** is a day planner for students: classes, exams, workouts, nutrition, sleep, money and habits in one place. It is a mobile-first PWA that installs on a phone or laptop and works offline (except the AI part). It is available in Serbian (Latin and Cyrillic) and English.
 
+### Versions
+Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone). **1.0** is reserved for the first official release (colleagues + Google Play).
+
 ### The problem
 A student juggles lectures, exams with registration deadlines, workouts, fun and sleep, all scattered. The most common and costly mistake is simple: **forgetting to register for an exam**. The app puts that in red on the first screen and builds the rest of the day around the obligations.
 
@@ -144,7 +157,7 @@ A student juggles lectures, exams with registration deadlines, workouts, fun and
 - 🏋️ **Workouts & nutrition**: sets × reps × weight, progress chart, automatic **personal records**, ready-made splits and **your own workout templates**, daily protein goal.
 - 😴💰✅ **Sleep, money, habits**: bed/wake with two clicks, 7-day average, bedtime suggestion; budget per category with an 80% warning (your currency); habits with day streaks.
 - 🎁 **Motivation**: XP, levels, streaks 🔥 and **a reward you name yourself** (gaming time, an episode of a series, a night out…) earned by studying. The app only counts it, no judging.
-- 🔔 **Reminders + .ics export**, 📊 **week/month overview**, 💾 **JSON export/import** (without the API key), dark theme, keyboard shortcuts (`N`, `T`, `W`, `/`, `?`; `Enter` confirms, `Esc` cancels).
+- 🔔 **Reminders + “Add to calendar”**, 📊 **week/month overview**, 💾 **JSON export/import** (without the API key), dark theme, keyboard shortcuts (`N`, `T`, `W`, `/`, `?`; `Enter` confirms, `Esc` cancels).
 
 ### Screenshots
 <p align="center">
@@ -165,8 +178,15 @@ One new file, no code changes:
 ### Two AI modes
 **Manual (free):** "Copy for Claude" builds a prompt with your week's data → paste it into claude.ai → answer 3–5 questions → paste the JSON reply back. **API (pay per use):** one click, called directly from the browser. You choose the mode during onboarding and can change it in the settings. Both modes use the **same** prompt builder, **same** `zod` validation and **same** preview. The API key is stored **only on your device** (visible in the browser's developer tools; never share it and set a spending limit in the Anthropic console).
 
+### How to get an Anthropic API key (API mode only)
+Manual mode needs no key. For API mode:
+1. Create an account at [console.anthropic.com](https://console.anthropic.com) and sign in.
+2. Under **Billing** add a payment method and set a monthly spending limit.
+3. Open **API Keys** → **Create Key**, name it (e.g. "My Day AI") and **copy the key** (it starts with `sk-ant-`). It is shown only once.
+4. In the app: **Settings → AI**: choose API mode and paste the key into **API key**. The key stays on that device only.
+
 ### Reminders: honest limits
-No server means browser notifications on a phone only work reliably while the app is open or recently used. Export the **.ics** calendar and import it into your phone's calendar for dependable reminders.
+No server means browser notifications on a phone only work reliably while the app is open or recently used. Use **Add to calendar**: the phone offers its Calendar app straight away, and the calendar then reminds you by itself.
 
 ### Tech stack
 Vite, React 18, TypeScript (strict), Tailwind CSS, Zustand + IndexedDB, React Router (hash), an i18n layer with date-fns locales and `Intl`, Recharts, zod, Vitest + Testing Library, Playwright + axe, vite-plugin-pwa.
