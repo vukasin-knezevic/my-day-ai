@@ -78,6 +78,33 @@ describe('dueReminders', () => {
   })
 })
 
+describe('buildIcs folding', () => {
+  const data = emptyData()
+  const title = 'Učenje šđčćž 📚 '.repeat(12).trim()
+  data.activities = [
+    {
+      id: 'a',
+      title,
+      category: 'study',
+      date: '2026-11-06',
+      start: '10:00',
+      end: '11:00',
+      recurrence: 'none',
+      status: 'planned',
+      source: 'me',
+    },
+  ]
+  const ics = buildIcs(data, new Date(2026, 10, 6, 9), 1)
+  it('no line is longer than 75 octets, even with Serbian letters and emoji', () => {
+    const utf8 = new TextEncoder()
+    for (const line of ics.split('\r\n'))
+      expect(utf8.encode(line).length).toBeLessThanOrEqual(75)
+  })
+  it('unfolding gives back the whole text', () => {
+    expect(ics.replace(/\r\n /g, '')).toContain(`SUMMARY:${title}`)
+  })
+})
+
 describe('buildIcs', () => {
   const ics = buildIcs(
     data({ activities: [act()], assessments: [exam({ time: '10:00' })] }),

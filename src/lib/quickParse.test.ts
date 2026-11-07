@@ -142,6 +142,16 @@ describe('expenses', () => {
 })
 
 describe('sleep', () => {
+  const justAfterMidnight = new Date(2026, 10, 7, 0, 30)
+  it('a late bedtime typed after midnight belongs to last night', () => {
+    expect(parseQuick('legao 23:30', justAfterMidnight)).toMatchObject({
+      event: 'bed',
+      time: '23:30',
+      date: '2026-11-06',
+    })
+    expect(parseQuick('legao 0:15', justAfterMidnight)).toMatchObject({ date: '2026-11-07' })
+    expect(parseQuick('ustao 23:30', justAfterMidnight)).toMatchObject({ date: '2026-11-07' })
+  })
   it('legao 1:30', () => {
     expect(p('legao 1:30')).toMatchObject({ kind: 'sleep', event: 'bed', time: '01:30' })
   })
