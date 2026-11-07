@@ -2,7 +2,7 @@ import { useState } from 'react'
 import DataCard from './DataCard'
 import { selectData, useStore } from '../store'
 import { buildIcs, downloadText } from '../lib/ics'
-import { requestNotifications } from '../lib/useReminders'
+import { requestNotifications, showNotification } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
@@ -175,6 +175,17 @@ export default function Settings() {
             </p>
           )}
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.notifNote')}</p>
+          {settings.reminders && (
+            <Button
+              variant="soft"
+              onClick={async () => {
+                const ok = await showNotification(t('set.notifTestTitle'), t('set.notifTestBody'))
+                setNotifMsg(ok ? '' : t('set.notifTestFail'))
+              }}
+            >
+              {t('set.notifTest')}
+            </Button>
+          )}
           <Button
             variant="soft"
             onClick={() => downloadText('my-day-ai.ics', buildIcs(selectData(useStore.getState())))}
