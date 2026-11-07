@@ -232,7 +232,7 @@ const messages = {
   'set.apiKey': 'Anthropic API ključ',
   'set.keyWarn':
     '⚠️ Ključ se čuva samo na ovom uređaju, ali je vidljiv u pregledaču (alati za programere). Nikome ga ne deli, ne stavljaj ga na tuđ računar i postavi mesečni limit potrošnje u Anthropic konzoli.',
-  'set.modelFast': 'Brži model (unos, uvoz)',
+  'set.modelFast': 'Brži model (unos, uvoz, čet)',
   'set.modelStrong': 'Jači model (planiranje)',
   'set.usage':
     'Potrošnja ovog meseca ({month}): {calls} poziva, {input} ulaznih i {output} izlaznih tokena{cost}.',
@@ -366,8 +366,6 @@ const messages = {
   'prompt.dataHeader': '--- MOJI PODACI ---',
   'prompt.schemaHeader': 'ŠEMA ODGOVORA (JSON, u jednom bloku koda):',
   'prompt.jsonAtEnd': 'Na kraju vrati JSON u bloku koda po šemi iznad.',
-  'prompt.chat.student': 'Student',
-  'prompt.chat.assistant': 'Asistent',
   'prompt.chat.instruction': 'Odgovori kratko (do 6 rečenica), konkretno, na srpskom.',
   'prompt.chat.question': 'PITANJE',
   'schema.plan-dana':

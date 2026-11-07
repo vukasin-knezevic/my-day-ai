@@ -233,7 +233,7 @@ const messages: Record<MessageKey, string> = {
   'set.apiKey': 'Anthropic API key',
   'set.keyWarn':
     '⚠️ The key is stored only on this device, but it is visible in the browser (developer tools). Do not share it, do not put it on someone else’s computer, and set a monthly spending limit in the Anthropic console.',
-  'set.modelFast': 'Faster model (entry, import)',
+  'set.modelFast': 'Faster model (entry, import, chat)',
   'set.modelStrong': 'Stronger model (planning)',
   'set.usage':
     'Usage this month ({month}): {calls} calls, {input} input and {output} output tokens{cost}.',
@@ -369,8 +369,6 @@ const messages: Record<MessageKey, string> = {
   'prompt.dataHeader': '--- MY DATA ---',
   'prompt.schemaHeader': 'ANSWER SCHEMA (JSON, in one code block):',
   'prompt.jsonAtEnd': 'At the end return the JSON in a code block following the schema above.',
-  'prompt.chat.student': 'Student',
-  'prompt.chat.assistant': 'Assistant',
   'prompt.chat.instruction': 'Answer briefly (up to 6 sentences), concretely, in English.',
   'prompt.chat.question': 'QUESTION',
   'schema.plan-dana':

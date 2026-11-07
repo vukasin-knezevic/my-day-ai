@@ -4,10 +4,11 @@ import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
-import { todayStr } from './lib/dates'
+import { monthOf, todayStr } from './lib/dates'
 import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
+import { addUsage } from './lib/ai/usage'
 import { resolveLanguage, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
@@ -53,6 +54,8 @@ interface Actions {
   award: (e: AwardEvent) => void
   /** Records reward time I used (no judging). */
   spendReward: (min: number, game?: string) => void
+  /** Adds one API call to this month's usage. */
+  trackAiUsage: (inputTokens: number, outputTokens: number) => void
 }
 
 export type Store = AppData & Actions
@@ -131,6 +134,8 @@ export const useStore = create<Store>()(
           games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
         }))
       },
+      trackAiUsage: (input, output) =>
+        set((s) => ({ aiUsage: addUsage(s.aiUsage, monthOf(todayStr()), input, output) })),
     }),
     {
       name: 'my-day-ai',
