@@ -93,6 +93,17 @@ Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zel
 27. **Istorija XP-a:** klik na broj XP-a otvara listu (šta, koliko, datum i sat); događaji sada pamte vreme, stari prikazuju samo datum.
 28. **README:** korake za Anthropic API ključ (console.anthropic.com → API Keys) i šema verzija (0.x do zvanične 1.0). `package.json` je 0.3.0, verzija se vidi na dnu podešavanja.
 
+### Faza F — iPhone (iOS) podrška (urađeno)
+Cilj: kolege sa iPhone-om mogu besplatno da testiraju (Safari → Deli → „Dodaj na početni ekran"), bez App Store-a.
+29. **`index.html`:** `apple-touch-icon` (180×180, plavi logo na tamnoj pozadini), `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style` = `black` (bez plavih traka), `apple-mobile-web-app-title` = „My Day AI".
+30. **Početni ekran:** `apple-touch-startup-image` za 9 najčešćih veličina iPhone-a (plavi logo na tamnoplavoj pozadini, `public/splash/`); `scripts/make-icons.mjs` ih pravi.
+31. **Notch i donja traka:** `viewport-fit=cover` + `env(safe-area-inset-*)` na telu stranice, donjoj navigaciji, sadržaju i porukama.
+32. **Uputstvo za instalaciju:** u Safariju (iOS, nije instalirano) kartica „Dodaj na početni ekran: Deli ⬆️ → Dodaj na početni ekran"; zatvara se i više se ne prikazuje (`settings.iosHintDismissed`).
+33. **Notifikacije na iOS-u:** ako aplikacija nije na početnom ekranu, u podešavanjima piše jasno da to treba (iOS 16.4+), umesto dugmeta koje ne radi; isto za pregledače bez notifikacija.
+34. **Provera:** `e2e/iphone.spec.ts` (Playwright WebKit, profil iPhone 14): uvod i ekran Danas, kartica za instalaciju, svih 8 glavnih ekrana bez grešaka i bez horizontalnog skrola, donji panel i birač vremena, poruka o notifikacijama. CI instalira i `webkit`.
+   - **Proverio sam:** gore navedeno u WebKit-u; unit testovi za prepoznavanje iPhone-a/iPad-a.
+   - **Mora na pravom iPhone-u:** pravo „Dodaj na početni ekran" i izgled ikonice; da li se prikazuje početni ekran (iOS ga ponekad preskoči ako veličina ne odgovara tačno); status traka i notch/donja traka (WebKit u Playwright-u nema njih); notifikacije posle instalacije (dozvola, stvarno prikazivanje); Web Share sa kalendarom; ponašanje birača datuma i vremena sa pravim prstom; automatsko ažuriranje (service worker se ponaša drugačije na iOS-u).
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.

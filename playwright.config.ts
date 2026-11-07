@@ -18,7 +18,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /iphone\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
+    },
+    {
+      // iPhone: WebKit (Safari's engine) with an iPhone profile. It cannot replace a real iPhone, see IZVESTAJ.md
+      name: 'iphone',
+      testMatch: /iphone\.spec\.ts/,
+      use: { ...devices['iPhone 14'] },
     },
   ],
   webServer: {
