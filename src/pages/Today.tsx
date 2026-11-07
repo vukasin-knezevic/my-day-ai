@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore, selectData } from '../store'
 import { Badge, Button, Card, Input } from '../components/ui'
 import { CATEGORY_META } from '../types'
-import { formatLong, minToTime, timeToMin, todayStr } from '../lib/dates'
+import { formatDuration, formatLong, minToTime, timeToMin, todayStr } from '../lib/dates'
 import {
   buildAlerts,
   currentAndNext,
@@ -212,8 +212,7 @@ export default function Today() {
             {t('today.next', {
               title: next.title,
               start: next.start,
-              h: Math.floor(minutesToNext! / 60),
-              m: minutesToNext! % 60,
+              d: formatDuration(minutesToNext!),
             })}
           </p>
         )}

@@ -80,6 +80,21 @@ export function minToTime(min: number): string {
   const m = ((Math.round(min) % 1440) + 1440) % 1440
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 }
+/**
+ * The one way to show a length of time: "2 h 36 min", "7 min", "2 h". Never decimal ("2.6 h"),
+ * never "0 h 7 min" or "2 h 0 min". Takes minutes (rounded).
+ */
+export function formatDuration(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes))
+  const h = Math.floor(total / 60)
+  const m = total % 60
+  if (h === 0) return t('dur.min', { m })
+  if (m === 0) return t('dur.h', { h })
+  return t('dur.hm', { h, m })
+}
+/** Same for hours given as a number (2.6 -> "2 h 36 min"). */
+export const formatHours = (hours: number) => formatDuration(hours * 60)
+
 export function nowMinutes(now: Date = new Date()): number {
   return now.getHours() * 60 + now.getMinutes()
 }

@@ -7,7 +7,7 @@ import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../compone
 import NumberInput from '../components/NumberInput'
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
 import { XP } from '../lib/xp'
-import { addDaysStr, formatShort, monthOf, todayStr } from '../lib/dates'
+import { addDaysStr, formatHours, formatShort, monthOf, todayStr } from '../lib/dates'
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
 import { currencyOf, expenseLabel } from '../lib/labels'
@@ -107,7 +107,12 @@ function Sleep() {
           </p>
         )}
         <p className="mt-2 text-sm">
-          <Rich text={t('life.avg', { avg: avg ?? '—', goal: data.settings.sleepGoalHours })} />
+          <Rich
+            text={t('life.avg', {
+              avg: avg === null ? '—' : formatHours(avg),
+              goal: formatHours(data.settings.sleepGoalHours),
+            })}
+          />
         </p>
         <p className="text-sm">
           <Rich text={t('life.suggestion', { time: suggest, first })} />
@@ -138,7 +143,10 @@ function Quality({ log }: { log: SleepLog }) {
   return (
     <Card>
       <p className="mb-2 text-sm">
-        {t('life.lastSleep', { date: formatShort(log.date), h: sleepHours(log) ?? '—' })}
+        {t('life.lastSleep', {
+          date: formatShort(log.date),
+          d: sleepHours(log) === null ? '—' : formatHours(sleepHours(log)!),
+        })}
       </p>
       <div className="flex gap-1">
         {([1, 2, 3, 4, 5] as const).map((q) => (

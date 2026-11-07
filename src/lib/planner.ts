@@ -1,7 +1,7 @@
 // Rule-based weekly planner (no AI). Pure function: same input -> same output.
 // It creates *suggestions* (dashed border in the UI) that the user accepts or ignores.
 import type { Activity, Assessment, Category, Settings, Subject } from '../types'
-import { addDaysStr, daysUntil, minToTime, timeToMin, weekdayOf } from './dates'
+import { addDaysStr, daysUntil, formatDuration, minToTime, timeToMin, weekdayOf } from './dates'
 import { freeSlots, occurrencesOn } from './schedule'
 import { t as tr } from '../i18n'
 import { rewardNameOf } from './labels'
@@ -268,7 +268,7 @@ export function planWeek(input: PlanInput): PlanResult {
   }
   for (const [id, m] of carry) {
     const ex = exams.find((e) => e.id === id)!
-    notes.push(tr('plan.notEnough', { title: ex.title, h: Math.round(m / 6) / 10 }))
+    notes.push(tr('plan.notEnough', { title: ex.title, d: formatDuration(m) }))
   }
 
   // ---- games as a reward after studying ----

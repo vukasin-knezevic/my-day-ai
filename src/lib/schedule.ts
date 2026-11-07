@@ -1,7 +1,16 @@
 // Pure helpers: what is on a given day, and what needs attention.
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
 import { CATEGORY_META } from '../types'
-import { addDaysStr, daysUntil, fromDateStr, timeToMin, weekdayOf, weekStartStr } from './dates'
+import {
+  addDaysStr,
+  daysUntil,
+  formatDuration,
+  formatHours,
+  fromDateStr,
+  timeToMin,
+  weekdayOf,
+  weekStartStr,
+} from './dates'
 import { t } from '../i18n'
 import { slotKindLabel } from './labels'
 
@@ -230,7 +239,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
       alerts.push({
         id: 'sleep',
         level: 'amber',
-        text: t('alert.sleep', { h: hours.toFixed(1) }),
+        text: t('alert.sleep', { d: formatHours(hours) }),
       })
   }
   return alerts
@@ -246,7 +255,7 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
   const parts: string[] = []
   if (classes) parts.push(t('day.classes', { n: classes }))
   if (workouts) parts.push(t('day.workouts', { n: workouts }))
-  if (studyMin) parts.push(t('day.study', { h: +(studyMin / 60).toFixed(1) }))
+  if (studyMin) parts.push(t('day.study', { d: formatDuration(studyMin) }))
   if (!parts.length) return studyAndWorkoutLabel ? t('day.free') : ''
   return t('day.prefix', { parts: parts.join(', ') })
 }

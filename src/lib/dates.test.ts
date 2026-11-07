@@ -7,6 +7,8 @@ import {
   weekDates,
   weekStartStr,
   formatLong,
+  formatDuration,
+  formatHours,
 } from './dates'
 
 describe('dates', () => {
@@ -42,5 +44,17 @@ describe('dates', () => {
   })
   it('formats in Serbian', () => {
     expect(formatLong('2026-11-06')).toBe('Petak, 6. novembar')
+  })
+})
+
+describe('formatDuration', () => {
+  it('shows hours and minutes, never decimals or empty parts', () => {
+    expect(formatDuration(156)).toBe('2 h 36 min')
+    expect(formatDuration(7)).toBe('7 min')
+    expect(formatDuration(120)).toBe('2 h')
+    expect(formatDuration(0)).toBe('0 min')
+    expect(formatDuration(-5)).toBe('0 min')
+    expect(formatHours(2.6)).toBe('2 h 36 min')
+    expect(formatHours(7.5)).toBe('7 h 30 min')
   })
 })

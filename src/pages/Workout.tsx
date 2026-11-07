@@ -14,7 +14,7 @@ import { tooltipProps } from '../components/chart'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
-import { formatShort, todayStr, weekdayName } from '../lib/dates'
+import { formatDuration, formatShort, todayStr, weekdayName } from '../lib/dates'
 import {
   exerciseHistory,
   exerciseNames,
@@ -375,7 +375,7 @@ function Training() {
                     text={t('wo.historyLine', {
                       date: formatShort(w.date),
                       type: w.type,
-                      min: w.durationMin,
+                      dur: formatDuration(w.durationMin),
                       f: w.feeling,
                       exercises: t('wo.exercises', { n: w.exercises.length }),
                       vol: totalVolume(w),
