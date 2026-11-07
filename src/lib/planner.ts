@@ -68,7 +68,20 @@ const intersect = (a: Iv, b: Iv): Iv | null => {
   const e = Math.min(a.e, b.e)
   return e > s ? { s, e } : null
 }
-const round15 = (n: number) => Math.round(n / 15) * 15
+
+/** Splits `total` by weight into MIN_BLOCK steps. The parts always add up to `total`. */
+function allocate(total: number, weights: number[]): number[] {
+  const sum = weights.reduce((a, b) => a + b, 0)
+  let weightSoFar = 0
+  let given = 0
+  return weights.map((w) => {
+    weightSoFar += w
+    const upToHere = Math.round((total * weightSoFar) / sum / MIN_BLOCK) * MIN_BLOCK
+    const part = upToHere - given
+    given = upToHere
+    return part
+  })
+}
 
 interface DayState {
   date: string
@@ -199,12 +212,11 @@ export function planWeek(input: PlanInput): PlanResult {
     const prepDays = Array.from({ length: span }, (_, i) => addDaysStr(ex.date, -span + i))
     // hard exams: even spread (more work early); easier: ramp up towards the exam
     const weights = prepDays.map((_, i) => (ex.difficulty >= 4 ? 1 : i + 1))
-    const sum = weights.reduce((a, b) => a + b, 0)
+    const total = Math.ceil((ex.studyHours * 60) / MIN_BLOCK) * MIN_BLOCK
+    const shares = allocate(total, weights)
     prepDays.forEach((d, i) => {
-      if (!state.has(d)) return
-      const m = round15((ex.studyHours * 60 * weights[i]) / sum)
-      if (m <= 0) return
-      demand.set(d, [...(demand.get(d) ?? []), { exam: ex, minutes: m }])
+      if (!state.has(d) || shares[i] <= 0) return
+      demand.set(d, [...(demand.get(d) ?? []), { exam: ex, minutes: shares[i] }])
     })
   }
 
@@ -242,10 +254,6 @@ export function planWeek(input: PlanInput): PlanResult {
         if (!slot) break
         const len = Math.min(remaining, room, MAX_STUDY_BLOCK, slot.e - slot.s)
         const blockLen = Math.floor(len / 15) * 15
-        if (blockLen < MIN_BLOCK) {
-          st.free = subtract(st.free, slot)
-          continue
-        }
         suggestions.push(
           makeAct(
             tr('plan.studyTitle', { subject: subjName(t.exam.subjectId) }),
@@ -262,13 +270,17 @@ export function planWeek(input: PlanInput): PlanResult {
         remaining -= blockLen
         room -= blockLen
       }
-      if (remaining >= MIN_BLOCK) carry.set(t.exam.id, remaining)
+      // a part too small for a block today is not lost: it joins tomorrow's share
+      if (remaining > 0) carry.set(t.exam.id, remaining)
       else carry.delete(t.exam.id)
     }
   }
+  const dayAfterPlan = addDaysStr(from, dates.length)
   for (const [id, m] of carry) {
     const ex = exams.find((e) => e.id === id)!
-    notes.push(tr('plan.notEnough', { title: ex.title, h: Math.round(m / 6) / 10 }))
+    // an exam beyond the planned days still has time: the next plan picks these minutes up
+    if (m >= MIN_BLOCK && ex.date <= dayAfterPlan)
+      notes.push(tr('plan.notEnough', { title: ex.title, h: Math.round(m / 6) / 10 }))
   }
 
   // ---- games as a reward after studying ----

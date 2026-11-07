@@ -81,3 +81,9 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 3. **Uvoz sna sa pametnog sata**: zatražiti pravi izvoz podataka (npr. iz Huawei Health) i napraviti uvoz; kasnije Health Kit preko malog servera (OAuth).
 4. **Server za push notifikacije** (Web Push + serverless funkcija) da podsetnici stižu i kad je aplikacija zatvorena, i automatski nedeljni rezime.
 5. **Pametniji planer**: ponavljajuće aktivnosti u formi, ručno prevlačenje blokova na liniji dana, učenje iz navika (kad stvarno učiš, koliko stvarno traje) i „šta ako" simulacija pred ispit.
+
+## Pregled koda pre portfolija (7. 11. 2026.)
+
+Grana `pregled-koda`. Popravke su poređane po važnosti; svaka ima svoj commit i test koji bez nje pada.
+
+- **Planer je tiho gubio sate učenja.** Dnevni udeo manji od 30 min se brisao bez upozorenja, pa je kolokvijum težine 5 sa 4 h dobijao 0 h plana. Sad se ukupno vreme deli tako da zbir uvek odgovara traženom, a ostatak prelazi na sledeći dan. Ispit posle planiranih dana više ne daje lažno upozorenje.

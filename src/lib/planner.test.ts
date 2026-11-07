@@ -92,6 +92,32 @@ describe('planWeek: study', () => {
     const total = study(planWeek(input())).reduce((n, s) => n + mins(s), 0)
     expect(total).toBe(8 * 60)
   })
+  it.each([
+    [5, 4],
+    [5, 1],
+    [5, 6],
+    [3, 2],
+    [3, 6],
+    [2, 1],
+    [1, 6],
+    [4, 0.5],
+  ])('difficulty %i, %f h: every requested hour lands in the plan', (difficulty, studyHours) => {
+    const far = exam({ date: '2026-11-15', difficulty: difficulty as 1, studyHours })
+    const r = planWeek(input({ days: 14, assessments: [far] }))
+    expect(study(r).reduce((n, s) => n + mins(s), 0)).toBe(studyHours * 60)
+  })
+  it('a very small request still gets one real block', () => {
+    const r = planWeek(input({ assessments: [exam({ studyHours: 0.25 })] }))
+    expect(study(r).map(mins)).toEqual([30])
+  })
+  it('no study requested -> no block', () => {
+    expect(study(planWeek(input({ assessments: [exam({ studyHours: 0 })] })))).toHaveLength(0)
+  })
+  it('does not warn about an exam after the planned days: the next plan continues', () => {
+    const next = exam({ date: '2026-11-20', difficulty: 5, studyHours: 100 })
+    const r = planWeek(input({ days: 7, assessments: [next] }))
+    expect(r.notes.some((n) => n.includes('ne stiže'))).toBe(false)
+  })
   it('spreads study over multiple days', () => {
     const days = new Set(study(planWeek(input())).map((s) => s.date))
     expect(days.size).toBeGreaterThanOrEqual(3)
