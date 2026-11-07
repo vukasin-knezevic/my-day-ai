@@ -25,26 +25,30 @@ test('3. idem / ne idem za termin predmeta', async ({ page }) => {
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
   await page.getByRole('button', { name: '+ Termin' }).click()
-  await expect(page.getByText('Da li ideš na ove termine?')).toBeVisible()
+  // the choice sits next to the class (new classes start as "Idem")
+  await expect(page.getByRole('button', { name: /^Idem: Fizika/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
   await page.getByRole('button', { name: /^Ne idem: Fizika/ }).click()
   await expect(page.getByText('slobodno vreme')).toBeVisible()
 })
 
 test('4. neprijavljen kolokvijum se vidi na ekranu Danas', async ({ page }) => {
   await onboard(page, { demo: true })
-  await expect(page.getByText(/Neprijavljen: Prvi kolokvijum/)).toBeVisible()
+  await expect(page.getByText(/Neprijavljen: Kolokvijum 1/)).toBeVisible()
 })
 
 test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => {
   await onboard(page, { demo: true })
   await page.goto('/#/faks')
-  await page.getByRole('tab', { name: 'Ispiti i domaći' }).click()
+  await page.getByRole('tab', { name: 'Ispit/Kolokvijum' }).click()
   await page
     .getByLabel(/Da li si prijavio/)
     .first()
     .check()
   await page.goto('/#/')
-  await expect(page.getByText(/Neprijavljen: Prvi kolokvijum/)).toHaveCount(0)
+  await expect(page.getByText(/Neprijavljen: Kolokvijum 1/)).toHaveCount(0)
   await expect(page.getByText(/\+20 XP/)).toBeVisible()
 })
 
