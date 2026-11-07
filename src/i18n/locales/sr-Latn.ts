@@ -14,7 +14,12 @@ const messages = {
   'common.add': 'Dodaj',
   'common.cancel': 'Otkaži',
   'common.giveUp': 'Odustani',
+  'err.title': 'Nešto je pošlo naopako',
+  'err.body':
+    'Tvoji podaci su i dalje sačuvani na ovom uređaju. Probaj da učitaš aplikaciju ponovo.',
+  'err.reload': 'Učitaj ponovo',
   'common.delete': 'Obriši',
+  'common.sure': 'Sigurno?',
   'common.when.none': '—',
   'when.today': 'danas',
   'when.tomorrow': 'sutra',
@@ -198,6 +203,7 @@ const messages = {
   'dataio.structure': 'JSON nema očekivanu strukturu.',
   'dataio.unknown': 'Ovo ne liči na izvoz iz My Day AI (nema poznatih polja).',
   'dataio.notList': 'Polje „{key}" mora biti lista.',
+  'dataio.badItem': 'Stavka {n} u „{key}" je oštećena, pa uvoz nije bezbedan.',
   'dataio.badSettings': 'Polje „settings" nije ispravno.',
   'set.title': '⚙️ Podešavanja',
   'set.appearance': 'Izgled',
@@ -232,7 +238,7 @@ const messages = {
   'set.apiKey': 'Anthropic API ključ',
   'set.keyWarn':
     '⚠️ Ključ se čuva samo na ovom uređaju, ali je vidljiv u pregledaču (alati za programere). Nikome ga ne deli, ne stavljaj ga na tuđ računar i postavi mesečni limit potrošnje u Anthropic konzoli.',
-  'set.modelFast': 'Brži model (unos, uvoz)',
+  'set.modelFast': 'Brži model (unos, uvoz, čet)',
   'set.modelStrong': 'Jači model (planiranje)',
   'set.usage':
     'Potrošnja ovog meseca ({month}): {calls} poziva, {input} ulaznih i {output} izlaznih tokena{cost}.',
@@ -366,8 +372,6 @@ const messages = {
   'prompt.dataHeader': '--- MOJI PODACI ---',
   'prompt.schemaHeader': 'ŠEMA ODGOVORA (JSON, u jednom bloku koda):',
   'prompt.jsonAtEnd': 'Na kraju vrati JSON u bloku koda po šemi iznad.',
-  'prompt.chat.student': 'Student',
-  'prompt.chat.assistant': 'Asistent',
   'prompt.chat.instruction': 'Odgovori kratko (do 6 rečenica), konkretno, na srpskom.',
   'prompt.chat.question': 'PITANJE',
   'schema.plan-dana':
@@ -496,6 +500,7 @@ const messages = {
   'wo.saved': '💪 Trening sačuvan!',
   'wo.record': '🎉 Novi rekord: {list}',
   'wo.recordItem': '{name} {kg} kg (bilo {before})',
+  'wo.needsExercise': 'Dodaj bar jednu vežbu da bi sačuvao trening.',
   'wo.tplNeedsExercise': 'Dodaj bar jednu vežbu da bi sačuvao šablon.',
   'wo.tplSaved': '📌 Šablon „{name}" sačuvan.',
   'wo.tplDefaultName': 'Šablon',

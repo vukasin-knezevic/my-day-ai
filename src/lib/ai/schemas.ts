@@ -53,7 +53,12 @@ export const WorkoutPlanSchema = z.object({
         day: z.number().int().min(1).max(7),
         title: z.string().min(1),
         exercises: z.array(
-          z.object({ name: z.string().min(1), sets: z.number().int().min(1), reps: z.string() }),
+          z.object({
+            name: z.string().min(1),
+            sets: z.number().int().min(1),
+            // the schema asks for a string ("6-8"), but a bare 8 means the same thing
+            reps: z.union([z.string(), z.number()]).transform(String),
+          }),
         ),
       }),
     )

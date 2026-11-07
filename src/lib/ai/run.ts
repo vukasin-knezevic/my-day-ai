@@ -1,18 +1,17 @@
 import type { AppData } from '../../types'
-import { callClaude, type ClaudeReply } from './client'
+import { callClaude, type ChatMessage, type ClaudeReply } from './client'
 import { parseAiResponse, type ParseResult } from './extract'
-import { buildContext, buildPrompt, systemPrompt } from './prompt'
-import { t } from '../../i18n'
+import { buildChatSystem, buildPrompt } from './prompt'
 import type { AiKind } from './schemas'
 
-const FAST_KINDS: AiKind[] = ['unos', 'uvoz']
+const FAST_KINDS: (AiKind | 'chat')[] = ['unos', 'uvoz', 'chat']
 
-/** Fast cheap model for text entry/import, stronger one for planning. */
+/** Fast cheap model for text entry, import and chat, stronger one for planning. */
 export function modelFor(
   kind: AiKind | 'chat',
   s: { modelFast: string; modelStrong: string },
 ): string {
-  return kind !== 'chat' && FAST_KINDS.includes(kind) ? s.modelFast : s.modelStrong
+  return FAST_KINDS.includes(kind) ? s.modelFast : s.modelStrong
 }
 
 export interface ApiRun {
@@ -29,32 +28,31 @@ export async function runApi(
   text = '',
   fetchImpl?: typeof fetch,
 ): Promise<ApiRun> {
-  const { system, user } = buildPrompt(kind, data, today, { manual: false, text })
+  const { system, user } = buildPrompt(kind, data, today, text)
   const model = modelFor(kind, data.settings)
-  const reply = await callClaude({ apiKey: data.settings.apiKey, model, system, user, fetchImpl })
+  const reply = await callClaude({
+    apiKey: data.settings.apiKey,
+    model,
+    system,
+    messages: [{ role: 'user', content: user }],
+    fetchImpl,
+  })
   return { parsed: parseAiResponse(kind, reply.text), reply, model }
 }
 
 export async function runChat(
   data: AppData,
   today: string,
-  history: { role: 'user' | 'assistant'; content: string }[],
+  history: ChatMessage[],
   question: string,
   fetchImpl?: typeof fetch,
 ) {
-  const transcript = history
-    .map(
-      (m) =>
-        `${m.role === 'user' ? t('prompt.chat.student') : t('prompt.chat.assistant')}: ${m.content}`,
-    )
-    .join('\n')
-  const user = `${buildContext(data, today)}\n\n${transcript ? transcript + '\n' : ''}${t('prompt.chat.student')}: ${question}\n\n${t('prompt.chat.instruction')}`
   const model = modelFor('chat', data.settings)
   const reply = await callClaude({
     apiKey: data.settings.apiKey,
     model,
-    system: systemPrompt(),
-    user,
+    system: buildChatSystem(data, today),
+    messages: [...history, { role: 'user', content: question }],
     maxTokens: 4000,
     fetchImpl,
   })

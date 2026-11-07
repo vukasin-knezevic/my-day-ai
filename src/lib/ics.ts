@@ -1,6 +1,7 @@
 // iCalendar (.ics) export so the phone's calendar app can remind you (works without this app being open).
 import type { AppData } from '../types'
-import { addDaysStr, todayStr } from './dates'
+import { addDaysStr, minToTime, timeToMin, todayStr } from './dates'
+import { isExam } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
 
@@ -9,11 +10,26 @@ const esc = (s: string) =>
 const compactDate = (d: string) => d.replace(/-/g, '')
 const compactTime = (t: string) => t.replace(':', '') + '00'
 
-/** RFC 5545: lines must be folded at 75 octets. We fold by characters, which is safe for ASCII-heavy text. */
+const utf8 = new TextEncoder()
+/** Room for text in one line: RFC 5545 allows 75 octets and a continuation starts with a space. */
+const FOLD_OCTETS = 74
+
+/** RFC 5545 line folding. Counts octets, so Serbian letters and emoji are not cut in half. */
 function fold(line: string): string {
-  if (line.length <= 73) return line
   const parts: string[] = []
-  for (let i = 0; i < line.length; i += 73) parts.push(line.slice(i, i + 73))
+  let part = ''
+  let octets = 0
+  for (const ch of line) {
+    const size = utf8.encode(ch).length
+    if (octets + size > FOLD_OCTETS) {
+      parts.push(part)
+      part = ''
+      octets = 0
+    }
+    part += ch
+    octets += size
+  }
+  parts.push(part)
   return parts.join('\r\n ')
 }
 
@@ -83,7 +99,7 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
     const sub = data.subjects.find((s) => s.id === a.subjectId)?.name ?? ''
     events.push({
       uid: `as-${a.id}`,
-      summary: `${a.type === 'domaci' || a.type === 'lab' ? '📝' : '🎓'} ${a.title}${sub ? ` (${sub})` : ''}`,
+      summary: `${isExam(a) ? '🎓' : '📝'} ${a.title}${sub ? ` (${sub})` : ''}`,
       date: a.date,
       start: a.time,
       end: a.time ? addMinutes(a.time, 90) : undefined,
@@ -114,10 +130,7 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
   return lines.map(fold).join('\r\n') + '\r\n'
 }
 
-function addMinutes(t: string, m: number): string {
-  const total = Math.min(23 * 60 + 59, Number(t.slice(0, 2)) * 60 + Number(t.slice(3)) + m)
-  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-}
+const addMinutes = (time: string, m: number) => minToTime(Math.min(1439, timeToMin(time) + m))
 
 export function downloadText(filename: string, text: string, mime = 'text/calendar') {
   const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }))

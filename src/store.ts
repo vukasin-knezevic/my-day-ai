@@ -4,10 +4,11 @@ import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
-import { todayStr } from './lib/dates'
+import { monthOf, todayStr } from './lib/dates'
 import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
+import { addUsage } from './lib/ai/usage'
 import { resolveLanguage, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
@@ -43,6 +44,8 @@ interface Actions {
   add: <K extends CollectionKey>(key: K, item: Omit<Item<K>, 'id'> & { id?: string }) => string
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void
   remove: (key: CollectionKey, id: string) => void
+  /** Deletes a subject together with its exams, so the planner does not keep counting them. */
+  removeSubject: (id: string) => void
   patch: (patch: Partial<AppData>) => void
   loadDemo: () => void
   clearDemo: () => void
@@ -53,6 +56,8 @@ interface Actions {
   award: (e: AwardEvent) => void
   /** Records reward time I used (no judging). */
   spendReward: (min: number, game?: string) => void
+  /** Adds one API call to this month's usage. */
+  trackAiUsage: (inputTokens: number, outputTokens: number) => void
 }
 
 export type Store = AppData & Actions
@@ -89,8 +94,14 @@ export const useStore = create<Store>()(
           (s) =>
             ({ [key]: (s[key] as { id: string }[]).filter((x) => x.id !== id) }) as Partial<Store>,
         ),
+      removeSubject: (id) =>
+        set((s) => ({
+          subjects: s.subjects.filter((x) => x.id !== id),
+          assessments: s.assessments.filter((a) => a.subjectId !== id),
+        })),
       patch: (p) => set(p as Partial<Store>),
       loadDemo: () => {
+        if (get().hasDemo()) return
         const demo = makeDemoData(todayStr())
         set((s) => {
           const next: Partial<Store> = {}
@@ -109,7 +120,9 @@ export const useStore = create<Store>()(
               (x) => !x.demo,
             )
           }
-          // assessments of removed demo subjects are demo too, so nothing is left dangling
+          // what the user added to a demo subject goes with it, so nothing is left dangling
+          const gone = new Set(s.subjects.filter((x) => x.demo).map((x) => x.id))
+          next.assessments = next.assessments?.filter((a) => !gone.has(a.subjectId))
           return next
         }),
       hasDemo: () =>
@@ -131,6 +144,8 @@ export const useStore = create<Store>()(
           games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
         }))
       },
+      trackAiUsage: (input, output) =>
+        set((s) => ({ aiUsage: addUsage(s.aiUsage, monthOf(todayStr()), input, output) })),
     }),
     {
       name: 'my-day-ai',

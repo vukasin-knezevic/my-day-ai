@@ -3,18 +3,22 @@
 Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
 ## Šta je novo u verziji 1.1
+
 **Popravke**
+
 - **Tastatura svuda:** `Enter` = Dalje / Sačuvaj / Potvrdi, `Esc` = Nazad / Otkaži / zatvori (onboarding, forme, dijalozi). U višeredom polju Enter pravi novi red (potvrda je `Ctrl+Enter`). Posle promene koraka fokus ide na prvo polje, pa se celo podešavanje može proći bez miša.
 - **Polja za brojeve:** jedna zajednička komponenta `NumberInput`; polje sme da bude prazno, nema vodeće nule (`03`), decimale rade gde treba (tačka ili zarez), min/max se primenjuju pri kucanju i pri napuštanju polja.
 - **Izmena aktivnosti, ponavljajuće aktivnosti** (svaki dan / radnim danima / nedeljno) u formi, i **sopstveni šabloni treninga**.
 
 **Opšta verzija**
+
 - „PS5 vreme" je zamenjeno **nagradom koju korisnik sam imenuje** (podrazumevano „Vreme za zabavu" 🎮, na engleskom „Fun time"); odnos minuta po satu učenja je podesiv.
 - **Migracija podataka:** stari sačuvani podaci i stari JSON izvozi se automatski prebacuju u novi oblik (`migrateData`, pokriveno testovima).
 - Bez ličnih detalja u demo podacima, promptu i README-u; valuta je podesiva (podrazumevano po jeziku).
 - **Onboarding:** novi koraci „Jezik", „Nagrada" i „AI režim" (ručni besplatno ili API koji se plaća po upotrebi, sa upozorenjem o ključu).
 
 **Više jezika**
+
 - i18n: srpski (latinica), engleski, srpski (ćirilica). Novi jezik je jedan novi fajl u `src/i18n/locales/` (3 koraka u README-u). Test pada ako nekom jeziku fali ključ ili `{parametar}`.
 - Datumi, nazivi dana i meseci, brojevi, AI prompt i odgovori prate jezik; brzi unos razume srpski i engleski.
 - Playwright proverava engleski i ćirilicu na svim ekranima (bez horizontalnog skrola, bez axe povreda) i pravi screenshot-ove.
@@ -22,25 +26,28 @@ Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: htt
 **README** je prepisan kao opis proizvoda (live demo, CI značka, jezici, kako dodati jezik).
 
 ## Kako da pokreneš
+
 - `npm run dev` → **http://localhost:5173**
 - Telefon na istoj Wi-Fi mreži: **http://192.168.1.15:5173** (ili http://192.168.1.16:5173 preko kabla). Ako ne otvara, Windows Firewall verovatno blokira Node.js: dozvoli ga za „Privatne mreže".
 - Instalacija na telefon (PWA) traži HTTPS ili localhost, pa radi tek kad se objavi na GitHub Pages (https://vukasin-knezevic.github.io/my-day-ai/). Na običnom `http://192.168…` aplikacija radi, ali „Dodaj na početni ekran" i offline režim ne.
 
 ## Stanje provera (poslednje pokretanje)
-| Provera | Rezultat |
-|---|---|
-| `npm run lint` | prolazi, 0 grešaka |
-| `npm run typecheck` | prolazi (TypeScript strict) |
-| `npm test` | **271 unit/komponentni test prolazi** (parser, planer, AI sloj, `NumberInput`, `KeyScope`, migracija, prevodi…) |
-| Pokrivenost `src/lib/` | **~94% linija** (cilj 80%) |
-| Playwright e2e | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
-| `npm run build` | bez upozorenja |
+
+| Provera                | Rezultat                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run lint`         | prolazi, 0 grešaka                                                                                                                                     |
+| `npm run typecheck`    | prolazi (TypeScript strict)                                                                                                                            |
+| `npm test`             | **271 unit/komponentni test prolazi** (parser, planer, AI sloj, `NumberInput`, `KeyScope`, migracija, prevodi…)                                        |
+| Pokrivenost `src/lib/` | **~94% linija** (cilj 80%)                                                                                                                             |
+| Playwright e2e         | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
+| `npm run build`        | bez upozorenja                                                                                                                                         |
 
 ## Šta je urađeno u verziji 1.0 (faze 0–12)
-Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `PLAN.md`):
-0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
+
+Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `docs/razvoj/PLAN.md`): 0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
 
 ## Popravke posle verzije 1.1
+
 - **Šablon treninga se može preimenovati** (naziv iz polja Tip).
 - **„Samo danas" za ponavljajuće aktivnosti:** uklanja jedan dan, niz ostaje; važi i za `.ics`.
 - **Greška u planeru ispravljena:** skraćenje treninga pred ispit menjalo je ceo ponavljajući niz, sada menja samo taj dan.
@@ -52,6 +59,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **Brzi unos razume ponavljanje:** „trening svaki dan u 18", „učenje radnim danima 10-12", „svakog ponedeljka", „every monday".
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
+
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.
 3. **Nazivi modela i cene** (`claude-haiku-5-5` $0.10/$0.50, `claude-sonnet-5-5` $2/$10 po milion tokena) i verzija `2026-10-21` potvrđeni su u Anthropic-ovoj referenci za API (keš od 6. 10. 2026). Haiku iznad 100K tokena u jednom zahtevu košta $0.50/$2.50, što procena ne računa; tako veliki zahtevi ovde nisu očekivani. Za druge modele nema procene u dolarima. Procena računa sve tokene po ceni jačeg modela (gornja granica).
@@ -71,13 +79,32 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 10. Verzije paketa su najnovije u trenutku instalacije (osim React 18, kako zadatak traži). `npm audit --omit=dev` ne nalazi ništa; 15 upozorenja (2 niska, 13 umerenih) je samo u razvojnim alatima (eslint lanac), ne ulaze u objavljenu aplikaciju. `npm audit fix` ih ne rešava, a `--force` nisam koristio.
 
 ## Poznati problemi
+
 - Prvi `git push` je tražio prijavu; posle toga radi sam.
 - Kad je podatak iz perioda pre prve upotrebe aplikacije (npr. sat sna od juče), prosek 7 dana ga ne vidi dok ga ne uneseš.
 - Ako IndexedDB nije dostupan (privatni prozor), aplikacija radi, ali podaci se ne pamte (upozorenje je u konzoli).
 
 ## 5 ideja za verziju 2
+
 1. **Sinhronizacija između uređaja** (npr. enkriptovan backup u sopstvenom cloud-u ili Supabase/Firebase) da telefon i laptop dele podatke.
 2. **Google Calendar integracija**: dvosmerna sinhronizacija umesto jednokratnog `.ics` izvoza.
 3. **Uvoz sna sa pametnog sata**: zatražiti pravi izvoz podataka (npr. iz Huawei Health) i napraviti uvoz; kasnije Health Kit preko malog servera (OAuth).
 4. **Server za push notifikacije** (Web Push + serverless funkcija) da podsetnici stižu i kad je aplikacija zatvorena, i automatski nedeljni rezime.
 5. **Pametniji planer**: ponavljajuće aktivnosti u formi, ručno prevlačenje blokova na liniji dana, učenje iz navika (kad stvarno učiš, koliko stvarno traje) i „šta ako" simulacija pred ispit.
+
+## Pregled koda pre portfolija (7. 11. 2026.)
+
+Grana `pregled-koda`. Popravke su poređane po važnosti, svaka je u svom commit-u i uz nju su testovi.
+
+- **Planer je tiho gubio sate učenja.** Dnevni udeo manji od 30 min se brisao bez upozorenja, pa je kolokvijum težine 5 sa 4 h dobijao 0 h plana. Sad se ukupno vreme deli tako da zbir uvek odgovara traženom, a ostatak prelazi na sledeći dan. Ispit posle planiranih dana više ne daje lažno upozorenje.
+- **Ponovno planiranje je dupliralo učenje.** Posle prihvatanja plana drugi klik je dodavao još 8 h za isti kolokvijum. Blokovi sada pamte ispit (`assessmentId`), pa se planira samo ono što nije pokriveno; preskočen ili neoznačen blok iz prošlosti ne računa se kao naučen. Nedeljni cilj treninga sada broji i dane pre današnjeg (u četvrtak sa 3/3 predlagala su se još 2), a planer ne nudi skraćenje već završenog treninga.
+- **Izvlačenje AI odgovora.** Jedan `{"a":1}` u tekstu posle ispravnog plana rušio je ceo odgovor, jer je uvek pobeđivao poslednji objekat. Sad blok koda ima prednost i bira se objekat koji zaista prolazi šemu. Prihvataju se i `reps` zadati brojem, a isti kolokvijum naveden dvaput u jednom uvozu dodaje se jednom.
+- **AI sloj.** Čet šalje prave `messages` uloge umesto teksta sa istorijom i koristi brži model, kako je i planirano za troškove. Ton više nije trajno „strog" zbog preskakanja od pre više meseci. Potrošnja tokena se upisuje u samoj prodavnici, pa se ne gubi kad dva poziva idu istovremeno. Uklonjeni su mrtav `opts.manual`, prazan `setPasted` i nepotreban re-export.
+- **San i kalendar.** „legao 23:30" otkucano posle ponoći upisivalo se u narednu noć, pa je san ispadao negativan i tiho nestajao iz proseka; sada ide u prethodnu noć. `.ics` je sekao redove po znakovima (do 103 okteta, RFC dozvoljava 75), a ćirilica, naša slova i emoji su to lako probijali; sada se seče po oktetima.
+- **Zaštita podataka.** Brisanje predmeta sada briše i njegove kolokvijume (planer ih je i dalje računao, a stranice su ih prikazivale bez predmeta). Predmet i ceo ponavljajući niz brišu se tek na drugi klik. Drugo učitavanje demo podataka više ih ne duplira. Prazan trening se ne čuva (svaki klik je davao 30 XP), a termin časa ne može da se završi pre početka.
+- **Otpornost na pad.** Rezervna kopija sa oštećenom stavkom (npr. aktivnost bez vremena) prolazila je proveru pa rušila ekran Danas; sada se svaka stavka proverava pre uvoza, a poruka kaže koja je loša. Dodat je `ErrorBoundary`: umesto bele strane korisnik vidi poruku, može da učita aplikaciju ponovo i da preuzme rezervnu kopiju.
+- **`planWeek` razbijen na korake.** Funkcija od preko 200 linija sada ima 11 i čita se kao recept (lakši dan, skraćivanje pred ispit, treninzi, učenje, nagrade); „magični" brojevi su dobili imena. Provera tipa ispita bila je kopirana na 8 mesta i sad je jedan `isExam`. Uz to: napomene pokazuju čitljiv datum umesto ISO oblika, dva treninga iste večeri daju jednu napomenu, a uklonjen je i dupli računski deo za sate sna i nekorišćen kod.
+- **Testovi planera.** `Planner.test.tsx` je zavisio od dana u nedelji, a tvrdnje su mu stajale iza `if`, pa ponekad nije proveravao ništa; sada ima fiksiran datum i šest pravih scenarija. Dodat je `planner.invariants.test.ts`: 300 ponovljivih nasumičnih nedelja proverava pravila koja uvek moraju da važe (bez preklapanja, unutar budnih sati, limiti, pre ispita). Odmah je našao pravu grešku: lakši dan je dozvoljavao 60 min i kad je dnevni limit manji.
+- **CI i objava.** Objava više ne ide na živi sajt ako lint ili testovi padnu. CI sada proverava i format i `build` (do sada se build pokretao tek pri objavi). Svih 14 fajlova koji su odstupali je formatirano, verzija u `package.json` je usklađena sa 1.1.0, a iz `defaults.ts` je uklonjen zalutali BOM znak.
+- **Uređen koren repoa.** Zadaci, planovi, dnevnik i beleške za učenje premešteni su u `docs/razvoj/`, pa se u korenu vide README, licenca i izveštaj. Ništa nije obrisano. Arhitektura je dopunjena novim ponašanjem planera. Napomena: `docs/razvoj/MY_DAY_AI_ZADATAK.md` i dalje sadrži lične detalje, a ostaju i u git istoriji.
+- **Dupliranje i pokrivenost.** Isti kod kartica bio je kopiran na tri stranice i sad je jedna `Tabs` komponenta. Novi testovi pokrivaju podsetnike (`useReminders`), čuvanje podataka kad IndexedDB otkaže (`storage`) i put od rečenice do sačuvanih podataka (`apply`), uključujući ceo tok „legao / ustao".

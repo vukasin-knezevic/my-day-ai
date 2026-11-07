@@ -1,0 +1,6 @@
+coverage
+dist
+playwright-report
+test-results
+package-lock.json
+MY_DAY_AI_REZIME.md

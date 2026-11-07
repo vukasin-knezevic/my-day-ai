@@ -1,4 +1,4 @@
-﻿import type { AppData, Settings } from '../types'
+import type { AppData, Settings } from '../types'
 
 export const DEFAULT_SETTINGS: Settings = {
   name: '',

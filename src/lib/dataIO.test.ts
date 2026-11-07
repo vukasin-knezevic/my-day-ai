@@ -21,6 +21,17 @@ describe('export / import', () => {
     expect(exportJson(d)).not.toContain('sk-secret')
     expect(exportJson(d, true)).toContain('sk-secret')
   })
+  it('refuses a damaged item, which would crash the screens later', () => {
+    const noTimes = { id: 'a', title: 'x', date: '2026-11-06' }
+    const r = importJson(JSON.stringify({ activities: [noTimes] }))
+    expect(r).toMatchObject({ ok: false, message: expect.stringContaining('activities') })
+    expect(r).toMatchObject({ message: expect.stringContaining('1') })
+  })
+  it('keeps fields it does not check', () => {
+    const d = full()
+    const r = importJson(exportJson(d))
+    expect(r.ok && r.data.activities).toEqual(d.activities)
+  })
   it('accepts a raw data object too', () => {
     const r = importJson(JSON.stringify({ meals: [] }))
     expect(r.ok).toBe(true)

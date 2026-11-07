@@ -1,7 +1,8 @@
 // Pure helpers: what is on a given day, and what needs attention.
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
-import { CATEGORY_META } from '../types'
-import { addDaysStr, daysUntil, fromDateStr, timeToMin, weekdayOf, weekStartStr } from './dates'
+import { daysUntil, timeToMin, weekdayOf, weekStartStr } from './dates'
+import { isExam } from './exams'
+import { sleepHours } from './life'
 import { t } from '../i18n'
 import { slotKindLabel } from './labels'
 
@@ -173,7 +174,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
   const subjName = (id: string) =>
     data.subjects.find((s) => s.id === id)?.name ?? t('subject.fallback')
   for (const a of data.assessments) {
-    if (a.type === 'domaci' || a.type === 'lab') {
+    if (!isExam(a)) {
       const d = daysUntil(a.date, today)
       if (!a.done && d >= 0 && d <= 1)
         alerts.push({
@@ -213,10 +214,9 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
   const last = [...data.sleep]
     .filter((s) => s.wakeTime)
     .sort((a, b) => b.date.localeCompare(a.date))[0]
-  if (last && last.wakeTime && daysUntil(today, last.date) <= 1) {
-    const hours =
-      (fromDateStr(last.wakeTime).getTime() - fromDateStr(last.bedtime).getTime()) / 3600000
-    if (hours > 0 && hours < 6)
+  if (last && daysUntil(today, last.date) <= 1) {
+    const hours = sleepHours(last)
+    if (hours !== null && hours < 6)
       alerts.push({
         id: 'sleep',
         level: 'amber',
@@ -240,8 +240,3 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
   if (!parts.length) return studyAndWorkoutLabel ? t('day.free') : ''
   return t('day.prefix', { parts: parts.join(', ') })
 }
-
-export function categoryEmoji(c: Category) {
-  return CATEGORY_META[c].emoji
-}
-export { addDaysStr }
