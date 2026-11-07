@@ -444,8 +444,6 @@ const messages: Record<MessageKey, string> = {
   'study.tab.schedule': 'Timetable',
   'study.tab.exams': 'Exam / Midterm',
   'study.tab.points': 'Points',
-  'study.ask.title': 'Are you going to these classes?',
-  'study.ask.slot': '**{subject}** — {kind}, {day} {start}–{end}',
   'study.ask.aria': '{att}: {subject} {kind} {day}',
   'study.weekly.title': '🗓️ Next week: are you going?',
   'study.weekly.slot': '{subject} — {kind}, {day} {start}',

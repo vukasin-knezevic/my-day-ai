@@ -8,15 +8,21 @@ beforeEach(() => {
   useStore.setState({ ...emptyData(), hydrated: true })
 })
 
-test('predmet + termin + pitanje idem / ne idem', async () => {
+test('predmet + termin: idem / ne idem / ponekad je odmah pored termina', async () => {
   const user = userEvent.setup()
   render(<Study />)
   await user.type(screen.getByLabelText('Naziv predmeta'), 'Fizika')
   await user.click(screen.getByRole('button', { name: 'Dodaj predmet' }))
   await user.click(screen.getByRole('button', { name: '+ Termin' }))
-  expect(screen.getByText('Da li ideš na ove termine?')).toBeInTheDocument()
+  // no separate card on top: the choice sits next to the class (new classes start as "Idem")
+  expect(screen.queryByText('Da li ideš na ove termine?')).not.toBeInTheDocument()
+  expect(useStore.getState().subjects[0].slots[0].attendance).toBe('idem')
   await user.click(screen.getByRole('button', { name: /^Ne idem: Fizika/ }))
   expect(useStore.getState().subjects[0].slots[0].attendance).toBe('ne-idem')
+  expect(screen.getByRole('button', { name: /^Ne idem: Fizika/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
   expect(screen.getByText('slobodno vreme')).toBeInTheDocument()
 })
 

@@ -441,8 +441,6 @@ const messages = {
   'study.tab.schedule': 'Raspored',
   'study.tab.exams': 'Ispit/Kolokvijum',
   'study.tab.points': 'Poeni',
-  'study.ask.title': 'Da li ideš na ove termine?',
-  'study.ask.slot': '**{subject}** — {kind}, {day} {start}–{end}',
   'study.ask.aria': '{att}: {subject} {kind} {day}',
   'study.weekly.title': '🗓️ Sledeća nedelja: da li ideš?',
   'study.weekly.slot': '{subject} — {kind}, {day} {start}',

@@ -23,7 +23,6 @@ import {
   nextWeekStart,
   slotsToAsk,
   sortAssessments,
-  unansweredSlots,
   urgency,
 } from '../lib/exams'
 import { hasSlot } from '../lib/schedule'
@@ -78,7 +77,6 @@ function Schedule() {
     useShallow((s) => ({ subjects: s.subjects, add: s.add, update: s.update, remove: s.remove })),
   )
   const today = todayStr()
-  const unanswered = unansweredSlots(subjects)
   // "sometimes" is asked on Sunday evening for next week
   const sundayEvening = weekdayOf(today) === 7 && new Date().getHours() >= 17
   const weekly = sundayEvening ? slotsToAsk(subjects, today) : []
@@ -122,45 +120,6 @@ function Schedule() {
 
   return (
     <div className="space-y-4">
-      {unanswered.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <h2 className="mb-2 font-semibold">{t('study.ask.title')}</h2>
-          <ul className="space-y-3">
-            {unanswered.map(({ subject, slot }) => (
-              <li key={slot.id} className="text-sm">
-                <p>
-                  <Rich
-                    text={t('study.ask.slot', {
-                      subject: subject.name,
-                      kind: slotKindLabel(slot.kind),
-                      day: weekdayName(slot.day),
-                      start: slot.start,
-                      end: slot.end,
-                    })}
-                  />
-                </p>
-                <div className="mt-1 flex gap-2">
-                  {ATTENDANCES.map((a) => (
-                    <Button
-                      key={a}
-                      variant="soft"
-                      aria-label={t('study.ask.aria', {
-                        att: attendanceLabel(a),
-                        subject: subject.name,
-                        kind: slotKindLabel(slot.kind),
-                        day: weekdayName(slot.day),
-                      })}
-                      onClick={() => setAttendance(subject, slot, a)}
-                    >
-                      {attendanceLabel(a)}
-                    </Button>
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
       {weekly.length > 0 && (
         <Card className="border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950">
           <h2 className="mb-2 font-semibold">{t('study.weekly.title')}</h2>
@@ -264,7 +223,7 @@ function SubjectCard({
       day,
       start,
       end,
-      attendance: null,
+      attendance: 'idem',
     }
     if (hasSlot(subject.slots, slot)) {
       setSlotMsg(t('study.slotExists'))
@@ -286,6 +245,12 @@ function SubjectCard({
       update('subjects', subject.id, { slots: [...subject.slots, removedSlot] })
     setRemovedSlot(null)
   }
+  const attAria = (sl: ClassSlot) =>
+    t('study.attAria', {
+      subject: subject.name,
+      kind: slotKindLabel(sl.kind),
+      day: weekdayName(sl.day),
+    })
   const slots = [...subject.slots].sort((a, b) => a.day - b.day || a.start.localeCompare(b.start))
   return (
     <Card>
@@ -321,24 +286,29 @@ function SubjectCard({
                 kind: slotKindLabel(sl.kind),
               })}
             </span>
-            {sl.attendance && (
-              <Select
-                aria-label={t('study.attAria', {
-                  subject: subject.name,
-                  kind: slotKindLabel(sl.kind),
-                  day: weekdayName(sl.day),
-                })}
-                className="!w-auto !py-1 text-sm"
-                value={sl.attendance}
-                onChange={(e) => onSlotAttendance(subject, sl, e.target.value as Attendance)}
-              >
-                {ATTENDANCES.map((a) => (
-                  <option key={a} value={a}>
-                    {attendanceLabel(a)}
-                  </option>
-                ))}
-              </Select>
-            )}
+            <span role="group" aria-label={attAria(sl)} className="inline-flex gap-1">
+              {ATTENDANCES.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  aria-pressed={sl.attendance === a}
+                  aria-label={t('study.ask.aria', {
+                    att: attendanceLabel(a),
+                    subject: subject.name,
+                    kind: slotKindLabel(sl.kind),
+                    day: weekdayName(sl.day),
+                  })}
+                  onClick={() => onSlotAttendance(subject, sl, a)}
+                  className={`min-h-8 rounded-lg px-2 text-xs font-medium transition ${
+                    sl.attendance === a
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                  }`}
+                >
+                  {attendanceLabel(a)}
+                </button>
+              ))}
+            </span>
             {sl.attendance === 'ne-idem' && (
               <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
             )}
