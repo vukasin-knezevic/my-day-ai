@@ -22,15 +22,23 @@ describe('extractJson', () => {
     const r = extractJson(
       `Evo plana! 🎉 Ovo je dosta priče {sa vitičastim zagradama}.\n${fence(goodPlan)}\nSrećno!`,
     )
-    expect(r).toEqual({ ok: true, value: goodPlan })
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
   })
   it('works without code fence (bare JSON in text)', () => {
     const r = extractJson(`Evo: ${JSON.stringify(goodPlan)} gotovo`)
-    expect(r).toEqual({ ok: true, value: goodPlan })
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
   })
   it('last valid block wins (draft first, final later)', () => {
     const r = extractJson(`${fence({ a: 1 })}\nispravka:\n${fence({ a: 2 })}`)
-    expect(r).toEqual({ ok: true, value: { a: 2 } })
+    expect(r).toEqual({ ok: true, values: [{ a: 2 }, { a: 1 }] })
+  })
+  it('a code block beats bare braces that come after it', () => {
+    const r = extractJson(`${fence(goodPlan)}\nFormat je {"a":1}, srećno!`)
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
+  })
+  it('a broken code block falls back to bare JSON in the text', () => {
+    const r = extractJson('```json\n{oops}\n```\nIspravljeno: {"a":1}')
+    expect(r).toEqual({ ok: true, values: [{ a: 1 }] })
   })
   it('braces inside strings do not break balancing', () => {
     const r = extractJson('{"summary": "tekst sa } u sredini", "activities": []}')
@@ -68,6 +76,20 @@ describe('parseAiResponse (shared by API and manual mode)', () => {
       }),
     )
     expect(wrong).toMatchObject({ ok: false, message: expect.stringContaining('ne prati šemu') })
+  })
+  it('a draft or an example near the answer does not hide the valid object', () => {
+    const later = `${fence(goodPlan)}\nGotovo. Primer drugog formata:\n${fence({ a: 1 })}`
+    expect(parseAiResponse('plan-dana', later)).toMatchObject({ ok: true, data: goodPlan })
+  })
+  it('accepts reps written as a number', () => {
+    const plan = (reps: unknown) => ({
+      name: 'PPL',
+      days: [{ day: 1, title: 'Push', exercises: [{ name: 'Bench', sets: 4, reps }] }],
+    })
+    const r = parseAiResponse('trening', fence(plan(8)))
+    expect(r).toMatchObject({ ok: true })
+    if (r.ok) expect(r.data).toEqual(plan('8'))
+    expect(parseAiResponse('trening', fence(plan(null))).ok).toBe(false)
   })
   it('validates other kinds', () => {
     expect(parseAiResponse('rezime', fence({ summary: 'ok', tips: ['a', 'b', 'c'] })).ok).toBe(true)
@@ -305,6 +327,19 @@ describe('applyAiResult', () => {
     applyAiResult('uvoz', r.data, st)
     expect(add).toHaveBeenCalledTimes(1)
     expect(add).toHaveBeenCalledWith('assessments', expect.objectContaining({ title: 'K2' }))
+  })
+  it('the same exam listed twice in one import is added once', () => {
+    const one = { subject: 'Novi', type: 'kolokvijum', title: 'K1', date: '2026-11-20' }
+    const r = parseAiResponse('uvoz', fence({ assessments: [one, one] }))
+    if (!r.ok) throw new Error('bad')
+    applyAiResult('uvoz', r.data, {
+      add,
+      patch,
+      subjects: [],
+      assessments: [],
+      workoutPlan: null,
+    } as never)
+    expect(add.mock.calls.map((c) => (c as unknown[])[0])).toEqual(['subjects', 'assessments'])
   })
   it('rejects impossible plans before they reach the data', () => {
     const plan = (date: string, end: string) => ({
