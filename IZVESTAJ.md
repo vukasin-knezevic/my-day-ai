@@ -87,3 +87,4 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 Grana `pregled-koda`. Popravke su poređane po važnosti; svaka ima svoj commit i test koji bez nje pada.
 
 - **Planer je tiho gubio sate učenja.** Dnevni udeo manji od 30 min se brisao bez upozorenja, pa je kolokvijum težine 5 sa 4 h dobijao 0 h plana. Sad se ukupno vreme deli tako da zbir uvek odgovara traženom, a ostatak prelazi na sledeći dan. Ispit posle planiranih dana više ne daje lažno upozorenje.
+- **Ponovno planiranje je dupliralo učenje.** Posle prihvatanja plana drugi klik je dodavao još 8 h za isti kolokvijum. Blokovi sada pamte ispit (`assessmentId`), pa se planira samo ono što nije pokriveno; preskočen ili neoznačen blok iz prošlosti ne računa se kao naučen. Nedeljni cilj treninga sada broji i dane pre današnjeg (u četvrtak sa 3/3 predlagala su se još 2), a planer ne nudi skraćenje već završenog treninga.

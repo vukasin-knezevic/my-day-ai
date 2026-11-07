@@ -193,6 +193,47 @@ describe('planWeek: study', () => {
   })
 })
 
+describe('planWeek: planning again', () => {
+  const accepted = (r: ReturnType<typeof planWeek>) =>
+    r.suggestions.map((s, i) => ({ ...s, id: `x${i}`, suggested: false }))
+
+  it('study blocks remember their exam', () => {
+    expect(study(planWeek(input())).every((s) => s.assessmentId === 'e1')).toBe(true)
+  })
+  it('planning again after accepting adds no extra study', () => {
+    const first = planWeek(input())
+    expect(study(planWeek(input({ activities: accepted(first) })))).toHaveLength(0)
+  })
+  it('later in the week only the part not yet covered is planned', () => {
+    const blocks = accepted(planWeek(input())).filter((a) => a.category === 'study')
+    const done = blocks[0]
+    const stillAhead = blocks[blocks.length - 1]
+    const r = planWeek(
+      input({
+        from: '2026-11-04',
+        settings: { ...input().settings, studyHoursPerDay: 8 },
+        activities: [{ ...done, status: 'done' }, stillAhead],
+      }),
+    )
+    const covered = mins(done) + mins(stillAhead)
+    expect(study(r).reduce((n, s) => n + mins(s), 0)).toBe(8 * 60 - covered)
+  })
+  it('a block that was skipped, or left unmarked in the past, does not count as studied', () => {
+    const block = act({
+      category: 'study',
+      date: MON,
+      start: '10:00',
+      end: '12:00',
+      assessmentId: 'e1',
+    })
+    const from = '2026-11-03'
+    const total = (a: Activity) =>
+      study(planWeek(input({ from, activities: [a] }))).reduce((n, s) => n + mins(s), 0)
+    expect(total({ ...block, status: 'skipped' })).toBe(8 * 60)
+    expect(total(block)).toBe(8 * 60)
+  })
+})
+
 describe('planWeek: day boundaries and free time', () => {
   it('nothing before wake-up or after bedtime', () => {
     const r = planWeek(
@@ -291,6 +332,22 @@ describe('planWeek: workouts and the exam eve', () => {
     ).toHaveLength(3)
     const withOne = planWeek(input({ assessments: [], activities: [act({ date: MON })] }))
     expect(withOne.suggestions.filter((s) => s.category === 'workout')).toHaveLength(2)
+  })
+  it('counts workouts from earlier this week towards the weekly goal', () => {
+    const done = ['2026-11-02', '2026-11-03', '2026-11-04'].map((date, i) =>
+      act({ id: `w${i}`, date, status: 'done' }),
+    )
+    const r = planWeek(input({ from: '2026-11-05', assessments: [], activities: done }))
+    expect(r.suggestions.filter((s) => s.category === 'workout')).toHaveLength(0)
+  })
+  it('a skipped workout earlier this week leaves the goal open', () => {
+    const skipped = act({ date: '2026-11-02', status: 'skipped' })
+    const r = planWeek(input({ from: '2026-11-05', assessments: [], activities: [skipped] }))
+    expect(r.suggestions.filter((s) => s.category === 'workout')).toHaveLength(2)
+  })
+  it('does not offer to shorten a workout that is already done', () => {
+    const r = planWeek(input({ activities: [act({ status: 'done' })] }))
+    expect(r.adjustments).toHaveLength(0)
   })
   it('spreads workouts (no two in a row when avoidable)', () => {
     const days = planWeek(input({ assessments: [] }))

@@ -1,7 +1,7 @@
 // Rule-based weekly planner (no AI). Pure function: same input -> same output.
 // It creates *suggestions* (dashed border in the UI) that the user accepts or ignores.
 import type { Activity, Assessment, Category, Settings, Subject } from '../types'
-import { addDaysStr, daysUntil, minToTime, timeToMin, weekdayOf } from './dates'
+import { addDaysStr, daysUntil, minToTime, timeToMin, weekStartStr, weekdayOf } from './dates'
 import { freeSlots, occurrencesOn } from './schedule'
 import { t as tr } from '../i18n'
 import { rewardNameOf } from './labels'
@@ -160,7 +160,7 @@ export function planWeek(input: PlanInput): PlanResult {
     if (!eveDays.has(date)) continue
     for (const a of fixed) {
       const occ = occurrencesOn({ activities: [a], subjects: [] }, date)[0]
-      if (!occ || a.category !== 'workout' || occ.status === 'skipped') continue
+      if (!occ || a.category !== 'workout' || occ.status !== 'planned') continue
       const len = timeToMin(a.end) - timeToMin(a.start)
       if (len > EVE_WORKOUT_MAX) {
         adjustments.push({
@@ -175,7 +175,11 @@ export function planWeek(input: PlanInput): PlanResult {
   }
 
   const existingWorkouts = dates.filter((d) => state.get(d)!.workout).length
-  const target = Math.round((settings.workoutsPerWeek * dates.length) / 7)
+  const earlierThisWeek = workoutDaysBefore(fixed, from)
+  const target = Math.min(
+    Math.round((settings.workoutsPerWeek * dates.length) / 7),
+    Math.max(0, settings.workoutsPerWeek - earlierThisWeek),
+  )
   let toAdd = Math.max(0, target - existingWorkouts)
   const trained = new Set(dates.filter((d) => state.get(d)!.workout))
   while (toAdd > 0) {
@@ -208,11 +212,12 @@ export function planWeek(input: PlanInput): PlanResult {
   for (const ex of exams) {
     const n = daysUntil(ex.date, from)
     if (n <= 0) continue
+    const covered = scheduledMinutes(fixed, ex.id, from)
     const span = Math.min(n, 3 + 2 * ex.difficulty) // harder exam -> start earlier
     const prepDays = Array.from({ length: span }, (_, i) => addDaysStr(ex.date, -span + i))
     // hard exams: even spread (more work early); easier: ramp up towards the exam
     const weights = prepDays.map((_, i) => (ex.difficulty >= 4 ? 1 : i + 1))
-    const total = Math.ceil((ex.studyHours * 60) / MIN_BLOCK) * MIN_BLOCK
+    const total = Math.ceil(Math.max(0, ex.studyHours * 60 - covered) / MIN_BLOCK) * MIN_BLOCK
     const shares = allocate(total, weights)
     prepDays.forEach((d, i) => {
       if (!state.has(d) || shares[i] <= 0) return
@@ -261,7 +266,7 @@ export function planWeek(input: PlanInput): PlanResult {
             date,
             slot.s,
             slot.s + blockLen,
-            t.exam.title,
+            { note: t.exam.title, assessmentId: t.exam.id },
           ),
         )
         st.free = subtract(st.free, { s: slot.s, e: slot.s + blockLen + BREAK_MIN })
@@ -315,6 +320,25 @@ export function planWeek(input: PlanInput): PlanResult {
   return { suggestions, adjustments, notes, easyDay }
 }
 
+/** Study already done for an exam, or still scheduled from `from` on. */
+function scheduledMinutes(activities: Activity[], examId: string, from: string): number {
+  return activities
+    .filter((a) => a.assessmentId === examId && a.status !== 'skipped')
+    .filter((a) => a.status === 'done' || a.date >= from)
+    .reduce((n, a) => n + timeToMin(a.end) - timeToMin(a.start), 0)
+}
+
+/** Days of this week before `from` that already have a workout, so the weekly goal is not exceeded. */
+function workoutDaysBefore(activities: Activity[], from: string): number {
+  const workouts = activities.filter((a) => a.category === 'workout')
+  let count = 0
+  for (let d = weekStartStr(from); d < from; d = addDaysStr(d, 1)) {
+    const occ = occurrencesOn({ activities: workouts, subjects: [] }, d)
+    if (occ.some((o) => o.status !== 'skipped')) count++
+  }
+  return count
+}
+
 function pickStudySlot(free: Iv[], win: Iv, preferred: Iv[]): Iv | null {
   const clipped = free
     .map((f) => intersect(f, win))
@@ -350,7 +374,7 @@ function makeAct(
   date: string,
   s: number,
   e: number,
-  note?: string,
+  extra: Pick<Activity, 'note' | 'assessmentId'> = {},
 ): Omit<Activity, 'id'> {
   return {
     title,
@@ -362,6 +386,6 @@ function makeAct(
     status: 'planned',
     source: 'me',
     suggested: true,
-    note,
+    ...extra,
   }
 }
