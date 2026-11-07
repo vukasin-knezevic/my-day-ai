@@ -41,6 +41,8 @@ export interface PlanResult {
   adjustments: Adjustment[]
   notes: string[]
   easyDay: string | null
+  /** For every exam / midterm that got study blocks: the first day studying starts */
+  studyStarts: { examId: string; subjectId: string; type: string; examDate: string; from: string }[]
 }
 
 interface Iv {
@@ -218,6 +220,7 @@ export function planWeek(input: PlanInput): PlanResult {
 
   // ---- place study blocks day by day, carrying leftovers forward ----
   const carry = new Map<string, number>() // exam id -> minutes
+  const starts = new Map<string, string>() // exam id -> first study day
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? tr('subject.fallback')
   for (const date of dates) {
     const st = state.get(date)!
@@ -264,6 +267,7 @@ export function planWeek(input: PlanInput): PlanResult {
             t.exam.title,
           ),
         )
+        if (!starts.has(t.exam.id)) starts.set(t.exam.id, date)
         st.free = subtract(st.free, { s: slot.s, e: slot.s + blockLen + BREAK_MIN })
         st.newStudy += blockLen
         st.lastStudyEnd = Math.max(st.lastStudyEnd ?? 0, slot.s + blockLen)
@@ -308,7 +312,17 @@ export function planWeek(input: PlanInput): PlanResult {
   }
 
   suggestions.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))
-  return { suggestions, adjustments, notes, easyDay }
+  const studyStarts = exams
+    .filter((e) => starts.has(e.id))
+    .map((e) => ({
+      examId: e.id,
+      subjectId: e.subjectId,
+      type: e.type,
+      examDate: e.date,
+      from: starts.get(e.id)!,
+    }))
+    .sort((a, b) => a.from.localeCompare(b.from) || a.examDate.localeCompare(b.examDate))
+  return { suggestions, adjustments, notes, easyDay, studyStarts }
 }
 
 function pickStudySlot(free: Iv[], win: Iv, preferred: Iv[]): Iv | null {

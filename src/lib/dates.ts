@@ -67,6 +67,14 @@ export function formatLong(s: string): string {
   // "Petak, 6. novembar" / "Friday, November 6th" (the pattern comes from the locale file)
   return capitalize(format(fromDateStr(s), t('date.long'), { locale: locale() }))
 }
+/** "pon 16. 11." / "Mon 11/16": weekday + day and month. */
+export function formatWeekdayDayMonth(s: string): string {
+  return format(fromDateStr(s), t('date.weekdayDayMonth'), { locale: locale() })
+}
+/** "23. 11." / "11/23": day and month only. */
+export function formatDayMonth(s: string): string {
+  return format(fromDateStr(s), t('date.dayMonth'), { locale: locale() })
+}
 export function formatShort(s: string): string {
   return format(fromDateStr(s), t('date.short'), { locale: locale() })
 }

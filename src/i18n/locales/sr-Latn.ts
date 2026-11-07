@@ -5,6 +5,8 @@ import type { LocaleModule } from '../index'
 
 const messages = {
   'date.long': 'EEEE, d. MMMM',
+  'date.weekdayDayMonth': 'EEE d. M.',
+  'date.dayMonth': 'd. M.',
   'date.short': 'd. MMM',
   'common.loading': 'Učitavanje…',
   'common.choose': 'Izaberi',
@@ -614,6 +616,12 @@ const messages = {
   'pl.title': '🧠 Planer',
   'pl.sub':
     'Bez AI-ja: pravila za učenje, trening, odmor i igre. Predlozi imaju isprekidanu ivicu dok ih ne prihvatiš.',
+  'pl.studyStarts': 'Učenje za {subject} počinje od {from} ({kind} {date})',
+  'pl.allDone': 'Sve je već isplanirano ✅',
+  'pl.added': 'Dodato je predloga: {n}.',
+  'pl.range': 'Koja nedelja',
+  'pl.thisWeek': 'Ova nedelja',
+  'pl.nextWeek': 'Sledeća nedelja',
   'pl.generate': 'Predloži plan',
   'pl.acceptAll': 'Prihvati sve',
   'pl.rejectAll': 'Odbaci sve',

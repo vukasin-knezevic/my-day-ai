@@ -5,6 +5,8 @@ import type { MessageKey } from './sr-Latn'
 
 const messages: Record<MessageKey, string> = {
   'date.long': 'EEEE, MMMM d',
+  'date.weekdayDayMonth': 'EEE M/d',
+  'date.dayMonth': 'M/d',
   'date.short': 'MMM d',
   'common.loading': 'Loading…',
   'common.choose': 'Choose',
@@ -618,6 +620,12 @@ const messages: Record<MessageKey, string> = {
   'pl.title': '🧠 Planner',
   'pl.sub':
     'No AI: rules for study, workouts, rest and fun. Suggestions have a dashed border until you accept them.',
+  'pl.studyStarts': 'Studying for {subject} starts on {from} ({kind} {date})',
+  'pl.allDone': 'Everything is already planned ✅',
+  'pl.added': 'Added {n} suggestions.',
+  'pl.range': 'Which week',
+  'pl.thisWeek': 'This week',
+  'pl.nextWeek': 'Next week',
   'pl.generate': 'Suggest a plan',
   'pl.acceptAll': 'Accept all',
   'pl.rejectAll': 'Reject all',

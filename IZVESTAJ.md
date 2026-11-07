@@ -73,6 +73,13 @@ Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zel
 13. **Dugi pritisak:** `user-select: none` na fiksnim tekstovima; tekst korisnika (`.user-text`) i polja se mogu kopirati.
 14. **Animacije:** prelazi između ekrana, paneli, poruke; `prefers-reduced-motion` ih gasi (e2e testovi rade sa uključenim smanjenim kretanjem).
 
+### Faza C — Faks (urađeno)
+15. **Vrste obaveza i termina:** ugrađeni su samo Ispit i Kolokvijum (obaveze) i predavanje i vežbe (termini). Ostalo korisnik sam dodaje i imenuje (`settings.customAssessmentKinds` / `customSlotKinds`); `src/lib/kinds.ts` drži pravila. Tab se zove „Ispit/Kolokvijum". **Migracija:** stari „domaci" i „lab" postaju korisničke vrste sa imenom na jeziku sačuvanih podešavanja („Domaći", „Lab vežba"…); pokretanje dvaput ništa ne menja (test u `dataIO.test.ts`). Obaveze koje nisu ispit/kolokvijum ne traže prijavu i ponašaju se kao raniji domaći (upozorenje dan ranije, „predato").
+16. **Naziv pravi aplikacija** za ispit i kolokvijum: „Kolokvijum 1 · Matematika 1", „Ispit · Fizika 1" (kolokvijum je uvek numerisan, ispit tek od drugog). Polje „Naziv" postoji samo za korisničke vrste i tu je obavezno.
+17. **„Sati učenja" nema u formi.** Planer procenjuje sate iz vrste (ispit > kolokvijum), težine (1–5) i ESPB (`estimateStudyHours`); ko hoće, menja ih u detaljima obaveze („Sati učenja", opciono, prazno = automatski). Već sačuvani sati ostaju kao ručno postavljeni.
+18. **Idem / Ne idem / Ponekad** stoji odmah pored svakog termina u kartici predmeta; nema kartice na vrhu. Novi termin počinje kao „Idem" (stari termini bez odgovora ostaju bez izbora dok se ne klikne). Nedeljno pitanje za „Ponekad" je ostalo.
+19. **Planer uvek odgovara** („Sve je već isplanirano ✅" ili „Učenje za Matematika 1 počinje od pon 16. 11. (kolokvijum 23. 11.)") i ima izbor „Ova nedelja / Sledeća nedelja" (vikendom je podrazumevana sledeća). Stari predlozi se menjaju samo za planirane dane.
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.
