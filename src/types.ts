@@ -118,6 +118,8 @@ export interface Activity {
   /** For recurring activities: dates on which a particular occurrence was done/skipped */
   doneDates?: string[]
   skippedDates?: string[]
+  /** Occurrences removed ("only this day") without deleting the whole series */
+  excludedDates?: string[]
   demo?: boolean
 }
 

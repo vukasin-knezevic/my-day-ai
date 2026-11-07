@@ -12,6 +12,7 @@ import {
   occurrencesOn,
   withStatus,
   type Occurrence,
+  withoutOccurrence,
 } from '../lib/schedule'
 import { parseQuick } from '../lib/quickParse'
 import { applyParsed } from '../lib/apply'
@@ -283,6 +284,18 @@ export default function Today() {
                   onClick={() => store.remove('activities', o.activityId!)}
                 >
                   ✕
+                </Button>
+              )}
+              {o.type === 'activity' && o.activityId && o.recurring && (
+                <Button
+                  variant="ghost"
+                  aria-label={t('today.deleteOne', { title: o.title })}
+                  onClick={() => {
+                    const a = data.activities.find((x) => x.id === o.activityId)
+                    if (a) store.update('activities', a.id, withoutOccurrence(a, o.date))
+                  }}
+                >
+                  {t('today.onlyToday')}
                 </Button>
               )}
             </li>

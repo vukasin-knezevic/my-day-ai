@@ -302,6 +302,8 @@ const messages = {
   'today.skip': 'Preskoči',
   'today.edit': 'Izmeni {title}',
   'today.delete': 'Obriši {title}',
+  'today.deleteOne': 'Ukloni {title} samo za ovaj dan',
+  'today.onlyToday': 'Samo danas',
   'today.timeline': 'Vremenska linija',
   'today.timelineAria': 'Vremenska linija dana',
   'today.newActivity': '+ Nova aktivnost',

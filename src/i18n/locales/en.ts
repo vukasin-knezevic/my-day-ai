@@ -303,6 +303,8 @@ const messages: Record<MessageKey, string> = {
   'today.skip': 'Skip',
   'today.edit': 'Edit {title}',
   'today.delete': 'Delete {title}',
+  'today.deleteOne': 'Remove {title} for this day only',
+  'today.onlyToday': 'Only today',
   'today.timeline': 'Timeline',
   'today.timelineAria': 'Timeline of the day',
   'today.newActivity': '+ New activity',

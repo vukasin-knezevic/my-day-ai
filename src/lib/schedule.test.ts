@@ -6,6 +6,7 @@ import {
   freeSlots,
   occurrencesOn,
   withStatus,
+  withoutOccurrence,
 } from './schedule'
 import type { Activity, Assessment, Subject } from '../types'
 
@@ -175,5 +176,15 @@ describe('daySummary', () => {
   })
   it('free day', () => {
     expect(daySummary([])).toContain('slobodan')
+  })
+})
+
+describe('withoutOccurrence', () => {
+  it('removes only the chosen day of a recurring activity', () => {
+    const a = withoutOccurrence(act({ recurrence: 'daily' }), '2026-11-07')
+    const d = { activities: [a], subjects: [] }
+    expect(occurrencesOn(d, '2026-11-07')).toHaveLength(0)
+    expect(occurrencesOn(d, '2026-11-08')).toHaveLength(1)
+    expect(occurrencesOn(d, '2026-11-08')[0].recurring).toBe(true)
   })
 })

@@ -17,11 +17,14 @@ export interface Occurrence {
   /** 'activity' can be marked done / skipped; 'class' comes from the timetable */
   type: 'activity' | 'class'
   activityId?: string
+  /** true when the activity repeats (can be removed for this day only) */
+  recurring?: boolean
   color?: string
 }
 
 function occursOn(a: Activity, date: string): boolean {
   if (date < a.date) return false
+  if (a.excludedDates?.includes(date)) return false
   switch (a.recurrence) {
     case 'none':
       return date === a.date
@@ -104,6 +107,7 @@ export function occurrencesOn(
       suggested: !!a.suggested,
       type: 'activity' as const,
       activityId: a.id,
+      recurring: a.recurrence !== 'none',
     }))
   return [...acts, ...classOccurrences(data.subjects, date)].sort(
     (x, y) => timeToMin(x.start) - timeToMin(y.start),
@@ -118,6 +122,11 @@ export function withStatus(a: Activity, date: string, status: ActivityStatus): A
   if (status === 'done') done.push(date)
   if (status === 'skipped') skipped.push(date)
   return { ...a, doneDates: done, skippedDates: skipped }
+}
+
+/** Removes a single occurrence of a recurring activity, keeping the series. */
+export function withoutOccurrence(a: Activity, date: string): Activity {
+  return { ...a, excludedDates: [...(a.excludedDates ?? []).filter((d) => d !== date), date] }
 }
 
 export function currentAndNext(occ: Occurrence[], nowMin: number) {
