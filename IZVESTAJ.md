@@ -62,6 +62,17 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 
 Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zeleno).
 
+### Faza B — Izgled i „smooth" osećaj (urađeno)
+6. **Boje i početni ekran:** `theme_color` i `background_color` u manifestu i `<meta name="theme-color">` su tamna boja pozadine aplikacije (`#020617`); meta se menja sa temom (svetla tema `#f8fafc`). Ikone su nove: plavi logo (izlazak sunca) na tamnoj pozadini; `scripts/make-icons.mjs` ih pravi iz `public/icon.svg`.
+7. **Sopstveni izbornici:** `Select` otvara donji panel (`Sheet`) sa animacijom umesto sistemskog menija. Polja imaju `autocomplete="off"`.
+8. **Birač vremena:** točkići sati : minuti; 24h podrazumevano, 12h (AM/PM) u podešavanjima. Sačuvana vrednost je uvek `HH:mm`; prikaz na ekranu Danas, u planeru i u terminima prati izabrani format.
+9. **Datum:** Android birač ostaje (nevidljivo polje preko teksta), prikaz je uvek DD.MM.GGGG.
+10. **Trajanje:** jedna funkcija `formatDuration`/`formatHours` („2 h 36 min", „7 min", „2 h").
+11. **Ekran Danas:** Trenutno (veliko, plavo) i Sledeće (manje, sa odbrojavanjem) → Obaveze → označeni brzi unos → vremenska linija → nivo/XP/nagrada. Podnaslov: „Vukašin, danas: …".
+12. **Obavezna/opciona polja:** `Field` ima `required` (diskretna zvezdica), `optional` („(opciono)") i `error` (crveni okvir i poruka samo posle pokušaja). Oznake su CSS, pa naziv polja ostaje čist za čitače ekrana i testove. Dugmad koja su ćutala (prazan brzi unos, pitanja AI-ju, forme) sada prijavljuju grešku.
+13. **Dugi pritisak:** `user-select: none` na fiksnim tekstovima; tekst korisnika (`.user-text`) i polja se mogu kopirati.
+14. **Animacije:** prelazi između ekrana, paneli, poruke; `prefers-reduced-motion` ih gasi (e2e testovi rade sa uključenim smanjenim kretanjem).
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.

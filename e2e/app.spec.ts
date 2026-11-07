@@ -221,7 +221,7 @@ test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
   await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
   await page.getByLabel('Naziv').fill('Šetnja')
   await choose(page, 'Ponavljanje', 'daily')
-  await page.keyboard.press('Enter')
+  await page.getByRole('dialog').getByRole('button', { name: 'Dodaj' }).click()
   await expect(page.getByText('Šetnja').first()).toBeVisible()
   await page.getByRole('button', { name: 'Izmeni Šetnja' }).click()
   await page.getByLabel('Naziv').fill('Duga šetnja')
