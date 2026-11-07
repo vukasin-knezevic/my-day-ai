@@ -296,13 +296,14 @@ function Money() {
 
 function Habits() {
   const { t } = useT()
-  const { habits, add, update, remove, award } = useStore(
+  const { habits, add, update, remove, award, revoke } = useStore(
     useShallow((s) => ({
       habits: s.habits,
       add: s.add,
       update: s.update,
       remove: s.remove,
       award: s.award,
+      revoke: s.revoke,
     })),
   )
   const today = todayStr()
@@ -318,6 +319,7 @@ function Habits() {
         xp: XP.habit,
         category: 'habits',
       })
+    else revoke(`habit-${h.id}-${today}`)
   }
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('💧')

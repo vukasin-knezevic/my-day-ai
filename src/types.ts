@@ -225,6 +225,8 @@ export interface XpEvent {
   reason: string
   xp: number
   category: Category
+  /** reward minutes this event gave (so taking the event back can take them back too) */
+  rewardMin?: number
 }
 
 export interface Progress {

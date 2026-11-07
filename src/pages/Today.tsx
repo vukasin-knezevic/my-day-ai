@@ -114,11 +114,15 @@ export default function Today() {
     setText('')
   }
 
-  function mark(o: Occurrence, status: 'done' | 'skipped') {
+  function mark(o: Occurrence, status: 'done' | 'skipped' | 'planned') {
     const a = data.activities.find((x) => x.id === o.activityId)
     if (!a) return
     store.update('activities', a.id, withStatus(a, today, status))
-    if (status !== 'done') return
+    // anything but "done" takes back what "done" paid out
+    if (status !== 'done') {
+      store.revoke(`act-${a.id}-${today}`)
+      return
+    }
     const ev = rewardForDone(a, today, data.settings.rewardMinPerStudyHour)
     if (ev) store.award(ev)
     const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
@@ -264,6 +268,15 @@ export default function Today() {
                     {t('today.skip')}
                   </Button>
                 </span>
+              )}
+              {o.type === 'activity' && o.activityId && o.status !== 'planned' && (
+                <Button
+                  variant="ghost"
+                  aria-label={t('today.undo', { title: o.title })}
+                  onClick={() => mark(o, 'planned')}
+                >
+                  {t('today.undoShort')}
+                </Button>
               )}
               {o.type === 'activity' && o.activityId && (
                 <Button

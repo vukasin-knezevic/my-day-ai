@@ -168,3 +168,40 @@ describe('streaks', () => {
     expect(computeStreaks(d, '2026-11-06')).toEqual({ study: 2, workout: 2, sleep: 1, habits: 2 })
   })
 })
+
+describe('revoke', () => {
+  const ev = { id: 'x', date: '2026-11-07', reason: 'r', xp: 10, category: 'study' as const }
+  it('takes back XP, reward minutes, the id and the event', async () => {
+    const { revoke } = await import('./xp')
+    const p = award(empty(), { ...ev, rewardMin: 15 }).progress
+    expect(p.xp).toBe(10)
+    const back = revoke(p, 'x')
+    expect(back.xp).toBe(0)
+    expect(back.rewardEarnedMin).toBe(0)
+    expect(back.awarded).toEqual([])
+    expect(back.events).toEqual([])
+  })
+  it('can be earned again after being taken back', async () => {
+    const { revoke } = await import('./xp')
+    const again = award(revoke(award(empty(), ev).progress, 'x'), ev).progress
+    expect(again.xp).toBe(10)
+  })
+  it('ignores unknown ids and never goes below zero', async () => {
+    const { revoke } = await import('./xp')
+    const p = award(empty(), ev).progress
+    expect(revoke(p, 'nope')).toBe(p)
+    const spent = spendReward(award(empty(), { ...ev, rewardMin: 30 }).progress, 30)
+    const back = revoke(spent, 'x')
+    expect(rewardBalance(back)).toBe(0)
+    expect(back.rewardEarnedMin).toBeGreaterThanOrEqual(back.rewardSpentMin)
+  })
+  it('revokeWhere takes back every matching award', async () => {
+    const { revokeWhere } = await import('./xp')
+    let p = award(empty(), { ...ev, id: 'pr-1-a' }).progress
+    p = award(p, { ...ev, id: 'pr-1-b' }).progress
+    p = award(p, { ...ev, id: 'other' }).progress
+    const back = revokeWhere(p, (id) => id.startsWith('pr-1-'))
+    expect(back.xp).toBe(10)
+    expect(back.awarded).toEqual(['other'])
+  })
+})

@@ -5,7 +5,7 @@ import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { todayStr } from './lib/dates'
-import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
+import { award as awardXp, revokeWhere, spendReward as spendTime, type AwardEvent } from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
 import { resolveLanguage, setLanguage } from './i18n'
@@ -35,6 +35,14 @@ const COLLECTIONS: CollectionKey[] = [
   'games',
 ]
 
+/** Which award ids belong to an item of a collection (so deleting the item takes the XP back). */
+const REWARD_IDS: Partial<Record<CollectionKey, (id: string) => (awardId: string) => boolean>> = {
+  workouts: (id) => (a) => a === `workout-${id}` || a.startsWith(`pr-${id}-`),
+  habits: (id) => (a) => a.startsWith(`habit-${id}-`),
+  activities: (id) => (a) => a.startsWith(`act-${id}-`),
+  assessments: (id) => (a) => a === `reg-${id}`,
+}
+
 type Item<K extends CollectionKey> = AppData[K][number]
 
 interface Actions {
@@ -51,6 +59,8 @@ interface Actions {
   resetAll: () => void
   /** Gives XP (once per event id) and shows a toast with the result. */
   award: (e: AwardEvent) => void
+  /** Takes back XP and reward minutes of one award id (exact) or of every id with the given prefix. */
+  revoke: (id: string, opts?: { prefix?: boolean }) => void
   /** Records reward time I used (no judging). */
   spendReward: (min: number, game?: string) => void
 }
@@ -84,11 +94,16 @@ export const useStore = create<Store>()(
               [key]: (s[key] as { id: string }[]).map((x) => (x.id === id ? { ...x, ...p } : x)),
             }) as Partial<Store>,
         ),
-      remove: (key, id) =>
+      remove: (key, id) => {
         set(
           (s) =>
             ({ [key]: (s[key] as { id: string }[]).filter((x) => x.id !== id) }) as Partial<Store>,
-        ),
+        )
+        // deleting something takes back what it paid out
+        const p = get().progress
+        const next = revokeWhere(p, (x) => (REWARD_IDS[key]?.(id) ?? (() => false))(x))
+        if (next !== p) set({ progress: next })
+      },
       patch: (p) => set(p as Partial<Store>),
       loadDemo: () => {
         const demo = makeDemoData(todayStr())
@@ -124,6 +139,11 @@ export const useStore = create<Store>()(
         })
         if (r.progress !== get().progress) set({ progress: r.progress })
         useToast.getState().push(r.messages)
+      },
+      revoke: (id, opts) => {
+        const p = get().progress
+        const next = revokeWhere(p, (x) => (opts?.prefix ? x.startsWith(id) : x === id))
+        if (next !== p) set({ progress: next })
       },
       spendReward: (min, game = rewardNameOf(get().settings)) => {
         set((s) => ({

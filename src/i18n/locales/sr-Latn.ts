@@ -227,7 +227,8 @@ const messages = {
   'set.notifTest': 'Pošalji probnu notifikaciju',
   'set.notifTestTitle': 'Probna notifikacija',
   'set.notifTestBody': 'Ako vidiš ovo, notifikacije rade. ✅',
-  'set.notifTestFail': 'Probna notifikacija nije prikazana. Proveri dozvolu za notifikacije za ovu aplikaciju u podešavanjima telefona.',
+  'set.notifTestFail':
+    'Probna notifikacija nije prikazana. Proveri dozvolu za notifikacije za ovu aplikaciju u podešavanjima telefona.',
   'set.ics': '📅 Izvezi kalendar (.ics)',
   'set.ai': '🤖 AI',
   'set.aiMode': 'AI režim',
@@ -304,6 +305,8 @@ const messages = {
   'today.badge.skipped': 'preskočeno',
   'today.accept': 'Prihvati',
   'today.markDone': '✔ Urađeno',
+  'today.undoShort': 'Poništi',
+  'today.undo': 'Poništi „{title}“',
   'today.skip': 'Preskoči',
   'today.edit': 'Izmeni {title}',
   'today.delete': 'Obriši {title}',

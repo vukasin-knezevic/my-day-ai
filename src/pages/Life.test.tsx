@@ -37,3 +37,17 @@ test('navika se štiklira i pravi niz', async () => {
   await user.click(screen.getByLabelText('Danas urađeno'))
   expect(screen.getByText(/🔥 1 d/)).toBeInTheDocument()
 })
+
+test('navika vraćena ispod cilja oduzima XP', async () => {
+  const user = userEvent.setup()
+  render(<Life />)
+  await user.click(screen.getByRole('tab', { name: /Navike/ }))
+  await user.type(screen.getByLabelText('Naziv'), 'Čitanje')
+  await user.click(screen.getByRole('button', { name: 'Dodaj naviku' }))
+  await user.click(screen.getByLabelText('Danas urađeno'))
+  expect(useStore.getState().progress.xp).toBe(5)
+  await user.click(screen.getByLabelText('Danas urađeno'))
+  expect(useStore.getState().progress.xp).toBe(0)
+  await user.click(screen.getByLabelText('Danas urađeno'))
+  expect(useStore.getState().progress.xp).toBe(5)
+})

@@ -228,7 +228,8 @@ const messages: Record<MessageKey, string> = {
   'set.notifTest': 'Send a test notification',
   'set.notifTestTitle': 'Test notification',
   'set.notifTestBody': 'If you see this, notifications work. ✅',
-  'set.notifTestFail': 'The test notification could not be shown. Check the notification permission for this app in the phone settings.',
+  'set.notifTestFail':
+    'The test notification could not be shown. Check the notification permission for this app in the phone settings.',
   'set.ics': '📅 Export calendar (.ics)',
   'set.ai': '🤖 AI',
   'set.aiMode': 'AI mode',
@@ -305,6 +306,8 @@ const messages: Record<MessageKey, string> = {
   'today.badge.skipped': 'skipped',
   'today.accept': 'Accept',
   'today.markDone': '✔ Done',
+  'today.undoShort': 'Undo',
+  'today.undo': "Undo '{title}'",
   'today.skip': 'Skip',
   'today.edit': 'Edit {title}',
   'today.delete': 'Delete {title}',

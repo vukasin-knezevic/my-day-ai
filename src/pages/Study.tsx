@@ -333,11 +333,12 @@ function SubjectCard({
 /* ---------------- Exams ---------------- */
 function Assessments() {
   const { t } = useT()
-  const { subjects, assessments, add, update, remove, award } = useStore(
+  const { subjects, assessments, add, update, remove, award, revoke } = useStore(
     useShallow((s) => ({
       subjects: s.subjects,
       assessments: s.assessments,
       award: s.award,
+      revoke: s.revoke,
       add: s.add,
       update: s.update,
       remove: s.remove,
@@ -440,6 +441,7 @@ function Assessments() {
                           xp: XP.registration,
                           category: 'study',
                         })
+                      else revoke(`reg-${a.id}`)
                     }}
                   />
                   {t('study.askRegistered')}{' '}
