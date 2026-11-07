@@ -109,3 +109,25 @@ test('u nedelju se planira cela sledeća nedelja', async () => {
   expect(days.length).toBeGreaterThan(0)
   expect(days.every((d) => d >= '2026-11-02')).toBe(true)
 })
+
+test('planer uvek odgovori: kad nema šta da se doda, kaže da je sve isplanirano', async () => {
+  const user = userEvent.setup()
+  useStore.setState({ assessments: [] })
+  render(<Planner />)
+  await propose(user)
+  expect(screen.getByRole('status')).toHaveTextContent('Sve je već isplanirano ✅')
+})
+
+test('planer javlja odakle počinje učenje za obavezu, a za sledeću nedelju nema šta da doda', async () => {
+  const user = userEvent.setup()
+  render(<Planner />)
+  await propose(user)
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Učenje za Mata počinje od pon 2. 11. (kolokvijum 6. 11.)',
+  )
+  await user.click(screen.getByRole('button', { name: 'Sledeća nedelja' }))
+  await propose(user)
+  expect(screen.getByRole('status')).toHaveTextContent('Sve je već isplanirano ✅')
+  // the suggestions of this week stay when next week is planned
+  expect(studyPlan().length).toBeGreaterThan(0)
+})

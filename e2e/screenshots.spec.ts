@@ -1,4 +1,5 @@
 import { test } from '@playwright/test'
+import { choose } from './helpers'
 
 // Generates docs/screenshots/*.png. Run with:  SCREENSHOTS=1 npx playwright test screenshots
 // Serbian (Latin) screenshots have no suffix, the others end in -en / -sr-cyrl.
@@ -51,7 +52,7 @@ for (const lang of LANGS) {
     for (const theme of lang.themes) {
       await page.setViewportSize(SIZES.telefon)
       await page.goto('/#/podesavanja')
-      await page.getByLabel(/^(Tema|Theme|Тема)/).selectOption(theme)
+      await choose(page, /^(Tema|Theme|Тема)/, theme)
       for (const device of lang.devices) {
         await page.setViewportSize(SIZES[device])
         for (const [name, route] of SCREENS) {

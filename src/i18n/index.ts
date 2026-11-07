@@ -16,6 +16,11 @@ export interface LocaleModule {
   dateLocale: Locale
   /** Every key of sr-Latn.ts (TypeScript and a test make sure none is missing). */
   messages: Record<MessageKey, string>
+  /**
+   * Feminine forms of texts that depend on the speaker's gender ("uradio" -> "uradila").
+   * Only for languages that have it; `t()` uses them when the user chose the feminine gender.
+   */
+  feminine?: Partial<Record<MessageKey, string>>
 }
 
 /** Keys without the plural suffix: `t('x.days', { n: 3 })` finds `x.days.one|few|other`. */
@@ -59,6 +64,15 @@ let current: LocaleModule = byCode(detectLanguage()) ?? LANGUAGES[0]
 if (typeof document !== 'undefined') document.documentElement.lang = current.code
 const listeners = new Set<() => void>()
 
+let gender: 'm' | 'f' = 'm'
+/** The user's grammatical gender: texts that depend on it use the feminine form for 'f'. */
+export function setGender(g: 'm' | 'f') {
+  if (g === gender) return
+  gender = g
+  listeners.forEach((l) => l())
+}
+export const getGender = () => gender
+
 export function getLanguage(): string {
   return current.code
 }
@@ -96,14 +110,27 @@ export function t(key: BaseKey, params?: Params): string {
     const rule = new Intl.PluralRules(current.code).select(params.n)
     text = msgs[`${key}.${rule}`] ?? msgs[`${key}.other`]
   }
+  if (gender === 'f' && !text)
+    text = (current.feminine as Record<string, string> | undefined)?.[key]
   text ??= msgs[key] ?? fallback?.[key] ?? key
   return fill(text, params)
 }
 
+/** A message in a specific language (used when old data is migrated: names stay in the user's language). */
+export function messageIn(code: string, key: MessageKey): string {
+  const msgs = (byCode(code) ?? current).messages as Record<string, string>
+  return msgs[key] ?? key
+}
+
 /** Hook: re-renders the component when the language changes. */
 export function useT() {
-  const lang = useSyncExternalStore(subscribe, getLanguage, getLanguage)
-  return { t, lang }
+  // the snapshot includes the gender so a change of gender re-renders too
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    () => `${current.code}|${gender}`,
+    () => `${current.code}|${gender}`,
+  )
+  return { t, lang: snapshot.split('|')[0] }
 }
 
 /** Number formatting in the current language (e.g. 1 234,5 vs 1,234.5). */

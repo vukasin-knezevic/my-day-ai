@@ -14,7 +14,7 @@ import { tooltipProps } from '../components/chart'
 import { Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import type { Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
-import { formatShort, todayStr, weekdayName } from '../lib/dates'
+import { formatDuration, formatShort, todayStr, weekdayName } from '../lib/dates'
 import {
   exerciseHistory,
   exerciseNames,
@@ -363,7 +363,7 @@ function Training() {
                     text={t('wo.historyLine', {
                       date: formatShort(w.date),
                       type: w.type,
-                      min: w.durationMin,
+                      dur: formatDuration(w.durationMin),
                       f: w.feeling,
                       exercises: t('wo.exercises', { n: w.exercises.length }),
                       vol: totalVolume(w),
@@ -448,12 +448,17 @@ function Food() {
   )
   const today = todayStr()
   const [desc, setDesc] = useState('')
+  const [descError, setDescError] = useState('')
   const [protein, setProtein] = useState(30)
   const total = proteinOn(meals, today)
   const pct = Math.min(100, (total / Math.max(1, goal)) * 100)
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!desc.trim()) return
+    if (!desc.trim()) {
+      setDescError(t('common.required'))
+      return
+    }
+    setDescError('')
     add('meals', { date: today, description: desc.trim(), protein })
     setDesc('')
   }
@@ -477,10 +482,13 @@ function Food() {
       <Card>
         <form onSubmit={submit} className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <Field label={t('wo.meal')}>
+            <Field label={t('wo.meal')} required error={descError}>
               <Input
                 value={desc}
-                onChange={(e) => setDesc(e.target.value)}
+                onChange={(e) => {
+                  setDesc(e.target.value)
+                  setDescError('')
+                }}
                 placeholder={t('wo.mealPlaceholder')}
               />
             </Field>

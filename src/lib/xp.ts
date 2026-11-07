@@ -80,6 +80,8 @@ export interface AwardEvent {
   xp: number
   category: Category
   rewardMin?: number
+  /** ISO time of the event; the store fills it in */
+  at?: string
 }
 
 export interface RewardInfo {
@@ -102,7 +104,15 @@ export function award(
     awarded: [...p.awarded, e.id],
     events: [
       ...p.events,
-      { id: e.id, date: e.date, reason: e.reason, xp: e.xp, category: e.category },
+      {
+        id: e.id,
+        date: e.date,
+        reason: e.reason,
+        xp: e.xp,
+        category: e.category,
+        ...(e.rewardMin ? { rewardMin: e.rewardMin } : {}),
+        ...(e.at ? { at: e.at } : {}),
+      },
     ].slice(-500),
   }
   const after = levelFor(progress.xp)
@@ -112,6 +122,30 @@ export function award(
     messages.push(t('xp.reward', { emoji: reward.emoji, n: e.rewardMin, name: reward.name }))
   if (after.index > before.index) messages.push(t('xp.levelUp', { name: after.name }))
   return { progress, messages }
+}
+
+/**
+ * Takes back everything one award gave: XP, reward minutes, the id (so it can be earned again) and
+ * the event. Unknown ids change nothing. XP never goes below 0 and the reward balance never below 0.
+ */
+export function revoke(p: Progress, id: string): Progress {
+  return revokeWhere(p, (x) => x === id)
+}
+
+/** Same as `revoke` for every award whose id matches (e.g. all PR bonuses of one workout). */
+export function revokeWhere(p: Progress, match: (id: string) => boolean): Progress {
+  const gone = p.events.filter((e) => match(e.id))
+  const stale = p.awarded.filter(match)
+  if (!gone.length && !stale.length) return p
+  const xp = gone.reduce((n, e) => n + e.xp, 0)
+  const min = gone.reduce((n, e) => n + (e.rewardMin ?? 0), 0)
+  return {
+    ...p,
+    xp: Math.max(0, p.xp - xp),
+    rewardEarnedMin: Math.max(p.rewardSpentMin, p.rewardEarnedMin - min),
+    awarded: p.awarded.filter((x) => !match(x)),
+    events: p.events.filter((e) => !match(e.id)),
+  }
 }
 
 /** The reward for marking an occurrence of an activity as done (null if it pays nothing). */
@@ -133,10 +167,14 @@ export function streakMessages(s: Streaks): string[] {
   return keys.filter((k) => isMilestone(s[k])).map((k) => t(`streak.${k}`, { n: s[k] }))
 }
 
+/** Spends reward time. Cannot spend more than the balance: then nothing changes. */
 export function spendReward(p: Progress, minutes: number): Progress {
-  return { ...p, rewardSpentMin: p.rewardSpentMin + Math.max(0, minutes) }
+  const n = Math.max(0, minutes)
+  if (n > rewardBalance(p)) return p
+  return { ...p, rewardSpentMin: p.rewardSpentMin + n }
 }
-export const rewardBalance = (p: Progress) => p.rewardEarnedMin - p.rewardSpentMin
+/** Earned minus spent; never below 0. */
+export const rewardBalance = (p: Progress) => Math.max(0, p.rewardEarnedMin - p.rewardSpentMin)
 
 /* ---- streaks ---- */
 /** Consecutive days ending today (or yesterday, if today is not done yet). */

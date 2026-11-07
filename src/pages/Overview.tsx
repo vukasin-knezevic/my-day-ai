@@ -14,7 +14,7 @@ import { selectData, useStore } from '../store'
 import { tooltipProps } from '../components/chart'
 import { Card, PageTitle } from '../components/ui'
 import { CATEGORY_META, type Category } from '../types'
-import { todayStr } from '../lib/dates'
+import { formatHours, todayStr } from '../lib/dates'
 import { overview, type Period } from '../lib/overview'
 import { fmtMoney } from '../lib/life'
 import { categoryLabel, currencyOf, expenseLabel } from '../lib/labels'
@@ -76,7 +76,7 @@ export default function Overview() {
         <Stat
           label={t('ov.sleep')}
           value={o.avgSleep !== null ? `${o.avgSleep} h` : '—'}
-          sub={t('ov.sleepSub', { goal: data.settings.sleepGoalHours })}
+          sub={t('ov.sleepSub', { goal: formatHours(data.settings.sleepGoalHours) })}
         />
         <Stat label={t('ov.spent')} value={fmtMoney(o.spent, currency)} />
         <Stat label={t('ov.xp')} value={String(o.xp)} sub={t('ov.level', { name: lvl.name })} />

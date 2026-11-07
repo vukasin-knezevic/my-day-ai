@@ -7,6 +7,10 @@ import {
   weekDates,
   weekStartStr,
   formatLong,
+  formatDuration,
+  formatHours,
+  formatTimeOfDay,
+  formatDateNumeric,
 } from './dates'
 
 describe('dates', () => {
@@ -42,5 +46,29 @@ describe('dates', () => {
   })
   it('formats in Serbian', () => {
     expect(formatLong('2026-11-06')).toBe('Petak, 6. novembar')
+  })
+})
+
+describe('formatDuration', () => {
+  it('shows hours and minutes, never decimals or empty parts', () => {
+    expect(formatDuration(156)).toBe('2 h 36 min')
+    expect(formatDuration(7)).toBe('7 min')
+    expect(formatDuration(120)).toBe('2 h')
+    expect(formatDuration(0)).toBe('0 min')
+    expect(formatDuration(-5)).toBe('0 min')
+    expect(formatHours(2.6)).toBe('2 h 36 min')
+    expect(formatHours(7.5)).toBe('7 h 30 min')
+  })
+})
+
+describe('time and date display', () => {
+  it('12h and 24h', () => {
+    expect(formatTimeOfDay('13:00', '24h')).toBe('13:00')
+    expect(formatTimeOfDay('13:05', '12h')).toBe('1:05 PM')
+    expect(formatTimeOfDay('00:30', '12h')).toBe('12:30 AM')
+    expect(formatTimeOfDay('12:00', '12h')).toBe('12:00 PM')
+  })
+  it('dates are DD.MM.YYYY', () => {
+    expect(formatDateNumeric('2026-11-07')).toBe('07.11.2026')
   })
 })

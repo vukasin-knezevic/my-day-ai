@@ -65,14 +65,30 @@ test('urađeno daje XP i vreme nagrade, samo jednom', async () => {
   expect(useStore.getState().progress.xp).toBe(40)
 })
 
-test('iskorišćena nagrada se beleži bez prekora', async () => {
+test('iskorišćena nagrada se beleži, ali samo do zarađenog, i može da se poništi', async () => {
   const user = userEvent.setup()
+  useStore.getState().patch({
+    progress: { ...useStore.getState().progress, rewardEarnedMin: 45 },
+  })
   render(
     <MemoryRouter>
       <Today />
     </MemoryRouter>,
   )
+  // 60 min is more than the 45 earned: the button is off
+  expect(screen.getByRole('button', { name: 'Iskoristio 60 min' })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: 'Iskoristio 30 min' }))
   expect(useStore.getState().progress.rewardSpentMin).toBe(30)
   expect(useStore.getState().games).toHaveLength(1)
+  // only 15 left: both buttons would be gone anyway, "Undo" is shown first
+  await user.click(screen.getByRole('button', { name: 'Poništi' }))
+  expect(useStore.getState().progress.rewardSpentMin).toBe(0)
+  expect(useStore.getState().games).toHaveLength(0)
+})
+
+test('nagrada ne može u minus', () => {
+  const s = useStore.getState()
+  expect(s.spendReward(30)).toBeNull()
+  expect(useStore.getState().progress.rewardSpentMin).toBe(0)
+  expect(useStore.getState().games).toHaveLength(0)
 })

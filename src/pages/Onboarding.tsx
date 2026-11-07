@@ -1,3 +1,5 @@
+import { isSerbian } from '../lib/address'
+import { vocative } from '../lib/vocative'
 import { useState } from 'react'
 import { useStore } from '../store'
 import { Button, Card, Field, Input, Select } from '../components/ui'
@@ -18,13 +20,15 @@ const STEPS: BaseKey[] = [
 ]
 
 export default function Onboarding() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const settings = useStore((s) => s.settings)
   const setSettings = useStore((s) => s.setSettings)
   const loadDemo = useStore((s) => s.loadDemo)
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState({ ...settings })
   const [demo, setDemo] = useState(true)
+  const [addressEdited, setAddressEdited] = useState(false)
+  const serbian = isSerbian(lang)
 
   const set = <K extends keyof typeof draft>(k: K, v: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [k]: v }))
@@ -71,13 +75,54 @@ export default function Onboarding() {
             </>
           )}
           {step === 1 && (
-            <Field label={t('ob.name.label')}>
-              <Input
-                value={draft.name}
-                onChange={(e) => set('name', e.target.value)}
-                placeholder={t('ob.name.placeholder')}
-              />
-            </Field>
+            <>
+              <Field label={t('ob.name.label')} optional>
+                <Input
+                  value={draft.name}
+                  onChange={(e) => {
+                    set('name', e.target.value)
+                    // the suggestion follows the name until the user corrects it by hand
+                    if (!addressEdited) set('addressName', vocative(e.target.value))
+                  }}
+                  placeholder={t('ob.name.placeholder')}
+                />
+              </Field>
+              {serbian && (
+                <>
+                  <Field label={t('ob.address.label')} optional>
+                    <Input
+                      value={draft.addressName}
+                      onChange={(e) => {
+                        setAddressEdited(true)
+                        set('addressName', e.target.value)
+                      }}
+                    />
+                  </Field>
+                  <p className="-mt-2 text-xs text-slate-600 dark:text-slate-400">
+                    {t('ob.address.hint')}
+                  </p>
+                  <div role="radiogroup" aria-label={t('ob.gender.label')} className="space-y-1">
+                    <p className="text-sm font-medium">{t('ob.gender.label')}</p>
+                    {(['m', 'f'] as const).map((g) => (
+                      <label key={g} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          name="gender"
+                          className="size-5"
+                          checked={draft.gender === g}
+                          onChange={() => {
+                            set('gender', g)
+                            // the screen uses the chosen form right away
+                            setSettings({ gender: g })
+                          }}
+                        />
+                        {t(g === 'm' ? 'ob.gender.m' : 'ob.gender.f')}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           )}
           {step === 2 && (
             <>
@@ -137,7 +182,7 @@ export default function Onboarding() {
               <p className="text-sm">{t('ob.reward.intro')}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <Field label={t('set.reward.name')}>
+                  <Field label={t('set.reward.name')} optional>
                     <Input
                       value={draft.rewardName}
                       onChange={(e) => set('rewardName', e.target.value)}
@@ -181,6 +226,15 @@ export default function Onboarding() {
           )}
           {step === 6 && (
             <>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={draft.autoUpdate}
+                  onChange={(e) => set('autoUpdate', e.target.checked)}
+                />
+                {t('set.autoUpdate')}
+              </label>
               <p className="text-sm">{t('ob.ai.intro')}</p>
               <fieldset className="space-y-2">
                 <legend className="sr-only">{t('ob.ai.legend')}</legend>
@@ -223,7 +277,7 @@ export default function Onboarding() {
               </a>
               {draft.aiMode === 'api' && (
                 <>
-                  <Field label={t('ob.ai.keyLabel')}>
+                  <Field label={t('ob.ai.keyLabel')} optional>
                     <Input
                       type="password"
                       autoComplete="off"

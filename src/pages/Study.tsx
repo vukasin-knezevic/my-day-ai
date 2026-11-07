@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { addKind, assessmentKinds, slotKinds } from '../lib/kinds'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
@@ -7,7 +8,9 @@ import KeyScope from '../components/KeyScope'
 import ConfirmButton from '../components/ConfirmButton'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
 import {
+  formatHours,
   formatShort,
+  formatTimeOfDay,
   monthName,
   monthOf,
   timeToMin,
@@ -18,15 +21,17 @@ import {
 import { uid } from '../lib/defaults'
 import {
   URGENCY_CLS,
+  autoTitle,
   countdownLabel,
+  estimateStudyHours,
   isExam,
   monthRegistrations,
   nextWeekStart,
   slotsToAsk,
   sortAssessments,
-  unansweredSlots,
   urgency,
 } from '../lib/exams'
+import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
@@ -34,7 +39,6 @@ import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
 type Tab = 'raspored' | 'ispiti' | 'poeni'
-const ASSESSMENT_TYPES: AssessmentType[] = ['kolokvijum', 'ispit', 'domaci', 'lab']
 const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 
 export default function Study() {
@@ -68,11 +72,11 @@ function Schedule() {
     })),
   )
   const today = todayStr()
-  const unanswered = unansweredSlots(subjects)
   // "sometimes" is asked on Sunday evening for next week
   const sundayEvening = weekdayOf(today) === 7 && new Date().getHours() >= 17
   const weekly = sundayEvening ? slotsToAsk(subjects, today) : []
   const [name, setName] = useState('')
+  const [nameError, setNameError] = useState('')
   const [espb, setEspb] = useState(6)
   const [pass, setPass] = useState(51)
 
@@ -93,7 +97,11 @@ function Schedule() {
   }
   function addSubject(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setNameError(t('common.required'))
+      return
+    }
+    setNameError('')
     const colors = ['#2563eb', '#0d9488', '#9333ea', '#db2777', '#ea580c', '#65a30d']
     add('subjects', {
       name: name.trim(),
@@ -107,45 +115,6 @@ function Schedule() {
 
   return (
     <div className="space-y-4">
-      {unanswered.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-          <h2 className="mb-2 font-semibold">{t('study.ask.title')}</h2>
-          <ul className="space-y-3">
-            {unanswered.map(({ subject, slot }) => (
-              <li key={slot.id} className="text-sm">
-                <p>
-                  <Rich
-                    text={t('study.ask.slot', {
-                      subject: subject.name,
-                      kind: slotKindLabel(slot.kind),
-                      day: weekdayName(slot.day),
-                      start: slot.start,
-                      end: slot.end,
-                    })}
-                  />
-                </p>
-                <div className="mt-1 flex gap-2">
-                  {ATTENDANCES.map((a) => (
-                    <Button
-                      key={a}
-                      variant="soft"
-                      aria-label={t('study.ask.aria', {
-                        att: attendanceLabel(a),
-                        subject: subject.name,
-                        kind: slotKindLabel(slot.kind),
-                        day: weekdayName(slot.day),
-                      })}
-                      onClick={() => setAttendance(subject, slot, a)}
-                    >
-                      {attendanceLabel(a)}
-                    </Button>
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
       {weekly.length > 0 && (
         <Card className="border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950">
           <h2 className="mb-2 font-semibold">{t('study.weekly.title')}</h2>
@@ -184,8 +153,14 @@ function Schedule() {
         <KeyScope onEscape={() => setName('')}>
           <form onSubmit={addSubject} className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <Field label={t('study.subjectName')}>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Field label={t('study.subjectName')} required error={nameError}>
+                <Input
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setNameError('')
+                  }}
+                />
               </Field>
             </div>
             <Field label={t('study.espb')}>
@@ -215,19 +190,58 @@ function SubjectCard({
 }) {
   const { t } = useT()
   const update = useStore((s) => s.update)
-  const [kind, setKind] = useState<'predavanje' | 'vezbe'>('predavanje')
+  const settings = useStore((s) => s.settings)
+  const setSettings = useStore((s) => s.setSettings)
+  const [kind, setKind] = useState('predavanje')
+  const [newSlotKind, setNewSlotKind] = useState('')
+  const kinds = slotKinds(settings, subject.slots)
+  function addSlotKind() {
+    const r = addKind(settings.customSlotKinds, newSlotKind)
+    if (!r.name) return
+    setSettings({ customSlotKinds: r.list })
+    setKind(r.name)
+    setNewSlotKind('')
+  }
   const [day, setDay] = useState<Weekday>(1)
   const [start, setStart] = useState('10:00')
   const [end, setEnd] = useState('12:00')
+  const [slotMsg, setSlotMsg] = useState('')
   const [slotError, setSlotError] = useState('')
+  const [removedSlot, setRemovedSlot] = useState<ClassSlot | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(undoTimer.current), [])
 
   function addSlot(e: React.FormEvent) {
     e.preventDefault()
     if (timeToMin(end) <= timeToMin(start)) return setSlotError(t('act.errEnd'))
     setSlotError('')
-    const slot: ClassSlot = { id: uid(), kind, day, start, end, attendance: null }
+    const slot: ClassSlot = { id: uid(), kind, day, start, end, attendance: 'idem' }
+    if (hasSlot(subject.slots, slot)) {
+      setSlotMsg(t('study.slotExists'))
+      return
+    }
+    setSlotMsg('')
     update('subjects', subject.id, { slots: [...subject.slots, slot] })
   }
+  function removeSlot(slot: ClassSlot) {
+    update('subjects', subject.id, { slots: subject.slots.filter((x) => x.id !== slot.id) })
+    clearTimeout(undoTimer.current)
+    setRemovedSlot(slot)
+    undoTimer.current = setTimeout(() => setRemovedSlot(null), 6000)
+  }
+  function undoRemoveSlot() {
+    if (!removedSlot) return
+    clearTimeout(undoTimer.current)
+    if (!hasSlot(subject.slots, removedSlot))
+      update('subjects', subject.id, { slots: [...subject.slots, removedSlot] })
+    setRemovedSlot(null)
+  }
+  const attAria = (sl: ClassSlot) =>
+    t('study.attAria', {
+      subject: subject.name,
+      kind: slotKindLabel(sl.kind),
+      day: weekdayName(sl.day),
+    })
   const slots = [...subject.slots].sort((a, b) => a.day - b.day || a.start.localeCompare(b.start))
   return (
     <Card>
@@ -257,43 +271,96 @@ function SubjectCard({
             <span>
               {t('study.slotLine', {
                 day: weekdayName(sl.day),
-                start: sl.start,
-                end: sl.end,
+                start: formatTimeOfDay(sl.start),
+                end: formatTimeOfDay(sl.end),
                 kind: slotKindLabel(sl.kind),
               })}
             </span>
-            {sl.attendance && (
-              <Select
-                aria-label={t('study.attAria', {
-                  subject: subject.name,
-                  kind: slotKindLabel(sl.kind),
-                  day: weekdayName(sl.day),
-                })}
-                className="!w-auto !py-1 text-sm"
-                value={sl.attendance}
-                onChange={(e) => onSlotAttendance(subject, sl, e.target.value as Attendance)}
-              >
-                {ATTENDANCES.map((a) => (
-                  <option key={a} value={a}>
-                    {attendanceLabel(a)}
-                  </option>
-                ))}
-              </Select>
-            )}
+            <span role="group" aria-label={attAria(sl)} className="inline-flex gap-1">
+              {ATTENDANCES.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  aria-pressed={sl.attendance === a}
+                  aria-label={t('study.ask.aria', {
+                    att: attendanceLabel(a),
+                    subject: subject.name,
+                    kind: slotKindLabel(sl.kind),
+                    day: weekdayName(sl.day),
+                  })}
+                  onClick={() => onSlotAttendance(subject, sl, a)}
+                  className={`min-h-8 rounded-lg px-2 text-xs font-medium transition ${
+                    sl.attendance === a
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                  }`}
+                >
+                  {attendanceLabel(a)}
+                </button>
+              ))}
+            </span>
             {sl.attendance === 'ne-idem' && (
               <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
             )}
+            <Button
+              variant="ghost"
+              className="ml-auto"
+              aria-label={t('study.deleteSlot', {
+                kind: slotKindLabel(sl.kind),
+                day: weekdayName(sl.day),
+                start: sl.start,
+              })}
+              onClick={() => removeSlot(sl)}
+            >
+              ✕
+            </Button>
           </li>
         ))}
       </ul>
+      {removedSlot && (
+        <p role="status" className="mb-2 flex items-center gap-2 text-sm">
+          {t('study.slotRemoved')}
+          <Button variant="soft" onClick={undoRemoveSlot}>
+            {t('common.undo')}
+          </Button>
+        </p>
+      )}
+      {slotMsg && (
+        <p role="alert" className="mb-2 text-sm text-red-700 dark:text-red-400">
+          {slotMsg}
+        </p>
+      )}
+      <div className="mb-2 flex items-end gap-2">
+        <div className="flex-1">
+          <Field label={t('study.newSlotKind')} optional>
+            <Input
+              value={newSlotKind}
+              placeholder={t('study.newSlotKindPlaceholder')}
+              onChange={(e) => setNewSlotKind(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addSlotKind()
+                }
+              }}
+            />
+          </Field>
+        </div>
+        <Button variant="soft" onClick={addSlotKind}>
+          {t('study.addKind')}
+        </Button>
+      </div>
       <form onSubmit={addSlot} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <Select
           aria-label={t('study.kindAria')}
           value={kind}
-          onChange={(e) => setKind(e.target.value as typeof kind)}
+          onChange={(e) => setKind(e.target.value)}
         >
-          <option value="predavanje">{slotKindLabel('predavanje')}</option>
-          <option value="vezbe">{slotKindLabel('vezbe')}</option>
+          {kinds.map((k) => (
+            <option key={k} value={k}>
+              {slotKindLabel(k)}
+            </option>
+          ))}
         </Select>
         <Select
           aria-label={t('study.dayAria')}
@@ -334,16 +401,30 @@ function SubjectCard({
 /* ---------------- Exams ---------------- */
 function Assessments() {
   const { t } = useT()
-  const { subjects, assessments, add, update, remove, award } = useStore(
-    useShallow((s) => ({
-      subjects: s.subjects,
-      assessments: s.assessments,
-      award: s.award,
-      add: s.add,
-      update: s.update,
-      remove: s.remove,
-    })),
-  )
+  const { subjects, assessments, add, update, remove, award, revoke, settings, setSettings } =
+    useStore(
+      useShallow((s) => ({
+        settings: s.settings,
+        setSettings: s.setSettings,
+        subjects: s.subjects,
+        assessments: s.assessments,
+        award: s.award,
+        revoke: s.revoke,
+        add: s.add,
+        update: s.update,
+        remove: s.remove,
+      })),
+    )
+  const [newKind, setNewKind] = useState('')
+  const kinds = assessmentKinds(settings, assessments)
+  function addAssessmentKind() {
+    const r = addKind(settings.customAssessmentKinds, newKind)
+    if (!r.name) return
+    setSettings({ customAssessmentKinds: r.list })
+    setF((x) => ({ ...x, type: r.name }))
+    setNewKind('')
+  }
+  const [titleError, setTitleError] = useState('')
   const today = todayStr()
   const month = monthOf(today)
   const regs = monthRegistrations(assessments, month)
@@ -357,18 +438,23 @@ function Assessments() {
     regDeadline: '',
     maxPoints: 30,
     difficulty: 3,
-    studyHours: 6,
   })
 
   function submit(e?: React.FormEvent) {
     e?.preventDefault()
-    const subjectId = f.subjectId || subjects[0]?.id
-    if (!subjectId || !f.title.trim()) return
+    const subject = subjects.find((s) => s.id === f.subjectId) ?? subjects[0]
     const needsReg = isExam(f)
+    // exam and midterm get their name from the app; other kinds are named by the student
+    if (!subject || (!needsReg && !f.title.trim())) {
+      setTitleError(t('common.required'))
+      return
+    }
+    setTitleError('')
+    const subjectId = subject.id
     add('assessments', {
       subjectId,
       type: f.type,
-      title: f.title.trim(),
+      title: needsReg ? autoTitle(f.type, subject, assessments) : f.title.trim(),
       date: f.date,
       time: f.time || undefined,
       registrationDeadline: needsReg && f.regDeadline ? f.regDeadline : undefined,
@@ -376,7 +462,6 @@ function Assessments() {
       maxPoints: f.maxPoints,
       points: null,
       difficulty: f.difficulty as Assessment['difficulty'],
-      studyHours: f.studyHours,
     })
     setF({ ...f, title: '' })
   }
@@ -415,7 +500,7 @@ function Assessments() {
         return (
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">
-              <strong>{a.title}</strong>
+              <strong className="user-text">{a.title}</strong>
               <Badge className="bg-slate-100 dark:bg-slate-800">{assessmentLabel(a.type)}</Badge>
               <Badge className={URGENCY_CLS[u]}>{countdownLabel(a.date, today)}</Badge>
               <span className="text-sm text-slate-500">
@@ -441,6 +526,7 @@ function Assessments() {
                           xp: XP.registration,
                           category: 'study',
                         })
+                      else revoke(`reg-${a.id}`)
                     }}
                   />
                   {t('study.askRegistered')}{' '}
@@ -462,6 +548,28 @@ function Assessments() {
                 />
                 {t('study.submitted')}
               </label>
+            )}
+            {exam && (
+              <div className="mt-2 text-sm">
+                <Field
+                  label={t('study.hoursLabel', {
+                    d: formatHours(
+                      estimateStudyHours(a.type, a.difficulty, subj(a.subjectId)?.espb ?? 6),
+                    ),
+                  })}
+                  optional
+                >
+                  <NumberInput
+                    min={0}
+                    max={200}
+                    step={0.5}
+                    value={a.studyHours ?? null}
+                    placeholder={t('study.hoursAuto')}
+                    onChange={(v) => update('assessments', a.id, { studyHours: v })}
+                    onEmpty={() => update('assessments', a.id, { studyHours: undefined })}
+                  />
+                </Field>
+              </div>
             )}
             <div className="mt-2 flex items-center gap-2 text-sm">
               <Field label={t('study.pointsLabel', { max: a.maxPoints })}>
@@ -510,33 +618,62 @@ function Assessments() {
                   value={f.type}
                   onChange={(e) => setF({ ...f, type: e.target.value as AssessmentType })}
                 >
-                  {ASSESSMENT_TYPES.map((x) => (
+                  {kinds.map((x) => (
                     <option key={x} value={x}>
                       {assessmentLabel(x)}
                     </option>
                   ))}
                 </Select>
               </Field>
-              <div className="col-span-2">
-                <Field label={t('study.f.title')}>
-                  <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-                </Field>
+              <div className="col-span-2 flex items-end gap-2">
+                <div className="flex-1">
+                  <Field label={t('study.newKind')} optional>
+                    <Input
+                      value={newKind}
+                      placeholder={t('study.newKindPlaceholder')}
+                      onChange={(e) => setNewKind(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          addAssessmentKind()
+                        }
+                      }}
+                    />
+                  </Field>
+                </div>
+                <Button variant="soft" onClick={addAssessmentKind}>
+                  {t('study.addKind')}
+                </Button>
               </div>
-              <Field label={t('study.f.date')}>
+              {!isExam(f) && (
+                <div className="col-span-2">
+                  <Field label={t('study.f.title')} required error={titleError}>
+                    <Input
+                      value={f.title}
+                      onChange={(e) => {
+                        setF({ ...f, title: e.target.value })
+                        setTitleError('')
+                      }}
+                    />
+                  </Field>
+                </div>
+              )}
+              <Field label={t('study.f.date')} required>
                 <Input
                   type="date"
                   value={f.date}
                   onChange={(e) => setF({ ...f, date: e.target.value })}
                 />
               </Field>
-              <Field label={t('study.f.time')}>
+              <Field label={t('study.f.time')} optional>
                 <Input
                   type="time"
                   value={f.time}
                   onChange={(e) => setF({ ...f, time: e.target.value })}
                 />
               </Field>
-              <Field label={t('study.f.regDeadline')}>
+              <Field label={t('study.f.regDeadline')} optional>
                 <Input
                   type="date"
                   value={f.regDeadline}
@@ -557,15 +694,6 @@ function Assessments() {
                   max={5}
                   value={f.difficulty}
                   onChange={(v) => setF({ ...f, difficulty: v })}
-                />
-              </Field>
-              <Field label={t('study.f.hours')}>
-                <NumberInput
-                  min={0}
-                  max={200}
-                  step={0.5}
-                  value={f.studyHours}
-                  onChange={(v) => setF({ ...f, studyHours: v })}
                 />
               </Field>
               <Button type="submit" className="col-span-2">

@@ -1,6 +1,6 @@
 // Pure helpers: what is on a given day, and what needs attention.
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
-import { daysUntil, timeToMin, weekdayOf, weekStartStr } from './dates'
+import { daysUntil, formatDuration, formatHours, timeToMin, weekdayOf, weekStartStr } from './dates'
 import { isExam } from './exams'
 import { sleepHours } from './life'
 import { t } from '../i18n'
@@ -125,6 +125,16 @@ export function withStatus(a: Activity, date: string, status: ActivityStatus): A
   return { ...a, doneDates: done, skippedDates: skipped }
 }
 
+/** True if the subject already has a slot with the same kind, day and time (no double entries). */
+export function hasSlot(
+  slots: ClassSlot[],
+  s: Pick<ClassSlot, 'kind' | 'day' | 'start' | 'end'>,
+): boolean {
+  return slots.some(
+    (x) => x.kind === s.kind && x.day === s.day && x.start === s.start && x.end === s.end,
+  )
+}
+
 /** Removes a single occurrence of a recurring activity, keeping the series. */
 export function withoutOccurrence(a: Activity, date: string): Activity {
   return { ...a, excludedDates: [...(a.excludedDates ?? []).filter((d) => d !== date), date] }
@@ -220,7 +230,7 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
       alerts.push({
         id: 'sleep',
         level: 'amber',
-        text: t('alert.sleep', { h: hours.toFixed(1) }),
+        text: t('alert.sleep', { d: formatHours(hours) }),
       })
   }
   return alerts
@@ -236,7 +246,7 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
   const parts: string[] = []
   if (classes) parts.push(t('day.classes', { n: classes }))
   if (workouts) parts.push(t('day.workouts', { n: workouts }))
-  if (studyMin) parts.push(t('day.study', { h: +(studyMin / 60).toFixed(1) }))
+  if (studyMin) parts.push(t('day.study', { d: formatDuration(studyMin) }))
   if (!parts.length) return studyAndWorkoutLabel ? t('day.free') : ''
   return t('day.prefix', { parts: parts.join(', ') })
 }

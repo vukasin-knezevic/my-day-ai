@@ -4,12 +4,18 @@ import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
-import { monthOf, todayStr } from './lib/dates'
-import { award as awardXp, spendReward as spendTime, type AwardEvent } from './lib/xp'
+import { monthOf, setTimeFormat, todayStr } from './lib/dates'
+import {
+  award as awardXp,
+  revokeWhere,
+  rewardBalance,
+  spendReward as spendTime,
+  type AwardEvent,
+} from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
 import { addUsage } from './lib/ai/usage'
-import { resolveLanguage, setLanguage } from './i18n'
+import { resolveLanguage, setGender, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -36,6 +42,14 @@ const COLLECTIONS: CollectionKey[] = [
   'games',
 ]
 
+/** Which award ids belong to an item of a collection (so deleting the item takes the XP back). */
+const REWARD_IDS: Partial<Record<CollectionKey, (id: string) => (awardId: string) => boolean>> = {
+  workouts: (id) => (a) => a === `workout-${id}` || a.startsWith(`pr-${id}-`),
+  habits: (id) => (a) => a.startsWith(`habit-${id}-`),
+  activities: (id) => (a) => a.startsWith(`act-${id}-`),
+  assessments: (id) => (a) => a === `reg-${id}`,
+}
+
 type Item<K extends CollectionKey> = AppData[K][number]
 
 interface Actions {
@@ -54,8 +68,12 @@ interface Actions {
   resetAll: () => void
   /** Gives XP (once per event id) and shows a toast with the result. */
   award: (e: AwardEvent) => void
+  /** Takes back XP and reward minutes of one award id (exact) or of every id with the given prefix. */
+  revoke: (id: string, opts?: { prefix?: boolean }) => void
   /** Records reward time I used (no judging). */
-  spendReward: (min: number, game?: string) => void
+  spendReward: (min: number, game?: string) => string | null
+  /** Takes back a recorded use of reward time (the "Undo" after a click). */
+  unspendReward: (gameId: string) => void
   /** Adds one API call to this month's usage. */
   trackAiUsage: (inputTokens: number, outputTokens: number) => void
 }
@@ -89,16 +107,29 @@ export const useStore = create<Store>()(
               [key]: (s[key] as { id: string }[]).map((x) => (x.id === id ? { ...x, ...p } : x)),
             }) as Partial<Store>,
         ),
-      remove: (key, id) =>
+      remove: (key, id) => {
         set(
           (s) =>
             ({ [key]: (s[key] as { id: string }[]).filter((x) => x.id !== id) }) as Partial<Store>,
-        ),
-      removeSubject: (id) =>
+        )
+        // deleting something takes back what it paid out
+        const p = get().progress
+        const next = revokeWhere(p, (x) => (REWARD_IDS[key]?.(id) ?? (() => false))(x))
+        if (next !== p) set({ progress: next })
+      },
+      removeSubject: (id) => {
+        const gone = get()
+          .assessments.filter((a) => a.subjectId === id)
+          .map((a) => a.id)
         set((s) => ({
           subjects: s.subjects.filter((x) => x.id !== id),
           assessments: s.assessments.filter((a) => a.subjectId !== id),
-        })),
+        }))
+        // the registrations of the removed assessments paid XP: take it back too
+        const p = get().progress
+        const next = revokeWhere(p, (x) => gone.some((a) => x === `reg-${a}`))
+        if (next !== p) set({ progress: next })
+      },
       patch: (p) => set(p as Partial<Store>),
       loadDemo: () => {
         if (get().hasDemo()) return
@@ -121,8 +152,22 @@ export const useStore = create<Store>()(
             )
           }
           // what the user added to a demo subject goes with it, so nothing is left dangling
-          const gone = new Set(s.subjects.filter((x) => x.demo).map((x) => x.id))
-          next.assessments = next.assessments?.filter((a) => !gone.has(a.subjectId))
+          const goneSubjects = new Set(s.subjects.filter((x) => x.demo).map((x) => x.id))
+          next.assessments = next.assessments?.filter((a) => !goneSubjects.has(a.subjectId))
+          // the XP / reward minutes the demo items paid out go with them
+          const gone = COLLECTIONS.flatMap((k) =>
+            (s[k] as { id: string; demo?: boolean }[])
+              .filter((x) => x.demo)
+              .map((x) => REWARD_IDS[k]?.(x.id))
+              .filter((m) => m !== undefined),
+          )
+          // assessments removed together with their demo subject
+          const goneAssessments = s.assessments.filter((a) => goneSubjects.has(a.subjectId))
+          const progress = revokeWhere(
+            s.progress,
+            (id) => gone.some((m) => m(id)) || goneAssessments.some((a) => id === `reg-${a.id}`),
+          )
+          if (progress !== s.progress) next.progress = progress
           return next
         }),
       hasDemo: () =>
@@ -131,17 +176,40 @@ export const useStore = create<Store>()(
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
       award: (e) => {
         const settings = get().settings
-        const r = awardXp(get().progress, e, {
-          name: rewardNameOf(settings),
-          emoji: settings.rewardEmoji,
-        })
+        const r = awardXp(
+          get().progress,
+          { at: new Date().toISOString(), ...e },
+          {
+            name: rewardNameOf(settings),
+            emoji: settings.rewardEmoji,
+          },
+        )
         if (r.progress !== get().progress) set({ progress: r.progress })
         useToast.getState().push(r.messages)
       },
+      revoke: (id, opts) => {
+        const p = get().progress
+        const next = revokeWhere(p, (x) => (opts?.prefix ? x.startsWith(id) : x === id))
+        if (next !== p) set({ progress: next })
+      },
       spendReward: (min, game = rewardNameOf(get().settings)) => {
+        if (min <= 0 || min > rewardBalance(get().progress)) return null
+        const id = uid()
         set((s) => ({
           progress: spendTime(s.progress, min),
-          games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
+          games: [...s.games, { id, date: todayStr(), game, durationMin: min }],
+        }))
+        return id
+      },
+      unspendReward: (gameId) => {
+        const g = get().games.find((x) => x.id === gameId)
+        if (!g) return
+        set((s) => ({
+          games: s.games.filter((x) => x.id !== gameId),
+          progress: {
+            ...s.progress,
+            rewardSpentMin: Math.max(0, s.progress.rewardSpentMin - g.durationMin),
+          },
         }))
       },
       trackAiUsage: (input, output) =>
@@ -164,7 +232,14 @@ export const useStore = create<Store>()(
 )
 
 // Keep the UI language in sync with the saved setting ('' = automatic, from the browser).
-const syncLanguage = (s: Pick<AppData, 'settings'>) =>
+const syncLanguage = (s: Pick<AppData, 'settings'>) => {
   setLanguage(resolveLanguage(s.settings.language))
+  setGender(s.settings.gender === 'f' ? 'f' : 'm')
+}
 syncLanguage(useStore.getState())
 useStore.subscribe(syncLanguage)
+
+// Times are shown as 24h or 12h, as set in the settings.
+const syncTimeFormat = (s: Pick<AppData, 'settings'>) => setTimeFormat(s.settings.timeFormat)
+syncTimeFormat(useStore.getState())
+useStore.subscribe(syncTimeFormat)

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { useStore } from '../store'
 import { emptyData } from './defaults'
-import { requestNotifications, useReminders } from './useReminders'
+import { requestNotifications, showNotification, useReminders } from './useReminders'
 
 const NOW = new Date(2026, 10, 6, 17, 50)
 
@@ -89,5 +89,41 @@ describe('requestNotifications', () => {
   it('a browser without notifications answers no', async () => {
     vi.stubGlobal('Notification', undefined)
     expect(await requestNotifications()).toBe(false)
+  })
+})
+
+describe('showNotification', () => {
+  it('uses the service worker (the only way on Chrome for Android)', async () => {
+    const showSw = vi.fn().mockResolvedValue(undefined)
+    const ctor = vi.fn()
+    vi.stubGlobal('Notification', Object.assign(ctor, { permission: 'granted' }))
+    vi.stubGlobal('navigator', {
+      serviceWorker: { ready: Promise.resolve({ showNotification: showSw }) },
+    })
+    expect(await showNotification('T', 'B')).toBe(true)
+    expect(showSw).toHaveBeenCalledWith('T', expect.objectContaining({ body: 'B' }))
+    expect(ctor).not.toHaveBeenCalled()
+  })
+
+  it('falls back to the constructor without a service worker', async () => {
+    const ctor = vi.fn()
+    vi.stubGlobal('Notification', Object.assign(ctor, { permission: 'granted' }))
+    vi.stubGlobal('navigator', {})
+    expect(await showNotification('T', 'B')).toBe(true)
+    expect(ctor).toHaveBeenCalledOnce()
+  })
+
+  it('reports failure instead of swallowing it', async () => {
+    const ctor = vi.fn(() => {
+      throw new TypeError('Illegal constructor')
+    })
+    vi.stubGlobal('Notification', Object.assign(ctor, { permission: 'granted' }))
+    vi.stubGlobal('navigator', {})
+    expect(await showNotification('T', 'B')).toBe(false)
+  })
+
+  it('does nothing without permission', async () => {
+    vi.stubGlobal('Notification', Object.assign(vi.fn(), { permission: 'denied' }))
+    expect(await showNotification('T', 'B')).toBe(false)
   })
 })

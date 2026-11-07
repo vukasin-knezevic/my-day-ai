@@ -1,5 +1,6 @@
 // The rules below must hold for ANY week, not only for the examples in planner.test.ts.
 // Scenarios are random but seeded, so a failure repeats exactly: the test name shows the seed.
+import { studyHoursOf } from './exams'
 import { planWeek, MAX_STUDY_BLOCK, type PlanInput } from './planner'
 import { addDaysStr, timeToMin } from './dates'
 import { occurrencesOn } from './schedule'
@@ -148,7 +149,14 @@ describe.each(Array.from({ length: 300 }, (_, i) => [i + 1]))('planWeek, seed %i
       const planned = suggestions
         .filter((s) => s.assessmentId === exam.id)
         .reduce((n, s) => n + timeToMin(s.end) - timeToMin(s.start), 0)
-      expect(planned).toBeLessThanOrEqual(Math.ceil(exam.studyHours * 2) * 30)
+      expect(planned).toBeLessThanOrEqual(
+        Math.ceil(
+          studyHoursOf(
+            exam,
+            input.subjects.find((x) => x.id === exam.subjectId),
+          ) * 2,
+        ) * 30,
+      )
     }
   })
 

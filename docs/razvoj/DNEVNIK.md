@@ -52,7 +52,7 @@ Napisao sam README na srpskom i engleskom, `docs/ARHITEKTURA.md` sa Mermaid dija
 
 Napisao sam `IZVESTAJ.md` sa poštenim spiskom šta radi, šta nije urađeno i šta nisam mogao da proverim (npr. pravi API poziv i Huawei format). `UCENJE.md` je tvoj vodič: poređenje sa Pythonom, redosled čitanja fajlova i 10 pitanja sa razgovora. Najvažnija lekcija projekta: kad ne možeš nešto da proveriš, to napišeš, a ne pretvaraš se da radi. Sledeći korak je da sam uključiš GitHub Pages (uputstvo je u README-u) i probaš AI sa pravim ključem.
 
-# Verzija 1.1
+# Verzija 0.2 (ranije 1.1)
 
 ## Deo 1 — Popravke
 

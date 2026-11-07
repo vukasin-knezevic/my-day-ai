@@ -106,10 +106,19 @@ describe('parseAiResponse (shared by API and manual mode)', () => {
       parseAiResponse(
         'uvoz',
         fence({
-          assessments: [{ subject: 'Mata', type: 'test', title: 'K1', date: '2026-11-20' }],
+          assessments: [{ subject: 'Mata', type: '', title: 'K1', date: '2026-11-20' }],
         }),
       ).ok,
     ).toBe(false)
+    // a kind the student named (homework, lab...) is fine
+    expect(
+      parseAiResponse(
+        'uvoz',
+        fence({
+          assessments: [{ subject: 'Mata', type: 'Seminarski', title: 'S1', date: '2026-11-20' }],
+        }),
+      ).ok,
+    ).toBe(true)
     expect(
       parseAiResponse(
         'trening',
@@ -133,7 +142,7 @@ describe('prompt generation', () => {
   data.settings = { ...data.settings, name: 'Vuk', wakeTime: '09:00', bedTime: '01:00' }
   it('includes my data, schema, tone rules and the ask-questions-first request', () => {
     const { manualText } = buildPrompt('plan-nedelje', data, TODAY)
-    expect(manualText).toContain('Matematika 1 (primer)')
+    expect(manualText).toContain('Predmet 1 (primer)')
     expect(manualText).toContain('"activities"')
     expect(manualText).toContain(systemPrompt().slice(0, 40))
     expect(manualText).toContain(manualQuestions())

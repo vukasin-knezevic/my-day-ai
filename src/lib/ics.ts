@@ -83,17 +83,40 @@ function vevent(e: Ev, dtstamp: string): string[] {
 
 /** Builds the calendar text for the next `days` days. Suggestions (not accepted yet) are skipped. */
 export function buildIcs(data: AppData, now: Date = new Date(), days = 60): string {
-  const today = todayStr(now)
-  const dtstamp = stamp(now)
   const events: Ev[] = []
+  for (let i = 0; i < days; i++) events.push(...eventsOfDay(data, now, i))
+  return finishIcs(data, now, events)
+}
 
+/** Same as `buildIcs`, but gives the screen a chance to draw (0-1 progress) while the days are processed. */
+export async function buildIcsWithProgress(
+  data: AppData,
+  onProgress: (fraction: number) => void,
+  now: Date = new Date(),
+  days = 60,
+): Promise<string> {
+  const events: Ev[] = []
   for (let i = 0; i < days; i++) {
-    const date = addDaysStr(today, i)
-    for (const o of occurrencesOn(data, date)) {
-      if (o.suggested || o.status === 'skipped') continue
-      events.push({ uid: o.key, summary: o.title, date, start: o.start, end: o.end, alarmMin: 15 })
+    events.push(...eventsOfDay(data, now, i))
+    if (i % 6 === 5) {
+      onProgress((i + 1) / days)
+      await new Promise((r) => setTimeout(r, 0))
     }
   }
+  onProgress(1)
+  return finishIcs(data, now, events)
+}
+
+function eventsOfDay(data: AppData, now: Date, offset: number): Ev[] {
+  const date = addDaysStr(todayStr(now), offset)
+  return occurrencesOn(data, date)
+    .filter((o) => !o.suggested && o.status !== 'skipped')
+    .map((o) => ({ uid: o.key, summary: o.title, date, start: o.start, end: o.end, alarmMin: 15 }))
+}
+
+function finishIcs(data: AppData, now: Date, events: Ev[]): string {
+  const today = todayStr(now)
+  const dtstamp = stamp(now)
   for (const a of data.assessments) {
     if (a.date < today) continue
     const sub = data.subjects.find((s) => s.id === a.subjectId)?.name ?? ''
@@ -131,6 +154,32 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
 }
 
 const addMinutes = (time: string, m: number) => minToTime(Math.min(1439, timeToMin(time) + m))
+
+/**
+ * Hands the calendar file to the phone: the share sheet offers the Calendar app straight away.
+ * Without Web Share for files (a laptop) it is an ordinary download. Returns what happened.
+ */
+export async function shareCalendar(
+  text: string,
+  filename = 'my-day-ai.ics',
+): Promise<'shared' | 'downloaded' | 'cancelled'> {
+  const file = new File([text], filename, { type: 'text/calendar' })
+  if (
+    typeof navigator !== 'undefined' &&
+    navigator.share &&
+    navigator.canShare?.({ files: [file] })
+  ) {
+    try {
+      await navigator.share({ files: [file], title: 'My Day AI' })
+      return 'shared'
+    } catch (e) {
+      // the user closed the share sheet: that is an answer, not an error
+      if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled'
+    }
+  }
+  downloadText(filename, text)
+  return 'downloaded'
+}
 
 export function downloadText(filename: string, text: string, mime = 'text/calendar') {
   const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }))

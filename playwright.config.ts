@@ -9,6 +9,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',
+    // no animations in the tests (axe would measure colours in the middle of a fade)
+    reducedMotion: 'reduce',
     viewport: { width: 390, height: 844 },
     // the tests are written for Serbian; the app picks its language from the browser
     locale: 'sr-RS',
@@ -16,7 +18,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /iphone\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
+    },
+    {
+      // iPhone: WebKit (Safari's engine) with an iPhone profile. It cannot replace a real iPhone, see IZVESTAJ.md
+      name: 'iphone',
+      testMatch: /iphone\.spec\.ts/,
+      use: { ...devices['iPhone 14'] },
     },
   ],
   webServer: {

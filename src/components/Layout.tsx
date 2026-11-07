@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import IosInstallHint from './IosInstallHint'
+import UpdateBanner from './UpdateBanner'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
@@ -32,7 +34,7 @@ function Toasts() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-4 top-4 z-20 mx-auto max-w-sm space-y-1 rounded-2xl bg-slate-900 p-3 text-sm text-white shadow-lg"
+      className="anim-toast fixed inset-x-4 top-[calc(1rem+env(safe-area-inset-top))] z-20 mx-auto max-w-sm space-y-1 rounded-2xl bg-slate-900 p-3 text-sm text-white shadow-lg"
     >
       {messages.map((m) => (
         <p key={m}>{m}</p>
@@ -43,6 +45,7 @@ function Toasts() {
 
 export default function Layout() {
   const { t } = useT()
+  const { pathname } = useLocation()
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
@@ -56,12 +59,16 @@ export default function Layout() {
           ))}
         </nav>
       </aside>
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-24 md:p-8 md:pb-8">
-        <Outlet />
+      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8">
+        <IosInstallHint />
+        <UpdateBanner />
+        <div key={pathname} className="anim-page">
+          <Outlet />
+        </div>
       </main>
       <nav
         aria-label={t('nav.bottom')}
-        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
+        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
       >
         {MAIN.map((n) => (
           <NavLink

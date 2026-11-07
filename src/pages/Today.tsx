@@ -1,10 +1,18 @@
+import { addressName } from '../lib/address'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, selectData } from '../store'
-import { Badge, Button, Card, Input } from '../components/ui'
+import { Badge, Button, Card, Field, Input } from '../components/ui'
 import { CATEGORY_META } from '../types'
-import { formatLong, minToTime, timeToMin, todayStr } from '../lib/dates'
+import {
+  formatDuration,
+  formatTimeOfDay,
+  formatLong,
+  minToTime,
+  timeToMin,
+  todayStr,
+} from '../lib/dates'
 import {
   buildAlerts,
   currentAndNext,
@@ -22,7 +30,6 @@ import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
 import { useT } from '../i18n'
-import Rich from '../i18n/Rich'
 import type { Activity } from '../types'
 
 const PX_PER_HOUR = 44
@@ -95,6 +102,7 @@ export default function Today() {
   const [now, setNow] = useState(new Date())
   const [text, setText] = useState('')
   const [msg, setMsg] = useState('')
+  const [quickError, setQuickError] = useState('')
   const [editing, setEditing] = useState<Activity | 'new' | null>(null)
 
   useEffect(() => {
@@ -110,16 +118,24 @@ export default function Today() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!text.trim()) return
+    if (!text.trim()) {
+      setQuickError(t('today.quickEmpty'))
+      return
+    }
+    setQuickError('')
     setMsg(applyParsed(parseQuick(text, new Date()), store))
     setText('')
   }
 
-  function mark(o: Occurrence, status: 'done' | 'skipped') {
+  function mark(o: Occurrence, status: 'done' | 'skipped' | 'planned') {
     const a = data.activities.find((x) => x.id === o.activityId)
     if (!a) return
     store.update('activities', a.id, withStatus(a, today, status))
-    if (status !== 'done') return
+    // anything but "done" takes back what "done" paid out
+    if (status !== 'done') {
+      store.revoke(`act-${a.id}-${today}`)
+      return
+    }
     const ev = rewardForDone(a, today, data.settings.rewardMinPerStudyHour)
     if (ev) store.award(ev)
     const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
@@ -129,14 +145,17 @@ export default function Today() {
     if (o.activityId) store.update('activities', o.activityId, { suggested: false })
   }
 
+  const summary = daySummary(occ)
+  const callName = addressName(data.settings)
+  const subtitle = callName
+    ? `${callName}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
+    : summary
+
   return (
     <>
       <header className="mb-4">
         <h1 className="text-2xl font-bold">🌅 {formatLong(today)}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {data.settings.name ? `${data.settings.name}, ` : ''}
-          {daySummary(occ)}
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
       </header>
 
       {now.getDay() === 0 && now.getHours() >= 18 && (
@@ -153,7 +172,38 @@ export default function Today() {
         </Card>
       )}
 
-      <ProgressCard />
+      <section aria-label={t('today.nowNext')} className="mb-4 space-y-2">
+        <Card className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <p className="text-xs font-semibold tracking-wide text-blue-800 uppercase dark:text-blue-200">
+            {t('today.nowLabel')}
+          </p>
+          {current ? (
+            <>
+              <p className="user-text mt-1 text-xl font-bold">
+                {CATEGORY_META[current.category].emoji} {current.title}
+              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                {t('today.until', { end: formatTimeOfDay(current.end) })}
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-slate-700 dark:text-slate-300">{t('today.nothing')}</p>
+          )}
+        </Card>
+        {next && (
+          <div className="rounded-2xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-800">
+            <span className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              {t('today.nextLabel')}
+            </span>
+            <p className="user-text">
+              {CATEGORY_META[next.category].emoji} {next.title} · {formatTimeOfDay(next.start)}{' '}
+              <span className="text-slate-600 dark:text-slate-400">
+                ({t('today.in', { d: formatDuration(minutesToNext!) })})
+              </span>
+            </p>
+          </div>
+        )}
+      </section>
 
       {alerts.length > 0 && (
         <Card className="mb-4 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950">
@@ -170,51 +220,6 @@ export default function Today() {
           </ul>
         </Card>
       )}
-
-      <form onSubmit={submit} className="mb-4 flex gap-2" role="search">
-        <Input
-          id="quick-input"
-          aria-label={t('today.quick')}
-          placeholder={t('today.quickPlaceholder')}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setText('')
-          }}
-        />
-        <Button type="submit">{t('common.add')}</Button>
-      </form>
-      {msg && (
-        <p role="status" className="mb-4 text-sm text-slate-700 dark:text-slate-300">
-          {msg}
-        </p>
-      )}
-
-      <Card className="mb-4">
-        {current ? (
-          <p>
-            <Rich
-              text={t('today.now', {
-                emoji: CATEGORY_META[current.category].emoji,
-                title: current.title,
-                end: current.end,
-              })}
-            />
-          </p>
-        ) : (
-          <p className="text-slate-600 dark:text-slate-400">{t('today.nothing')}</p>
-        )}
-        {next && (
-          <p className="mt-1 text-sm">
-            {t('today.next', {
-              title: next.title,
-              start: next.start,
-              h: Math.floor(minutesToNext! / 60),
-              m: minutesToNext! % 60,
-            })}
-          </p>
-        )}
-      </Card>
 
       {editing && (
         <ActivityForm
@@ -237,10 +242,12 @@ export default function Today() {
           {occ.map((o) => (
             <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
               <span className="w-24 shrink-0 tabular-nums">
-                {o.start}–{o.end}
+                {formatTimeOfDay(o.start)}–{formatTimeOfDay(o.end)}
               </span>
               <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
-                {CATEGORY_META[o.category].emoji} {o.title}
+                <span className="user-text">
+                  {CATEGORY_META[o.category].emoji} {o.title}
+                </span>
               </span>
               {o.suggested && (
                 <Badge className="bg-amber-100 text-amber-800">{t('today.badge.suggested')}</Badge>
@@ -265,6 +272,15 @@ export default function Today() {
                     {t('today.skip')}
                   </Button>
                 </span>
+              )}
+              {o.type === 'activity' && o.activityId && o.status !== 'planned' && (
+                <Button
+                  variant="ghost"
+                  aria-label={t('today.undo', { title: o.title })}
+                  onClick={() => mark(o, 'planned')}
+                >
+                  {t('today.undoShort')}
+                </Button>
               )}
               {o.type === 'activity' && o.activityId && (
                 <Button
@@ -304,6 +320,33 @@ export default function Today() {
         </ul>
       </Card>
 
+      <Card className="mb-4">
+        <form onSubmit={submit} role="search" className="space-y-2">
+          <Field label={t('today.quick')} error={quickError}>
+            <div className="flex gap-2">
+              <Input
+                id="quick-input"
+                placeholder={t('today.quickPlaceholder')}
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value)
+                  setQuickError('')
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setText('')
+                }}
+              />
+              <Button type="submit">{t('common.add')}</Button>
+            </div>
+          </Field>
+        </form>
+        {msg && (
+          <p role="status" className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+            {msg}
+          </p>
+        )}
+      </Card>
+
       <Card>
         <h2 className="mb-3 font-semibold">{t('today.timeline')}</h2>
         <Timeline
@@ -313,6 +356,10 @@ export default function Today() {
           nowMin={nowMin}
         />
       </Card>
+
+      <div className="mt-4">
+        <ProgressCard />
+      </div>
     </>
   )
 }

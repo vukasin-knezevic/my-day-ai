@@ -1,8 +1,8 @@
 # IZVEŠTAJ — My Day AI
 
-Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
+Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
-## Šta je novo u verziji 1.1
+## Šta je novo u verziji 0.2 (ranije 1.1)
 
 **Popravke**
 
@@ -42,11 +42,11 @@ Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: htt
 | Playwright e2e         | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
 | `npm run build`        | bez upozorenja                                                                                                                                         |
 
-## Šta je urađeno u verziji 1.0 (faze 0–12)
+## Šta je urađeno u verziji 0.1 (ranije 1.0, faze 0–12)
 
 Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `docs/razvoj/PLAN.md`): 0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
 
-## Popravke posle verzije 1.1
+## Popravke u verziji 0.2 (noćne popravke i pregled koda)
 
 - **Šablon treninga se može preimenovati** (naziv iz polja Tip).
 - **„Samo danas" za ponavljajuće aktivnosti:** uklanja jedan dan, niz ostaje; važi i za `.ics`.
@@ -57,6 +57,69 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **Planer:** više ne predlaže termine koji su danas već prošli i ne preklapa AI predloge na čekanju.
 - **AI rezultati:** odbijaju se aktivnosti koje se završavaju pre početka i nepostojeći datumi; model sada zna koliko je sati; ponovni uvoz istog rasporeda ne duplira kolokvijume.
 - **Brzi unos razume ponavljanje:** „trening svaki dan u 18", „učenje radnim danima 10-12", „svakog ponedeljka", „every monday".
+
+## Update 0.3
+
+### Faza A — Greške (urađeno)
+
+1. **Notifikacije na Androidu:** podsetnici se prikazuju preko service worker-a (`registration.showNotification`); `new Notification` je samo rezerva za laptop. Greška se više ne guta: u podešavanjima je dugme **„Pošalji probnu notifikaciju"** koje javlja da li je prikazana.
+2. **XP se oduzima:** `revoke` u `src/lib/xp.ts` skida XP, nagradne minute, id i događaj (događaj sada pamti i `rewardMin`). Poziva se kad navika padne ispod cilja, kad se aktivnost vrati iz „urađeno" (novo dugme „Poništi" na ekranu Danas), kad se odštiklira prijava kolokvijuma, i pri brisanju treninga, navike, aktivnosti ili obaveze. Napomena: događaji nastali pre ove verzije ne pamte nagradne minute, pa se za njih skida samo XP.
+3. **Nagrada ne ide u minus:** „Iskoristio 30/60 min" je neaktivno kad nema dovoljno minuta; posle klika stoji **„Poništi"** 6 sekundi. `stanje = zarađeno − potrošeno`, nikad ispod 0. Stari podaci sa negativnim stanjem (npr. −900) se popravljaju pri učitavanju (potrošeno se spušta na zarađeno).
+4. **Termini:** ✕ pored svakog termina (sa „Poništi") i zaštita od duplikata (isti predmet + vrsta + dan + vreme; dupli klik na „+ Termin" dodaje jedan i javlja poruku).
+5. **„Obriši demo podatke"** sada skida i XP/nagradne minute demo stavki.
+
+Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zeleno).
+
+### Faza B — Izgled i „smooth" osećaj (urađeno)
+
+6. **Boje i početni ekran:** `theme_color` i `background_color` u manifestu i `<meta name="theme-color">` su tamna boja pozadine aplikacije (`#020617`); meta se menja sa temom (svetla tema `#f8fafc`). Ikone su nove: plavi logo (izlazak sunca) na tamnoj pozadini; `scripts/make-icons.mjs` ih pravi iz `public/icon.svg`.
+7. **Sopstveni izbornici:** `Select` otvara donji panel (`Sheet`) sa animacijom umesto sistemskog menija. Polja imaju `autocomplete="off"`.
+8. **Birač vremena:** točkići sati : minuti; 24h podrazumevano, 12h (AM/PM) u podešavanjima. Sačuvana vrednost je uvek `HH:mm`; prikaz na ekranu Danas, u planeru i u terminima prati izabrani format.
+9. **Datum:** Android birač ostaje (nevidljivo polje preko teksta), prikaz je uvek DD.MM.GGGG.
+10. **Trajanje:** jedna funkcija `formatDuration`/`formatHours` („2 h 36 min", „7 min", „2 h").
+11. **Ekran Danas:** Trenutno (veliko, plavo) i Sledeće (manje, sa odbrojavanjem) → Obaveze → označeni brzi unos → vremenska linija → nivo/XP/nagrada. Podnaslov: „Vukašin, danas: …".
+12. **Obavezna/opciona polja:** `Field` ima `required` (diskretna zvezdica), `optional` („(opciono)") i `error` (crveni okvir i poruka samo posle pokušaja). Oznake su CSS, pa naziv polja ostaje čist za čitače ekrana i testove. Dugmad koja su ćutala (prazan brzi unos, pitanja AI-ju, forme) sada prijavljuju grešku.
+13. **Dugi pritisak:** `user-select: none` na fiksnim tekstovima; tekst korisnika (`.user-text`) i polja se mogu kopirati.
+14. **Animacije:** prelazi između ekrana, paneli, poruke; `prefers-reduced-motion` ih gasi (e2e testovi rade sa uključenim smanjenim kretanjem).
+
+### Faza C — Faks (urađeno)
+
+15. **Vrste obaveza i termina:** ugrađeni su samo Ispit i Kolokvijum (obaveze) i predavanje i vežbe (termini). Ostalo korisnik sam dodaje i imenuje (`settings.customAssessmentKinds` / `customSlotKinds`); `src/lib/kinds.ts` drži pravila. Tab se zove „Ispit/Kolokvijum". **Migracija:** stari „domaci" i „lab" postaju korisničke vrste sa imenom na jeziku sačuvanih podešavanja („Domaći", „Lab vežba"…); pokretanje dvaput ništa ne menja (test u `dataIO.test.ts`). Obaveze koje nisu ispit/kolokvijum ne traže prijavu i ponašaju se kao raniji domaći (upozorenje dan ranije, „predato").
+16. **Naziv pravi aplikacija** za ispit i kolokvijum: „Kolokvijum 1 · Matematika 1", „Ispit · Fizika 1" (kolokvijum je uvek numerisan, ispit tek od drugog). Polje „Naziv" postoji samo za korisničke vrste i tu je obavezno.
+17. **„Sati učenja" nema u formi.** Planer procenjuje sate iz vrste (ispit > kolokvijum), težine (1–5) i ESPB (`estimateStudyHours`); ko hoće, menja ih u detaljima obaveze („Sati učenja", opciono, prazno = automatski). Već sačuvani sati ostaju kao ručno postavljeni.
+18. **Idem / Ne idem / Ponekad** stoji odmah pored svakog termina u kartici predmeta; nema kartice na vrhu. Novi termin počinje kao „Idem" (stari termini bez odgovora ostaju bez izbora dok se ne klikne). Nedeljno pitanje za „Ponekad" je ostalo.
+19. **Planer uvek odgovara** („Sve je već isplanirano ✅" ili „Učenje za Matematika 1 počinje od pon 16. 11. (kolokvijum 23. 11.)") i ima izbor „Ova nedelja / Sledeća nedelja" (vikendom je podrazumevana sledeća). Stari predlozi se menjaju samo za planirane dane.
+
+### Faza D — Jezik i obraćanje (urađeno, osim stavke 21 koja je na kraju)
+
+20. Opcija jezika je „Automatski (jezik telefona)" / „Automatic (phone language)".
+21. **Vokativ** (`src/lib/vocative.ts`, latinica i ćirilica, sa testovima): Vukašin→Vukašine, Petar→Petre, Milica→Milice, Marko→Marko, Ana→Ana… Uvod pita **„Kako da ti se obraćam?"** i unapred popuni predlog; dok korisnik ne ispravi ručno, predlog prati ime. Ekran Danas: „Vukašine, danas: …".
+22. **Rod** (srpski): izbor u uvodu i podešavanjima; tekstovi koji zavise od roda (Legao/Legla, Ustao/Ustala, Iskoristio/Iskoristila, „Da li si prijavio/prijavila?", „Spavala si samo…") imaju ženske oblike u `feminine` delu `sr-Latn.ts` (ćirilica se izvodi sama). Ostali jezici ne menjaju ime ni rod.
+23. Demo primeri su opšti: „Predmet 1 (primer)", „Predmet 2 (primer)", „Kolokvijum 1 · Predmet 1 (primer)".
+24. **Novi jezici (francuski, španski, nemački, ruski):** vidi dole, sekcija „Novi jezici".
+
+### Faza E — Update, kalendar, XP istorija, README (urađeno)
+
+25. **Automatsko ažuriranje:** `registerType: 'prompt'`; nova verzija se preuzima u pozadini, na vrhu stoji **„Novi update"** sa trakom 0–100% i na kraju dugme **„Restartuj aplikaciju"**. Iskreno: pregledač ne javlja stvarne bajtove preuzimanja, pa traka do 90% _procenjuje_ tok, a 100% pokazuje tek kad je nova verzija stvarno spremna. Podešavanje (uvod i podešavanja): uključeno = kad korisnik izađe iz aplikacije, spremna verzija se sama uključuje; isključeno = samo kad korisnik pritisne dugme. Ne može da se proveri na pravom uređaju iz ovog okruženja: probati na telefonu posle sledećeg objavljivanja.
+26. **„Dodaj u kalendar"** (reč „.ics" se ne prikazuje); diskretna traka napretka u aplikaciji; fajl ide kroz Web Share (`text/calendar`), a bez podrške običan download. Zatvaranje share panela nije greška i ništa ne preuzima.
+27. **Istorija XP-a:** klik na broj XP-a otvara listu (šta, koliko, datum i sat); događaji sada pamte vreme, stari prikazuju samo datum.
+28. **README:** korake za Anthropic API ključ (console.anthropic.com → API Keys) i šema verzija (0.x do zvanične 1.0). `package.json` je 0.3.0, verzija se vidi na dnu podešavanja.
+
+### Faza F — iPhone (iOS) podrška (urađeno)
+
+Cilj: kolege sa iPhone-om mogu besplatno da testiraju (Safari → Deli → „Dodaj na početni ekran"), bez App Store-a. 29. **`index.html`:** `apple-touch-icon` (180×180, plavi logo na tamnoj pozadini), `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style` = `black` (bez plavih traka), `apple-mobile-web-app-title` = „My Day AI". 30. **Početni ekran:** `apple-touch-startup-image` za 9 najčešćih veličina iPhone-a (plavi logo na tamnoplavoj pozadini, `public/splash/`); `scripts/make-icons.mjs` ih pravi. 31. **Notch i donja traka:** `viewport-fit=cover` + `env(safe-area-inset-*)` na telu stranice, donjoj navigaciji, sadržaju i porukama. 32. **Uputstvo za instalaciju:** u Safariju (iOS, nije instalirano) kartica „Dodaj na početni ekran: Deli ⬆️ → Dodaj na početni ekran"; zatvara se i više se ne prikazuje (`settings.iosHintDismissed`). 33. **Notifikacije na iOS-u:** ako aplikacija nije na početnom ekranu, u podešavanjima piše jasno da to treba (iOS 16.4+), umesto dugmeta koje ne radi; isto za pregledače bez notifikacija. 34. **Provera:** `e2e/iphone.spec.ts` (Playwright WebKit, profil iPhone 14): uvod i ekran Danas, kartica za instalaciju, svih 8 glavnih ekrana bez grešaka i bez horizontalnog skrola, donji panel i birač vremena, poruka o notifikacijama. CI instalira i `webkit`.
+
+- **Proverio sam:** gore navedeno u WebKit-u; unit testovi za prepoznavanje iPhone-a/iPad-a.
+- **Mora na pravom iPhone-u:** pravo „Dodaj na početni ekran" i izgled ikonice; da li se prikazuje početni ekran (iOS ga ponekad preskoči ako veličina ne odgovara tačno); status traka i notch/donja traka (WebKit u Playwright-u nema njih); notifikacije posle instalacije (dozvola, stvarno prikazivanje); Web Share sa kalendarom; ponašanje birača datuma i vremena sa pravim prstom; automatsko ažuriranje (service worker se ponaša drugačije na iOS-u).
+
+### Novi jezici (stavka 21): francuski, španski, nemački, ruski
+
+`src/i18n/locales/fr.ts`, `es.ts`, `de.ts`, `ru.ts` — isti sistem kao ostali jezici, bez izmena koda: jezik se sam pojavi u izboru, a datumi, nazivi dana i meseci prate izabrani jezik. TypeScript (`fromEnglish`) traži prevod svakog teksta, a testovi proveravaju da nijedan ključ ne fali, da su `{parametri}` isti i da prevod nije prekopirani engleski. Ruski ima tri oblika množine. Provereno e2e testom (Chromium, telefon 390 px): nema horizontalnog skrola ni axe grešaka na svih 8 ekrana, u svih 6 jezika.
+
+- **Iskreno:** prevodi su pisani mašinski (kao engleski) i nije ih pregledao izvorni govornik. Uputstva za AI (`prompt.*`) i JSON šeme (`schema.*`) ostaju na engleskom namerno (model ih razume u svakom jeziku, a JSON ključevi ne smeju da se menjaju); pravilo „odgovori na jeziku …" je prevedeno.
+- Brzi unos razume samo srpski i engleski, pa su primeri u polju (`workout 18-19:30 · coffee 200`) i u ovim jezicima na engleskom.
+- Vokativ i rod važe samo za srpski; u ostalim jezicima se ime i rod ne menjaju (polja se ne prikazuju).
+- Zbog redosleda rada, ovi jezici su urađeni posle faza E i F, da bi odmah imali sve ključeve.
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 

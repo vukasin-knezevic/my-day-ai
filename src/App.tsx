@@ -1,3 +1,4 @@
+import { initUpdates } from './lib/updates'
 import { lazy, Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useStore } from './store'
@@ -26,6 +27,9 @@ export default function App() {
   const theme = useStore((s) => s.settings.theme)
 
   useReminders()
+  useEffect(() => {
+    if (import.meta.env.PROD) initUpdates(() => useStore.getState().settings.autoUpdate)
+  }, [])
 
   useEffect(() => {
     applyTheme(theme)

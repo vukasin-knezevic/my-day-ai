@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { isoDate, onboard } from './helpers'
+import { choose, isoDate, onboard } from './helpers'
 
 test('1. onboarding vodi do ekrana Danas', async ({ page }) => {
   await onboard(page)
@@ -25,26 +25,30 @@ test('3. idem / ne idem za termin predmeta', async ({ page }) => {
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
   await page.getByRole('button', { name: '+ Termin' }).click()
-  await expect(page.getByText('Da li ideš na ove termine?')).toBeVisible()
+  // the choice sits next to the class (new classes start as "Idem")
+  await expect(page.getByRole('button', { name: /^Idem: Fizika/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
   await page.getByRole('button', { name: /^Ne idem: Fizika/ }).click()
   await expect(page.getByText('slobodno vreme')).toBeVisible()
 })
 
 test('4. neprijavljen kolokvijum se vidi na ekranu Danas', async ({ page }) => {
   await onboard(page, { demo: true })
-  await expect(page.getByText(/Neprijavljen: Prvi kolokvijum/)).toBeVisible()
+  await expect(page.getByText(/Neprijavljen: Kolokvijum 1/)).toBeVisible()
 })
 
 test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => {
   await onboard(page, { demo: true })
   await page.goto('/#/faks')
-  await page.getByRole('tab', { name: 'Ispiti i domaći' }).click()
+  await page.getByRole('tab', { name: 'Ispit/Kolokvijum' }).click()
   await page
     .getByLabel(/Da li si prijavio/)
     .first()
     .check()
   await page.goto('/#/')
-  await expect(page.getByText(/Neprijavljen: Prvi kolokvijum/)).toHaveCount(0)
+  await expect(page.getByText(/Neprijavljen: Kolokvijum 1/)).toHaveCount(0)
   await expect(page.getByText(/\+20 XP/)).toBeVisible()
 })
 
@@ -99,7 +103,7 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Kopiraj JSON' }).click()
   await expect(page.getByText('JSON je kopiran')).toBeVisible()
   const json = await page.evaluate(() => navigator.clipboard.readText())
-  expect(json).toContain('Matematika 1 (primer)')
+  expect(json).toContain('Predmet 1 (primer)')
   expect(json).not.toContain('sk-ant')
   // delete everything (confirmation is inside the page), then import back
   await page.getByRole('button', { name: 'Obriši sve podatke' }).click()
@@ -128,15 +132,15 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Da, uvezi' }).click()
   await expect(page.getByText('Podaci su uvezeni')).toBeVisible()
   await page.goto('/#/faks')
-  await expect(page.getByText('Matematika 1 (primer)').first()).toBeVisible()
+  await expect(page.getByText('Predmet 1 (primer)').first()).toBeVisible()
 })
 
 test('11. tamna tema', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/podesavanja')
-  await page.getByLabel('Tema').selectOption('dark')
+  await choose(page, 'Tema', 'dark')
   await expect(page.locator('html')).toHaveClass(/dark/)
-  await page.getByLabel('Tema').selectOption('light')
+  await choose(page, 'Tema', 'light')
   await expect(page.locator('html')).not.toHaveClass(/dark/)
 })
 
@@ -220,8 +224,8 @@ test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
   await onboard(page)
   await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
   await page.getByLabel('Naziv').fill('Šetnja')
-  await page.getByLabel('Ponavljanje').selectOption('daily')
-  await page.keyboard.press('Enter')
+  await choose(page, 'Ponavljanje', 'daily')
+  await page.getByRole('dialog').getByRole('button', { name: 'Dodaj' }).click()
   await expect(page.getByText('Šetnja').first()).toBeVisible()
   await page.getByRole('button', { name: 'Izmeni Šetnja' }).click()
   await page.getByLabel('Naziv').fill('Duga šetnja')
@@ -234,7 +238,7 @@ test.describe('pristupačnost (axe, WCAG A/AA)', () => {
     test(`15. bez povreda na svim ekranima, ${theme} tema`, async ({ page }) => {
       await onboard(page, { demo: true })
       await page.goto('/#/podesavanja')
-      await page.getByLabel('Tema').selectOption(theme)
+      await choose(page, 'Tema', theme)
       for (const route of [
         '/',
         '/faks',
@@ -262,7 +266,7 @@ test.describe('jezici', () => {
   test('20. engleski u onboardingu i podešavanjima, izbor se pamti', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
-    await page.getByLabel('Jezik').selectOption('en')
+    await choose(page, 'Jezik', 'en')
     await expect(page.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByLabel('What should I call you?').fill('Alex')
@@ -276,17 +280,18 @@ test.describe('jezici', () => {
     await expect(page.getByLabel('Quick entry')).toBeVisible()
     await page.goto('/#/podesavanja')
     await expect(page.getByRole('heading', { name: /Settings/ })).toBeVisible()
-    await page.getByLabel('Language').selectOption('sr-Cyrl')
+    await choose(page, 'Language', 'sr-Cyrl')
     await expect(page.getByRole('heading', { name: /Подешавања/ })).toBeVisible()
-    await page.getByLabel('Језик').selectOption('sr-Latn')
+    await choose(page, 'Језик', 'sr-Latn')
     await expect(page.getByRole('heading', { name: /Podešavanja/ })).toBeVisible()
   })
 
-  test('21. engleski i ćirilica bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+  test('21. svi jezici bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+    test.setTimeout(150_000) // 6 languages x 8 screens, each with an axe scan
     await onboard(page, { demo: true })
-    for (const lang of ['en', 'sr-Cyrl']) {
+    for (const lang of ['en', 'sr-Cyrl', 'de', 'ru', 'fr', 'es']) {
       await page.goto('/#/podesavanja')
-      await page.getByLabel(/Jezik|Language|Језик/).selectOption(lang)
+      await choose(page, /Jezik|Language|Језик|Sprache|Язык|Langue|Idioma/, lang)
       for (const route of [
         '/',
         '/faks',

@@ -1,10 +1,11 @@
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Today from './Today'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { todayStr } from '../lib/dates'
+import { pick, setTime } from '../test/pick'
 
 beforeEach(() => {
   const d = emptyData()
@@ -46,7 +47,7 @@ test('nova aktivnost iz forme, ponavljanje radnim danima, Enter čuva', async ()
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
   await user.type(screen.getByLabelText('Naziv'), 'Teretana')
-  await user.selectOptions(screen.getByLabelText('Ponavljanje'), 'weekdays')
+  await pick(user, 'Ponavljanje', 'weekdays')
   await user.click(screen.getByLabelText('Naziv'))
   await user.keyboard('{Enter}')
   const a = useStore.getState().activities
@@ -106,7 +107,7 @@ test('kraj pre početka daje grešku', async () => {
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
   await user.type(screen.getByLabelText('Naziv'), 'X')
-  fireEvent.change(screen.getByLabelText('Kraj'), { target: { value: '17:00' } })
+  await setTime(user, 'Kraj', '17:00')
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
   expect(screen.getByRole('alert')).toHaveTextContent('Kraj mora biti posle početka')
   expect(useStore.getState().activities).toHaveLength(0)
@@ -161,4 +162,51 @@ test('ponavljajuća aktivnost: „Samo danas“ uklanja dan, a niz ostaje', asyn
   expect(screen.queryByText(/Jutarnje trčanje/)).toBeNull()
   const [a] = useStore.getState().activities
   expect(a.excludedDates).toEqual([today])
+})
+
+test('ekran Danas: Trenutno i Sledeće na vrhu, podnaslov bez razmaka pre zareza', () => {
+  useStore.getState().setSettings({ name: 'Vukašin', onboarded: true })
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  const headings = screen.getAllByRole('heading').map((h) => h.textContent)
+  expect(headings.indexOf('Obaveze')).toBeGreaterThan(-1)
+  expect(screen.getByText('Trenutno')).toBeInTheDocument()
+  // the quick entry is clearly labelled and comes after the duties
+  const duties = screen.getByText('Obaveze')
+  const quick = screen.getByText('Brzi unos')
+  expect(duties.compareDocumentPosition(quick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.getByText(/^Vukašine, danas/)).toBeInTheDocument()
+})
+
+test('obavezno polje nije crveno unapred; crveno i poruka tek posle pokušaja, nestaje kad se popuni', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
+  const title = screen.getByLabelText('Naziv')
+  expect(title).not.toHaveAttribute('aria-invalid')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
+  expect(title).toHaveAttribute('aria-invalid', 'true')
+  expect(screen.getByRole('alert')).toBeInTheDocument()
+  await user.type(title, 'X')
+  expect(title).not.toHaveAttribute('aria-invalid')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('prazan brzi unos ne ćuti', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: 'Dodaj' }))
+  expect(screen.getByRole('alert')).toHaveTextContent('Napiši šta da dodam')
 })

@@ -9,8 +9,16 @@ function darkQuery(): MediaQueryList | null {
   return typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null
 }
 
+/** App background colours: the browser / phone bars take the same colour. */
+export const BG_DARK = '#020617'
+export const BG_LIGHT = '#f8fafc'
+
 export function applyTheme(theme: Settings['theme']): void {
-  document.documentElement.classList.toggle('dark', isDark(theme, !!darkQuery()?.matches))
+  const dark = isDark(theme, !!darkQuery()?.matches)
+  document.documentElement.classList.toggle('dark', dark)
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', dark ? BG_DARK : BG_LIGHT)
 }
 
 /** Re-applies the theme when the system theme changes. Returns an unsubscribe function. */

@@ -4,6 +4,7 @@ import Onboarding from './Onboarding'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { getLanguage } from '../i18n'
+import { pick } from '../test/pick'
 
 beforeEach(() => {
   useStore.setState({ ...emptyData(), hydrated: true })
@@ -66,7 +67,7 @@ test('izbor AI režima i imena nagrade u onboardingu', async () => {
 test('izbor jezika u prvom koraku odmah menja jezik i pamti se', async () => {
   const user = userEvent.setup()
   render(<Onboarding />)
-  await user.selectOptions(screen.getByLabelText('Jezik'), 'en')
+  await pick(user, 'Jezik', 'en')
   expect(getLanguage()).toBe('en')
   expect(screen.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeInTheDocument()
   expect(useStore.getState().settings.language).toBe('en')
@@ -74,6 +75,24 @@ test('izbor jezika u prvom koraku odmah menja jezik i pamti se', async () => {
   expect(screen.getByLabelText('What should I call you?')).toBeInTheDocument()
   // back to Serbian so that the other tests are not affected
   await user.click(screen.getByRole('button', { name: 'Back' }))
-  await user.selectOptions(screen.getByLabelText('Language'), 'sr-Latn')
+  await pick(user, 'Language', 'sr-Latn')
   expect(getLanguage()).toBe('sr-Latn')
+})
+
+test('uvod: predlog obraćanja (vokativ) se može ispraviti, rod menja rečenice', async () => {
+  const user = userEvent.setup()
+  render(<Onboarding />)
+  await clickNext(user)
+  await user.type(screen.getByLabelText('Kako da te zovem?'), 'Petar')
+  expect(screen.getByLabelText('Kako da ti se obraćam?')).toHaveValue('Petre')
+  // the user corrects it: the suggestion stops following the name
+  await user.clear(screen.getByLabelText('Kako da ti se obraćam?'))
+  await user.type(screen.getByLabelText('Kako da ti se obraćam?'), 'Pero')
+  await user.type(screen.getByLabelText('Kako da te zovem?'), 'x')
+  expect(screen.getByLabelText('Kako da ti se obraćam?')).toHaveValue('Pero')
+  await user.click(screen.getByRole('radio', { name: /Ženski/ }))
+  expect(useStore.getState().settings.gender).toBe('f')
+  await clickNext(user, 5)
+  await user.click(screen.getByRole('button', { name: 'Završi' }))
+  expect(useStore.getState().settings).toMatchObject({ addressName: 'Pero', gender: 'f' })
 })

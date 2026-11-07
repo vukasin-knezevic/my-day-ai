@@ -25,6 +25,50 @@ describe('store', () => {
     expect(useStore.getState().hasDemo()).toBe(false)
     expect(useStore.getState().meals).toHaveLength(1)
   })
+  it('deleting a workout takes back its XP and record bonuses', () => {
+    const s = useStore.getState()
+    const id = s.add('workouts', {
+      date: '2026-11-07',
+      type: 'Gym',
+      durationMin: 45,
+      exercises: [],
+      feeling: 3,
+    })
+    const ev = { date: '2026-11-07', reason: 'r', category: 'workout' as const }
+    s.award({ ...ev, id: `workout-${id}`, xp: 30 })
+    s.award({ ...ev, id: `pr-${id}-Bench`, xp: 15 })
+    expect(useStore.getState().progress.xp).toBe(45)
+    useStore.getState().remove('workouts', id)
+    expect(useStore.getState().progress.xp).toBe(0)
+    expect(useStore.getState().progress.events).toEqual([])
+  })
+  it('revoke by prefix takes back every award of a habit', () => {
+    const s = useStore.getState()
+    const ev = { date: '2026-11-07', reason: 'r', category: 'habits' as const, xp: 5 }
+    s.award({ ...ev, id: 'habit-h1-2026-11-06' })
+    s.award({ ...ev, id: 'habit-h1-2026-11-07' })
+    useStore.getState().revoke('habit-h1-', { prefix: true })
+    expect(useStore.getState().progress.xp).toBe(0)
+  })
+  it('clearing the demo also takes back the XP and reward minutes of demo items', () => {
+    const s = useStore.getState()
+    s.loadDemo()
+    const demoWorkout = useStore.getState().workouts.find((w) => w.demo)!
+    const own = s.add('workouts', {
+      date: '2026-11-07',
+      type: 'Moj',
+      durationMin: 30,
+      exercises: [],
+      feeling: 3,
+    })
+    const ev = { date: '2026-11-07', reason: 'r', category: 'workout' as const, xp: 30 }
+    useStore.getState().award({ ...ev, id: `workout-${demoWorkout.id}` })
+    useStore.getState().award({ ...ev, id: `workout-${own}` })
+    expect(useStore.getState().progress.xp).toBe(60)
+    useStore.getState().clearDemo()
+    expect(useStore.getState().progress.xp).toBe(30)
+    expect(useStore.getState().progress.awarded).toEqual([`workout-${own}`])
+  })
   it('loading the demo twice does not duplicate it', () => {
     useStore.getState().loadDemo()
     const once = useStore.getState().subjects.length

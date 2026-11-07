@@ -4,13 +4,14 @@ import type { Activity, Assessment, Category, Settings, Subject } from '../types
 import {
   addDaysStr,
   daysUntil,
+  formatDuration,
   formatShort,
   minToTime,
   timeToMin,
   weekStartStr,
   weekdayOf,
 } from './dates'
-import { isExam } from './exams'
+import { isExam, studyHoursOf } from './exams'
 import { freeSlots, occurrencesOn, type Occurrence } from './schedule'
 import { t as tr } from '../i18n'
 import { rewardNameOf } from './labels'
@@ -48,6 +49,8 @@ export interface PlanResult {
   adjustments: Adjustment[]
   notes: string[]
   easyDay: string | null
+  /** For every exam / midterm that got study blocks: the first day studying starts */
+  studyStarts: { examId: string; subjectId: string; type: string; examDate: string; from: string }[]
 }
 
 export const MAX_STUDY_BLOCK = 120 // minutes
@@ -123,6 +126,8 @@ interface Plan extends PlanResult {
   /** Waking hours of a day */
   window: Iv
   day: Map<string, DayState>
+  /** exam id -> first day with a study block */
+  starts: Map<string, string>
 }
 
 /** One day's study need for one exam. */
@@ -140,7 +145,17 @@ export function planWeek(input: PlanInput): PlanResult {
   addRewards(plan)
   const { suggestions, adjustments, notes, easyDay } = plan
   suggestions.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))
-  return { suggestions, adjustments, notes, easyDay }
+  const studyStarts = plan.exams
+    .filter((e) => plan.starts.has(e.id))
+    .map((e) => ({
+      examId: e.id,
+      subjectId: e.subjectId,
+      type: e.type,
+      examDate: e.date,
+      from: plan.starts.get(e.id)!,
+    }))
+    .sort((a, b) => a.from.localeCompare(b.from) || a.examDate.localeCompare(b.examDate))
+  return { suggestions, adjustments, notes, easyDay, studyStarts }
 }
 
 function startPlan(input: PlanInput): Plan {
@@ -178,6 +193,8 @@ function startPlan(input: PlanInput): Plan {
     adjustments: [],
     notes: [],
     easyDay: null,
+    studyStarts: [],
+    starts: new Map(),
   }
 }
 
@@ -306,7 +323,11 @@ function studyDemand({ exams, day, fixed, input }: Plan): Map<string, StudyTask[
     const prepDays = Array.from({ length: span }, (_, i) => addDaysStr(exam.date, -span + i))
     // hard exams: even spread (more work early); easier: ramp up towards the exam
     const weights = prepDays.map((_, i) => (exam.difficulty >= 4 ? 1 : i + 1))
-    const missing = exam.studyHours * 60 - scheduledMinutes(fixed, exam.id, input.from)
+    const hours = studyHoursOf(
+      exam,
+      input.subjects.find((s) => s.id === exam.subjectId),
+    )
+    const missing = hours * 60 - scheduledMinutes(fixed, exam.id, input.from)
     const total = Math.ceil(Math.max(0, missing) / MIN_BLOCK) * MIN_BLOCK
     const shares = allocate(total, weights)
     prepDays.forEach((d, i) => {
@@ -347,7 +368,7 @@ function placeStudy(plan: Plan, demand: Map<string, StudyTask[]>) {
     const exam = exams.find((e) => e.id === id)!
     // an exam beyond the planned days still has time: the next plan picks these minutes up
     if (minutes >= MIN_BLOCK && exam.date <= dayAfterPlan)
-      plan.notes.push(tr('plan.notEnough', { title: exam.title, h: Math.round(minutes / 6) / 10 }))
+      plan.notes.push(tr('plan.notEnough', { title: exam.title, d: formatDuration(minutes) }))
   }
 }
 
@@ -402,6 +423,7 @@ function placeBlocks(plan: Plan, date: string, task: StudyTask, room: number): n
         { note: task.exam.title, assessmentId: task.exam.id },
       ),
     )
+    if (!plan.starts.has(task.exam.id)) plan.starts.set(task.exam.id, date)
     st.free = subtract(st.free, { s: slot.s, e: end + BREAK_MIN })
     st.newStudy += block
     st.lastStudyEnd = Math.max(st.lastStudyEnd ?? 0, end)

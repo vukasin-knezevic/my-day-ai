@@ -1,8 +1,11 @@
+import { currentEnv, notificationSupport } from '../lib/ios'
+import { isSerbian } from '../lib/address'
+import { vocative } from '../lib/vocative'
 import { useState } from 'react'
 import DataCard from './DataCard'
 import { selectData, useStore } from '../store'
-import { buildIcs, downloadText } from '../lib/ics'
-import { requestNotifications } from '../lib/useReminders'
+import { buildIcsWithProgress, shareCalendar } from '../lib/ics'
+import { requestNotifications, showNotification } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
@@ -11,13 +14,16 @@ import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
 
 export default function Settings() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const settings = useStore((s) => s.settings)
   const setSettings = useStore((s) => s.setSettings)
   const loadDemo = useStore((s) => s.loadDemo)
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
+  const support = notificationSupport(currentEnv())
   const [notifMsg, setNotifMsg] = useState('')
+  const [calProgress, setCalProgress] = useState<number | null>(null)
+  const [calMsg, setCalMsg] = useState('')
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
@@ -40,6 +46,17 @@ export default function Settings() {
               ))}
             </Select>
           </Field>
+          <Field label={t('set.timeFormat')}>
+            <Select
+              value={settings.timeFormat}
+              onChange={(e) =>
+                setSettings({ timeFormat: e.target.value as SettingsT['timeFormat'] })
+              }
+            >
+              <option value="24h">{t('set.time24')}</option>
+              <option value="12h">{t('set.time12')}</option>
+            </Select>
+          </Field>
           <Field label={t('set.language')}>
             <Select
               value={settings.language || ''}
@@ -58,9 +75,40 @@ export default function Settings() {
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.rhythm')}</h2>
-          <Field label={t('set.name')}>
-            <Input value={settings.name} onChange={(e) => setSettings({ name: e.target.value })} />
+          <Field label={t('set.name')} optional>
+            <Input
+              value={settings.name}
+              onChange={(e) => {
+                // while the address is not corrected by hand it follows the name
+                const follows = settings.addressName === vocative(settings.name)
+                setSettings({
+                  name: e.target.value,
+                  ...(follows || !settings.addressName
+                    ? { addressName: vocative(e.target.value) }
+                    : {}),
+                })
+              }}
+            />
           </Field>
+          {isSerbian(lang) && (
+            <>
+              <Field label={t('set.address')} optional>
+                <Input
+                  value={settings.addressName}
+                  onChange={(e) => setSettings({ addressName: e.target.value })}
+                />
+              </Field>
+              <Field label={t('set.gender')}>
+                <Select
+                  value={settings.gender}
+                  onChange={(e) => setSettings({ gender: e.target.value as SettingsT['gender'] })}
+                >
+                  <option value="m">{t('ob.gender.m')}</option>
+                  <option value="f">{t('ob.gender.f')}</option>
+                </Select>
+              </Field>
+            </>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <Field label={t('set.wake')}>
               <Input
@@ -122,7 +170,7 @@ export default function Settings() {
           <p className="text-sm text-slate-600 dark:text-slate-400">{t('set.reward.desc')}</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <Field label={t('set.reward.name')}>
+              <Field label={t('set.reward.name')} optional>
                 <Input
                   value={settings.rewardName}
                   onChange={(e) => setSettings({ rewardName: e.target.value })}
@@ -153,34 +201,97 @@ export default function Settings() {
           </div>
         </Card>
         <Card className="space-y-3">
-          <h2 className="font-semibold">{t('set.reminders')}</h2>
+          <h2 className="font-semibold">{t('set.updates')}</h2>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               className="size-5"
-              checked={settings.reminders}
-              onChange={async (e) => {
-                if (e.target.checked) {
-                  const ok = await requestNotifications()
-                  setNotifMsg(ok ? '' : t('set.notifDenied'))
-                  setSettings({ reminders: ok })
-                } else setSettings({ reminders: false })
-              }}
+              checked={settings.autoUpdate}
+              onChange={(e) => setSettings({ autoUpdate: e.target.checked })}
             />
-            {t('set.notif')}
+            {t('set.autoUpdate')}
           </label>
-          {notifMsg && (
-            <p role="alert" className="text-sm text-red-700">
-              {notifMsg}
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.autoUpdateNote')}</p>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.reminders')}</h2>
+          {support === 'ok' ? (
+            <>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={settings.reminders}
+                  onChange={async (e) => {
+                    if (e.target.checked) {
+                      const ok = await requestNotifications()
+                      setNotifMsg(ok ? '' : t('set.notifDenied'))
+                      setSettings({ reminders: ok })
+                    } else setSettings({ reminders: false })
+                  }}
+                />
+                {t('set.notif')}
+              </label>
+              {notifMsg && (
+                <p role="alert" className="text-sm text-red-700">
+                  {notifMsg}
+                </p>
+              )}
+            </>
+          ) : (
+            <p role="note" className="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950">
+              {t(support === 'ios-install' ? 'set.notifIos' : 'set.notifUnsupported')}
             </p>
           )}
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.notifNote')}</p>
+          {support === 'ok' && settings.reminders && (
+            <Button
+              variant="soft"
+              onClick={async () => {
+                const ok = await showNotification(t('set.notifTestTitle'), t('set.notifTestBody'))
+                setNotifMsg(ok ? '' : t('set.notifTestFail'))
+              }}
+            >
+              {t('set.notifTest')}
+            </Button>
+          )}
           <Button
             variant="soft"
-            onClick={() => downloadText('my-day-ai.ics', buildIcs(selectData(useStore.getState())))}
+            disabled={calProgress !== null}
+            onClick={async () => {
+              setCalMsg('')
+              setCalProgress(0)
+              const text = await buildIcsWithProgress(selectData(useStore.getState()), (f) =>
+                setCalProgress(f * 0.9),
+              )
+              const result = await shareCalendar(text)
+              setCalProgress(1)
+              setCalMsg(result === 'cancelled' ? '' : t('set.calDone'))
+              setTimeout(() => setCalProgress(null), 600)
+            }}
           >
             {t('set.ics')}
           </Button>
+          {calProgress !== null && (
+            <div
+              role="progressbar"
+              aria-label={t('set.ics')}
+              aria-valuenow={Math.round(calProgress * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+            >
+              <div
+                className="h-full bg-blue-600 transition-[width] duration-200"
+                style={{ width: `${Math.round(calProgress * 100)}%` }}
+              />
+            </div>
+          )}
+          {calMsg && (
+            <p role="status" className="text-sm">
+              {calMsg}
+            </p>
+          )}
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.ai')}</h2>
@@ -193,7 +304,7 @@ export default function Settings() {
               <option value="api">{t('set.aiApi')}</option>
             </Select>
           </Field>
-          <Field label={t('set.apiKey')}>
+          <Field label={t('set.apiKey')} optional>
             <Input
               type="password"
               autoComplete="off"
@@ -240,6 +351,9 @@ export default function Settings() {
             </Button>
           </div>
         </Card>
+        <p className="text-center text-xs text-slate-600 dark:text-slate-400">
+          {t('set.version', { v: __APP_VERSION__ })}
+        </p>
       </div>
     </>
   )
