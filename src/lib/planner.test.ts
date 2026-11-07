@@ -318,6 +318,17 @@ describe('planWeek: workouts and the exam eve', () => {
     expect(r.adjustments[0].reason).toContain('kolokvijum')
     expect(r.notes.some((n) => n.includes('skraćen'))).toBe(true)
   })
+  it('two long workouts on the same exam eve give one note and two adjustments', () => {
+    const r = planWeek(
+      input({ activities: [act(), act({ id: 'a2', start: '10:00', end: '12:00' })] }),
+    )
+    expect(r.adjustments).toHaveLength(2)
+    expect(r.notes.filter((n) => n.includes('skraćen'))).toHaveLength(1)
+  })
+  it('notes show dates the way people read them', () => {
+    const r = planWeek(input({ activities: [act()] }))
+    expect(r.notes.join(' ')).not.toMatch(/\d{4}-\d{2}-\d{2}/)
+  })
   it('does not touch a workout that is already short', () => {
     const r = planWeek(input({ activities: [act({ end: '18:40' })] }))
     expect(r.adjustments).toHaveLength(0)

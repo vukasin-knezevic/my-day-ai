@@ -19,6 +19,7 @@ import { uid } from '../lib/defaults'
 import {
   URGENCY_CLS,
   countdownLabel,
+  isExam,
   monthRegistrations,
   nextWeekStart,
   slotsToAsk,
@@ -378,7 +379,7 @@ function Assessments() {
     e?.preventDefault()
     const subjectId = f.subjectId || subjects[0]?.id
     if (!subjectId || !f.title.trim()) return
-    const needsReg = f.type === 'kolokvijum' || f.type === 'ispit'
+    const needsReg = isExam(f)
     add('assessments', {
       subjectId,
       type: f.type,
@@ -425,7 +426,7 @@ function Assessments() {
 
       {sortAssessments(assessments, today).map((a) => {
         const u = urgency(a.date, today)
-        const exam = a.type === 'kolokvijum' || a.type === 'ispit'
+        const exam = isExam(a)
         return (
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">

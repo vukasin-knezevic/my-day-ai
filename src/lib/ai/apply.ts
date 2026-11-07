@@ -1,6 +1,7 @@
 import type { Store } from '../../store'
 import type { Assessment } from '../../types'
 import { t } from '../../i18n'
+import { isExam } from '../exams'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
 
 type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'>
@@ -37,7 +38,6 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
       )
       if (duplicate) continue
       known.push({ subjectId, date: a.date, title: a.title })
-      const exam = a.type === 'kolokvijum' || a.type === 'ispit'
       const item: Omit<Assessment, 'id'> = {
         subjectId: sub.id,
         type: a.type,
@@ -45,7 +45,7 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
         date: a.date,
         time: a.time,
         registrationDeadline: a.registrationDeadline,
-        registration: exam ? 'nije-prijavljen' : 'ne-treba',
+        registration: isExam(a) ? 'nije-prijavljen' : 'ne-treba',
         maxPoints: 30,
         points: null,
         difficulty: 3,

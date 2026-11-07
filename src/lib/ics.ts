@@ -1,6 +1,7 @@
 // iCalendar (.ics) export so the phone's calendar app can remind you (works without this app being open).
 import type { AppData } from '../types'
 import { addDaysStr, minToTime, timeToMin, todayStr } from './dates'
+import { isExam } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
 
@@ -98,7 +99,7 @@ export function buildIcs(data: AppData, now: Date = new Date(), days = 60): stri
     const sub = data.subjects.find((s) => s.id === a.subjectId)?.name ?? ''
     events.push({
       uid: `as-${a.id}`,
-      summary: `${a.type === 'domaci' || a.type === 'lab' ? '📝' : '🎓'} ${a.title}${sub ? ` (${sub})` : ''}`,
+      summary: `${isExam(a) ? '🎓' : '📝'} ${a.title}${sub ? ` (${sub})` : ''}`,
       date: a.date,
       start: a.time,
       end: a.time ? addMinutes(a.time, 90) : undefined,
