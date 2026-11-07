@@ -463,7 +463,7 @@ function Assessments() {
         return (
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">
-              <strong>{a.title}</strong>
+              <strong className="user-text">{a.title}</strong>
               <Badge className="bg-slate-100 dark:bg-slate-800">{assessmentLabel(a.type)}</Badge>
               <Badge className={URGENCY_CLS[u]}>{countdownLabel(a.date, today)}</Badge>
               <span className="text-sm text-slate-500">

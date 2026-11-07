@@ -28,6 +28,79 @@ body {
   color: #94a3b8;
 }
 
+/* Fixed app text (titles, buttons, labels) is not selectable, so a long press never opens "Web search".
+   What the user wrote (notes, names, text fields) stays copyable: add .user-text to it. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input,
+textarea,
+select,
+.user-text,
+.user-text * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Motion: smooth screen changes, panels and messages. Switched off for people who ask for less motion. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.anim-page {
+  animation: page-in 0.22s ease-out;
+}
+.anim-toast {
+  animation: toast-in 0.25s ease-out;
+}
+.anim-fade {
+  animation: fade-in 0.2s ease-out;
+}
+.anim-sheet {
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.anim-pop {
+  animation: pop-in 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 :focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;

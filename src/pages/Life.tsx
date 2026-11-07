@@ -343,7 +343,7 @@ function Habits() {
               <span className="text-xl" aria-hidden>
                 {h.emoji}
               </span>
-              <strong>{h.name}</strong>
+              <strong className="user-text">{h.name}</strong>
               {streak > 0 && (
                 <Badge className="bg-orange-100 text-orange-800">
                   {t('life.streakBadge', { n: streak })}

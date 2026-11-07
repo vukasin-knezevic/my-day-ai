@@ -243,7 +243,9 @@ export default function Today() {
                 {o.start}–{o.end}
               </span>
               <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
-                {CATEGORY_META[o.category].emoji} {o.title}
+                <span className="user-text">
+                  {CATEGORY_META[o.category].emoji} {o.title}
+                </span>
               </span>
               {o.suggested && (
                 <Badge className="bg-amber-100 text-amber-800">{t('today.badge.suggested')}</Badge>

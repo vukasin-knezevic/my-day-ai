@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
@@ -32,7 +32,7 @@ function Toasts() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-4 top-4 z-20 mx-auto max-w-sm space-y-1 rounded-2xl bg-slate-900 p-3 text-sm text-white shadow-lg"
+      className="anim-toast fixed inset-x-4 top-4 z-20 mx-auto max-w-sm space-y-1 rounded-2xl bg-slate-900 p-3 text-sm text-white shadow-lg"
     >
       {messages.map((m) => (
         <p key={m}>{m}</p>
@@ -43,6 +43,7 @@ function Toasts() {
 
 export default function Layout() {
   const { t } = useT()
+  const { pathname } = useLocation()
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
@@ -57,7 +58,9 @@ export default function Layout() {
         </nav>
       </aside>
       <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-24 md:p-8 md:pb-8">
-        <Outlet />
+        <div key={pathname} className="anim-page">
+          <Outlet />
+        </div>
       </main>
       <nav
         aria-label={t('nav.bottom')}
