@@ -124,6 +124,16 @@ export function withStatus(a: Activity, date: string, status: ActivityStatus): A
   return { ...a, doneDates: done, skippedDates: skipped }
 }
 
+/** True if the subject already has a slot with the same kind, day and time (no double entries). */
+export function hasSlot(
+  slots: ClassSlot[],
+  s: Pick<ClassSlot, 'kind' | 'day' | 'start' | 'end'>,
+): boolean {
+  return slots.some(
+    (x) => x.kind === s.kind && x.day === s.day && x.start === s.start && x.end === s.end,
+  )
+}
+
 /** Removes a single occurrence of a recurring activity, keeping the series. */
 export function withoutOccurrence(a: Activity, date: string): Activity {
   return { ...a, excludedDates: [...(a.excludedDates ?? []).filter((d) => d !== date), date] }

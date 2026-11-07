@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
@@ -16,6 +16,7 @@ import {
   unansweredSlots,
   urgency,
 } from '../lib/exams'
+import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
@@ -218,6 +219,10 @@ function SubjectCard({
   const [day, setDay] = useState<Weekday>(1)
   const [start, setStart] = useState('10:00')
   const [end, setEnd] = useState('12:00')
+  const [slotMsg, setSlotMsg] = useState('')
+  const [removedSlot, setRemovedSlot] = useState<ClassSlot | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(undoTimer.current), [])
 
   function addSlot(e: React.FormEvent) {
     e.preventDefault()
@@ -229,7 +234,25 @@ function SubjectCard({
       end,
       attendance: null,
     }
+    if (hasSlot(subject.slots, slot)) {
+      setSlotMsg(t('study.slotExists'))
+      return
+    }
+    setSlotMsg('')
     update('subjects', subject.id, { slots: [...subject.slots, slot] })
+  }
+  function removeSlot(slot: ClassSlot) {
+    update('subjects', subject.id, { slots: subject.slots.filter((x) => x.id !== slot.id) })
+    clearTimeout(undoTimer.current)
+    setRemovedSlot(slot)
+    undoTimer.current = setTimeout(() => setRemovedSlot(null), 6000)
+  }
+  function undoRemoveSlot() {
+    if (!removedSlot) return
+    clearTimeout(undoTimer.current)
+    if (!hasSlot(subject.slots, removedSlot))
+      update('subjects', subject.id, { slots: [...subject.slots, removedSlot] })
+    setRemovedSlot(null)
   }
   const slots = [...subject.slots].sort((a, b) => a.day - b.day || a.start.localeCompare(b.start))
   return (
@@ -287,9 +310,34 @@ function SubjectCard({
             {sl.attendance === 'ne-idem' && (
               <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
             )}
+            <Button
+              variant="ghost"
+              className="ml-auto"
+              aria-label={t('study.deleteSlot', {
+                kind: slotKindLabel(sl.kind),
+                day: weekdayName(sl.day),
+                start: sl.start,
+              })}
+              onClick={() => removeSlot(sl)}
+            >
+              ✕
+            </Button>
           </li>
         ))}
       </ul>
+      {removedSlot && (
+        <p role="status" className="mb-2 flex items-center gap-2 text-sm">
+          {t('study.slotRemoved')}
+          <Button variant="soft" onClick={undoRemoveSlot}>
+            {t('common.undo')}
+          </Button>
+        </p>
+      )}
+      {slotMsg && (
+        <p role="alert" className="mb-2 text-sm text-red-700 dark:text-red-400">
+          {slotMsg}
+        </p>
+      )}
       <form onSubmit={addSlot} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <Select
           aria-label={t('study.kindAria')}

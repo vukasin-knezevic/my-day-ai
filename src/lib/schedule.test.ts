@@ -6,6 +6,7 @@ import {
   freeSlots,
   occurrencesOn,
   patchOccurrence,
+  hasSlot,
   withStatus,
   withoutOccurrence,
 } from './schedule'
@@ -204,5 +205,15 @@ describe('patchOccurrence', () => {
     expect(occurrencesOn(d, '2026-11-20').map((o) => o.end)).toEqual(['19:30'])
     expect(occurrencesOn(d, '2026-11-06')[0].status).toBe('done')
     expect(single!.doneDates).toBeUndefined()
+  })
+})
+
+describe('hasSlot', () => {
+  const s = { kind: 'vezbe' as const, day: 2 as const, start: '10:00', end: '12:00' }
+  it('finds the same kind, day and time only', () => {
+    const slots = [{ ...s, id: 'a', attendance: null }]
+    expect(hasSlot(slots, s)).toBe(true)
+    expect(hasSlot(slots, { ...s, kind: 'predavanje' })).toBe(false)
+    expect(hasSlot(slots, { ...s, start: '11:00' })).toBe(false)
   })
 })
