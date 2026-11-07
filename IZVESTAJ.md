@@ -51,6 +51,17 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **AI rezultati:** odbijaju se aktivnosti koje se završavaju pre početka i nepostojeći datumi; model sada zna koliko je sati; ponovni uvoz istog rasporeda ne duplira kolokvijume.
 - **Brzi unos razume ponavljanje:** „trening svaki dan u 18", „učenje radnim danima 10-12", „svakog ponedeljka", „every monday".
 
+## Update 0.3
+
+### Faza A — Greške (urađeno)
+1. **Notifikacije na Androidu:** podsetnici se prikazuju preko service worker-a (`registration.showNotification`); `new Notification` je samo rezerva za laptop. Greška se više ne guta: u podešavanjima je dugme **„Pošalji probnu notifikaciju"** koje javlja da li je prikazana.
+2. **XP se oduzima:** `revoke` u `src/lib/xp.ts` skida XP, nagradne minute, id i događaj (događaj sada pamti i `rewardMin`). Poziva se kad navika padne ispod cilja, kad se aktivnost vrati iz „urađeno" (novo dugme „Poništi" na ekranu Danas), kad se odštiklira prijava kolokvijuma, i pri brisanju treninga, navike, aktivnosti ili obaveze. Napomena: događaji nastali pre ove verzije ne pamte nagradne minute, pa se za njih skida samo XP.
+3. **Nagrada ne ide u minus:** „Iskoristio 30/60 min" je neaktivno kad nema dovoljno minuta; posle klika stoji **„Poništi"** 6 sekundi. `stanje = zarađeno − potrošeno`, nikad ispod 0. Stari podaci sa negativnim stanjem (npr. −900) se popravljaju pri učitavanju (potrošeno se spušta na zarađeno).
+4. **Termini:** ✕ pored svakog termina (sa „Poništi") i zaštita od duplikata (isti predmet + vrsta + dan + vreme; dupli klik na „+ Termin" dodaje jedan i javlja poruku).
+5. **„Obriši demo podatke"** sada skida i XP/nagradne minute demo stavki.
+
+Provera posle svake stavke: `npm run lint`, `npm run typecheck`, `npm test` (zeleno).
+
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
 2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.
