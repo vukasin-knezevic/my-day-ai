@@ -31,12 +31,16 @@ export default function ActivityForm({
     recurrence: initial?.recurrence ?? ('none' as Recurrence),
     note: initial?.note ?? '',
   })
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<{ title?: string; date?: string; end?: string }>({})
 
   function save() {
-    if (!f.title.trim()) return setError(t('act.errTitle'))
-    if (!f.date) return setError(t('act.errDate'))
-    if (timeToMin(f.end) <= timeToMin(f.start)) return setError(t('act.errEnd'))
+    const found = {
+      title: f.title.trim() ? undefined : t('act.errTitle'),
+      date: f.date ? undefined : t('act.errDate'),
+      end: timeToMin(f.end) <= timeToMin(f.start) ? t('act.errEnd') : undefined,
+    }
+    setErrors(found)
+    if (found.title || found.date || found.end) return
     const patch = {
       title: f.title.trim(),
       category: f.category,
@@ -57,11 +61,14 @@ export default function ActivityForm({
         <h2 className="mb-3 font-semibold">{initial ? t('act.edit') : t('act.new')}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <Field label={t('act.name')}>
+            <Field label={t('act.name')} required error={errors.title}>
               <Input
                 autoFocus
                 value={f.title}
-                onChange={(e) => setF({ ...f, title: e.target.value })}
+                onChange={(e) => {
+                  setF({ ...f, title: e.target.value })
+                  setErrors((x) => ({ ...x, title: undefined }))
+                }}
               />
             </Field>
           </div>
@@ -89,7 +96,11 @@ export default function ActivityForm({
               ))}
             </Select>
           </Field>
-          <Field label={f.recurrence === 'none' ? t('act.date') : t('act.starts')}>
+          <Field
+            label={f.recurrence === 'none' ? t('act.date') : t('act.starts')}
+            required
+            error={errors.date}
+          >
             <Input
               type="date"
               value={f.date}
@@ -104,25 +115,23 @@ export default function ActivityForm({
                 onChange={(e) => setF({ ...f, start: e.target.value })}
               />
             </Field>
-            <Field label={t('act.end')}>
+            <Field label={t('act.end')} error={errors.end}>
               <Input
                 type="time"
                 value={f.end}
-                onChange={(e) => setF({ ...f, end: e.target.value })}
+                onChange={(e) => {
+                  setF({ ...f, end: e.target.value })
+                  setErrors((x) => ({ ...x, end: undefined }))
+                }}
               />
             </Field>
           </div>
           <div className="col-span-2">
-            <Field label={t('act.note')}>
+            <Field label={t('act.note')} optional>
               <Input value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
             </Field>
           </div>
         </div>
-        {error && (
-          <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
-            {error}
-          </p>
-        )}
         <div className="mt-3 flex justify-end gap-2">
           <Button variant="soft" onClick={onClose}>
             {t('common.cancel')}

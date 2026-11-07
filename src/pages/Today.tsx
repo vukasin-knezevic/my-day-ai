@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, selectData } from '../store'
-import { Badge, Button, Card, Input } from '../components/ui'
+import { Badge, Button, Card, Field, Input } from '../components/ui'
 import { CATEGORY_META } from '../types'
 import {
   formatDuration,
@@ -100,6 +100,7 @@ export default function Today() {
   const [now, setNow] = useState(new Date())
   const [text, setText] = useState('')
   const [msg, setMsg] = useState('')
+  const [quickError, setQuickError] = useState('')
   const [editing, setEditing] = useState<Activity | 'new' | null>(null)
 
   useEffect(() => {
@@ -115,7 +116,11 @@ export default function Today() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!text.trim()) return
+    if (!text.trim()) {
+      setQuickError(t('today.quickEmpty'))
+      return
+    }
+    setQuickError('')
     setMsg(applyParsed(parseQuick(text, new Date()), store))
     setText('')
   }
@@ -314,21 +319,23 @@ export default function Today() {
 
       <Card className="mb-4">
         <form onSubmit={submit} role="search" className="space-y-2">
-          <label htmlFor="quick-input" className="block text-sm font-semibold">
-            {t('today.quick')}
-          </label>
-          <div className="flex gap-2">
-            <Input
-              id="quick-input"
-              placeholder={t('today.quickPlaceholder')}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setText('')
-              }}
-            />
-            <Button type="submit">{t('common.add')}</Button>
-          </div>
+          <Field label={t('today.quick')} error={quickError}>
+            <div className="flex gap-2">
+              <Input
+                id="quick-input"
+                placeholder={t('today.quickPlaceholder')}
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value)
+                  setQuickError('')
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setText('')
+                }}
+              />
+              <Button type="submit">{t('common.add')}</Button>
+            </div>
+          </Field>
         </form>
         {msg && (
           <p role="status" className="mt-2 text-sm text-slate-700 dark:text-slate-300">

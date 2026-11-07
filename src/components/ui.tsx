@@ -11,6 +11,7 @@ import {
 import Sheet from './Sheet'
 import { DateField, TimeField } from './Pickers'
 import { inputCls } from './styles'
+import { FieldContext, invalidCls, useFieldState } from './fieldContext'
 import { useT } from '../i18n'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -42,16 +43,58 @@ export function Button({ variant = 'primary', className = '', ...p }: BtnProps) 
   )
 }
 
-export function Field({ label, children }: { label: string; children: ReactNode }) {
+/**
+ * A labelled control.
+ * - `required`: a discreet * after the name; the field looks like any other until a final action fails.
+ * - `optional`: "(optional)" after the name.
+ * - `error`: red border + short message (only pass it after the user tried to finish).
+ * The marks are drawn with CSS, so the label text itself stays just the name.
+ */
+export function Field({
+  label,
+  children,
+  required,
+  optional,
+  error,
+}: {
+  label: string
+  children: ReactNode
+  required?: boolean
+  optional?: boolean
+  error?: string
+}) {
+  const { t } = useT()
+  const mark = required
+    ? "after:ml-0.5 after:text-slate-500 after:content-['*']"
+    : optional
+      ? 'after:ml-1 after:font-normal after:text-slate-500 after:content-[var(--suffix)]'
+      : ''
   return (
     <label className="block text-sm">
-      <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">{label}</span>
-      {children}
+      <span
+        className={`mb-1 block font-medium text-slate-700 dark:text-slate-300 ${mark}`}
+        style={
+          optional
+            ? ({ '--suffix': JSON.stringify(`(${t('common.optional')})`) } as React.CSSProperties)
+            : undefined
+        }
+      >
+        {label}
+      </span>
+      <FieldContext.Provider value={{ required: !!required, invalid: !!error }}>
+        {children}
+      </FieldContext.Provider>
+      {error && (
+        <span role="alert" className="mt-1 block text-xs text-red-700 dark:text-red-400">
+          {error}
+        </span>
+      )}
     </label>
   )
 }
 
 export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
+  const { invalid, required } = useFieldState()
   // time and date fields use the app's own pickers
   if (p.type === 'time')
     return (
@@ -79,7 +122,15 @@ export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
       />
     )
   // no browser suggestions in the fields unless a field asks for them
-  return <input autoComplete="off" {...p} className={`${inputCls} ${p.className ?? ''}`} />
+  return (
+    <input
+      autoComplete="off"
+      aria-invalid={invalid || undefined}
+      aria-required={required || undefined}
+      {...p}
+      className={`${inputCls} ${invalid ? invalidCls : ''} ${p.className ?? ''}`}
+    />
+  )
 }
 
 type OptionProps = { value?: string | number; children?: ReactNode; disabled?: boolean }
@@ -111,6 +162,7 @@ export function Select({
   ...rest
 }: SelectProps) {
   const { t } = useT()
+  const { invalid } = useFieldState()
   const [open, setOpen] = useState(false)
   const options = Children.toArray(children)
     .filter((c): c is ReactElement<OptionProps> => isValidElement(c) && c.type === 'option')
@@ -132,7 +184,8 @@ export function Select({
         aria-label={rest['aria-label']}
         data-value={String(value ?? '')}
         onClick={() => setOpen(true)}
-        className={`${inputCls} flex items-center justify-between gap-2 text-left disabled:opacity-50 ${className}`}
+        aria-invalid={invalid || undefined}
+        className={`${inputCls} ${invalid ? invalidCls : ''} flex items-center justify-between gap-2 text-left disabled:opacity-50 ${className}`}
       >
         <span className="truncate">{current?.label ?? ' '}</span>
         <span aria-hidden className="text-slate-500">

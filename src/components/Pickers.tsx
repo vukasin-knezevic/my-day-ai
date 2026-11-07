@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type InputHTMLAttributes } from 'react'
 import Sheet from './Sheet'
 import { inputCls } from './styles'
+import { invalidCls, useFieldState } from './fieldContext'
 import { useT } from '../i18n'
 import { useStore } from '../store'
 import { formatDateNumeric, formatTimeOfDay } from '../lib/dates'
@@ -119,6 +120,7 @@ export function TimeField({
   ariaLabel?: string
 }) {
   const { t } = useT()
+  const { invalid } = useFieldState()
   const format = useStore((s) => s.settings.timeFormat)
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(parse(value))
@@ -143,7 +145,8 @@ export function TimeField({
           setDraft(parse(value))
           setOpen(true)
         }}
-        className={`${inputCls} text-left tabular-nums disabled:opacity-50 ${className}`}
+        aria-invalid={invalid || undefined}
+        className={`${inputCls} ${invalid ? invalidCls : ''} text-left tabular-nums disabled:opacity-50 ${className}`}
       >
         {value ? formatTimeOfDay(value, format) : ' '}
       </button>
@@ -216,8 +219,11 @@ export function DateField({
   onChange: (e: { target: { value: string } }) => void
   className?: string
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type' | 'className'>) {
+  const { invalid } = useFieldState()
   return (
-    <div className={`${inputCls} relative min-h-[2.75rem] tabular-nums ${className}`}>
+    <div
+      className={`${inputCls} ${invalid ? invalidCls : ''} relative min-h-[2.75rem] tabular-nums ${className}`}
+    >
       <span aria-hidden>{value ? formatDateNumeric(value) : ' '}</span>
       <input
         {...rest}

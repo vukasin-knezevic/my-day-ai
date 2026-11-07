@@ -179,6 +179,7 @@ function Money() {
   const today = todayStr()
   const month = monthOf(today)
   const [amount, setAmount] = useState(0)
+  const [amountError, setAmountError] = useState('')
   const [category, setCategory] = useState<ExpenseCategory>('hrana')
   const [desc, setDesc] = useState('')
   const status = budgetStatus(expenses, budget, month)
@@ -189,7 +190,11 @@ function Money() {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     const n = amount
-    if (!n || n <= 0) return
+    if (!n || n <= 0) {
+      setAmountError(t('common.required'))
+      return
+    }
+    setAmountError('')
     add('expenses', { date: today, amount: n, category, description: desc.trim() })
     setAmount(0)
     setDesc('')
@@ -216,8 +221,16 @@ function Money() {
         ))}
       <Card>
         <form onSubmit={submit} className="grid grid-cols-2 gap-2">
-          <Field label={t('life.amount', { cur: currency })}>
-            <NumberInput min={1} max={10000000} value={amount} onChange={setAmount} />
+          <Field label={t('life.amount', { cur: currency })} required error={amountError}>
+            <NumberInput
+              min={1}
+              max={10000000}
+              value={amount}
+              onChange={(v) => {
+                setAmount(v)
+                setAmountError('')
+              }}
+            />
           </Field>
           <Field label={t('act.category')}>
             <Select
@@ -232,7 +245,7 @@ function Money() {
             </Select>
           </Field>
           <div className="col-span-2">
-            <Field label={t('life.desc')}>
+            <Field label={t('life.desc')} optional>
               <Input value={desc} onChange={(e) => setDesc(e.target.value)} />
             </Field>
           </div>
@@ -330,13 +343,18 @@ function Habits() {
     else revoke(`habit-${h.id}-${today}`)
   }
   const [name, setName] = useState('')
+  const [nameError, setNameError] = useState('')
   const [emoji, setEmoji] = useState('💧')
   const [goal, setGoal] = useState(1)
   const [unit, setUnit] = useState('')
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setNameError(t('common.required'))
+      return
+    }
+    setNameError('')
     add('habits', { name: name.trim(), emoji, goal, unit, entries: {} })
     setName('')
   }
@@ -409,10 +427,13 @@ function Habits() {
         <h2 className="mb-2 font-semibold">{t('life.newHabit')}</h2>
         <form onSubmit={submit} className="grid grid-cols-4 gap-2">
           <div className="col-span-3">
-            <Field label={t('life.habitName')}>
+            <Field label={t('life.habitName')} required error={nameError}>
               <Input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  setNameError('')
+                }}
                 placeholder={t('life.habitPlaceholder')}
               />
             </Field>
@@ -424,7 +445,7 @@ function Habits() {
             <NumberInput min={0.5} max={10000} step={0.5} value={goal} onChange={setGoal} />
           </Field>
           <div className="col-span-2">
-            <Field label={t('life.habitUnit')}>
+            <Field label={t('life.habitUnit')} optional>
               <Input value={unit} onChange={(e) => setUnit(e.target.value)} />
             </Field>
           </div>

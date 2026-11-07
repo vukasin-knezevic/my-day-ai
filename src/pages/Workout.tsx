@@ -460,12 +460,17 @@ function Food() {
   )
   const today = todayStr()
   const [desc, setDesc] = useState('')
+  const [descError, setDescError] = useState('')
   const [protein, setProtein] = useState(30)
   const total = proteinOn(meals, today)
   const pct = Math.min(100, (total / Math.max(1, goal)) * 100)
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!desc.trim()) return
+    if (!desc.trim()) {
+      setDescError(t('common.required'))
+      return
+    }
+    setDescError('')
     add('meals', { date: today, description: desc.trim(), protein })
     setDesc('')
   }
@@ -489,10 +494,13 @@ function Food() {
       <Card>
         <form onSubmit={submit} className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <Field label={t('wo.meal')}>
+            <Field label={t('wo.meal')} required error={descError}>
               <Input
                 value={desc}
-                onChange={(e) => setDesc(e.target.value)}
+                onChange={(e) => {
+                  setDesc(e.target.value)
+                  setDescError('')
+                }}
                 placeholder={t('wo.mealPlaceholder')}
               />
             </Field>

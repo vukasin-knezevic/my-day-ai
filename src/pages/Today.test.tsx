@@ -180,3 +180,33 @@ test('ekran Danas: Trenutno i Sledeće na vrhu, podnaslov bez razmaka pre zareza
   expect(duties.compareDocumentPosition(quick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(screen.getByText(/^Vukašin, danas/)).toBeInTheDocument()
 })
+
+test('obavezno polje nije crveno unapred; crveno i poruka tek posle pokušaja, nestaje kad se popuni', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
+  const title = screen.getByLabelText('Naziv')
+  expect(title).not.toHaveAttribute('aria-invalid')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
+  expect(title).toHaveAttribute('aria-invalid', 'true')
+  expect(screen.getByRole('alert')).toBeInTheDocument()
+  await user.type(title, 'X')
+  expect(title).not.toHaveAttribute('aria-invalid')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('prazan brzi unos ne ćuti', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: 'Dodaj' }))
+  expect(screen.getByRole('alert')).toHaveTextContent('Napiši šta da dodam')
+})

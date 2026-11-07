@@ -81,6 +81,7 @@ function Schedule() {
   const sundayEvening = weekdayOf(today) === 7 && new Date().getHours() >= 17
   const weekly = sundayEvening ? slotsToAsk(subjects, today) : []
   const [name, setName] = useState('')
+  const [nameError, setNameError] = useState('')
   const [espb, setEspb] = useState(6)
   const [pass, setPass] = useState(51)
 
@@ -101,7 +102,11 @@ function Schedule() {
   }
   function addSubject(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setNameError(t('common.required'))
+      return
+    }
+    setNameError('')
     const colors = ['#2563eb', '#0d9488', '#9333ea', '#db2777', '#ea580c', '#65a30d']
     add('subjects', {
       name: name.trim(),
@@ -192,8 +197,14 @@ function Schedule() {
         <KeyScope onEscape={() => setName('')}>
           <form onSubmit={addSubject} className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <Field label={t('study.subjectName')}>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Field label={t('study.subjectName')} required error={nameError}>
+                <Input
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setNameError('')
+                  }}
+                />
               </Field>
             </div>
             <Field label={t('study.espb')}>
@@ -400,6 +411,7 @@ function Assessments() {
       remove: s.remove,
     })),
   )
+  const [titleError, setTitleError] = useState('')
   const today = todayStr()
   const month = monthOf(today)
   const regs = monthRegistrations(assessments, month)
@@ -419,7 +431,11 @@ function Assessments() {
   function submit(e?: React.FormEvent) {
     e?.preventDefault()
     const subjectId = f.subjectId || subjects[0]?.id
-    if (!subjectId || !f.title.trim()) return
+    if (!subjectId || !f.title.trim()) {
+      setTitleError(t('common.required'))
+      return
+    }
+    setTitleError('')
     const needsReg = f.type === 'kolokvijum' || f.type === 'ispit'
     add('assessments', {
       subjectId,
@@ -575,25 +591,31 @@ function Assessments() {
                 </Select>
               </Field>
               <div className="col-span-2">
-                <Field label={t('study.f.title')}>
-                  <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+                <Field label={t('study.f.title')} required error={titleError}>
+                  <Input
+                    value={f.title}
+                    onChange={(e) => {
+                      setF({ ...f, title: e.target.value })
+                      setTitleError('')
+                    }}
+                  />
                 </Field>
               </div>
-              <Field label={t('study.f.date')}>
+              <Field label={t('study.f.date')} required>
                 <Input
                   type="date"
                   value={f.date}
                   onChange={(e) => setF({ ...f, date: e.target.value })}
                 />
               </Field>
-              <Field label={t('study.f.time')}>
+              <Field label={t('study.f.time')} optional>
                 <Input
                   type="time"
                   value={f.time}
                   onChange={(e) => setF({ ...f, time: e.target.value })}
                 />
               </Field>
-              <Field label={t('study.f.regDeadline')}>
+              <Field label={t('study.f.regDeadline')} optional>
                 <Input
                   type="date"
                   value={f.regDeadline}
