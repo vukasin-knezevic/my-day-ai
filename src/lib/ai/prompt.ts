@@ -1,7 +1,16 @@
 import type { AppData } from '../../types'
 import { t } from '../../i18n'
 import { categoryLabel, rewardNameOf } from '../labels'
-import { addDaysStr, daysUntil, formatShort, weekDates, weekdayName, weekdayOf } from '../dates'
+import {
+  addDaysStr,
+  daysUntil,
+  formatShort,
+  minToTime,
+  nowMinutes,
+  weekDates,
+  weekdayName,
+  weekdayOf,
+} from '../dates'
 import { buildAlerts, occurrencesOn } from '../schedule'
 import { avgSleep } from '../life'
 import { subjectPoints } from '../grades'
@@ -34,10 +43,11 @@ export function toneHint(data: AppData, today: string): Tone {
 const toneText = (tone: Tone) => t(`prompt.tone.${tone}`)
 
 /** Compact text with this week's data. Contains only what the user entered. */
-export function buildContext(data: AppData, today: string): string {
+export function buildContext(data: AppData, today: string, nowMin = nowMinutes()): string {
   const s = data.settings
   const lines: string[] = []
   lines.push(t('prompt.ctx.today', { date: today, weekday: weekdayName(weekdayOf(today)) }))
+  lines.push(t('prompt.ctx.now', { time: minToTime(nowMin) }))
   lines.push(
     t('prompt.ctx.profile', {
       name: s.name || t('prompt.ctx.unknownName'),

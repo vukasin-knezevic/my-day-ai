@@ -3,7 +3,7 @@ import type { Assessment } from '../../types'
 import { t } from '../../i18n'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
 
-type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan'>
+type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'>
 
 /** Saves a validated AI result. Plans become dashed suggestions the user must accept. Returns a short message. */
 export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string {
@@ -35,6 +35,14 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
         sub = { id, name: a.subject, color: '#2563eb', espb: 6, passMark: 51, slots: [] }
         subjects = [...subjects, sub]
       }
+      const subjectId = sub.id
+      const duplicate = st.assessments.some(
+        (x) =>
+          x.subjectId === subjectId &&
+          x.date === a.date &&
+          x.title.toLowerCase() === a.title.toLowerCase(),
+      )
+      if (duplicate) continue
       const exam = a.type === 'kolokvijum' || a.type === 'ispit'
       const item: Omit<Assessment, 'id'> = {
         subjectId: sub.id,

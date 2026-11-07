@@ -1,19 +1,25 @@
 // Zod schemas for everything the AI may return. One shared validation for API mode and manual mode.
 import { z } from 'zod'
+import { isValid, parseISO } from 'date-fns'
 import { t } from '../../i18n'
 
-const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => t('zod.date') })
+const date = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => t('zod.date') })
+  .refine((s) => isValid(parseISO(s)), { error: () => t('zod.date') })
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, { error: () => t('zod.time') })
 const category = z.enum(['study', 'workout', 'sleep', 'games', 'food', 'money', 'habits'])
 
-export const ActivityItem = z.object({
-  title: z.string().min(1),
-  category,
-  date,
-  start: time,
-  end: time,
-  note: z.string().optional(),
-})
+export const ActivityItem = z
+  .object({
+    title: z.string().min(1),
+    category,
+    date,
+    start: time,
+    end: time,
+    note: z.string().optional(),
+  })
+  .refine((a) => a.end > a.start, { error: () => t('zod.endAfterStart'), path: ['end'] })
 
 export const PlanSchema = z.object({
   summary: z.string(),

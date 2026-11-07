@@ -325,6 +325,7 @@ const messages: Record<MessageKey, string> = {
     'STRICT and direct, no excuses (there is an unregistered exam / a close deadline / skipped tasks)',
   'prompt.tone.support': 'CALM and supportive (little sleep or a hard period)',
   'prompt.ctx.today': 'Today: {date} ({weekday}).',
+  'prompt.ctx.now': 'Current time: {time}. Do not suggest anything earlier than that for today.',
   'prompt.ctx.unknownName': 'unknown',
   'prompt.ctx.profile':
     'Name: {name}. I wake up at {wake}, I sleep around {bed}. Sleep goal {goal} h.',
@@ -385,6 +386,7 @@ const messages: Record<MessageKey, string> = {
     '{\n  "name": "plan name",\n  "days": [ { "day": 1, "title": "e.g. Push", "exercises": [ { "name": "Bench press", "sets": 4, "reps": "6-8" } ] } ]\n}',
   'zod.date': 'the date must be YYYY-MM-DD',
   'zod.time': 'the time must be HH:mm',
+  'zod.endAfterStart': 'the end must be after the start',
   'ai.kind.plan-dana': 'Day plan',
   'ai.kind.plan-nedelje': 'Week plan',
   'ai.kind.unos': 'Smart entry',

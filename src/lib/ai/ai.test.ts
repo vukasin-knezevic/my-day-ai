@@ -276,11 +276,48 @@ describe('applyAiResult', () => {
   it('plan -> dashed suggestions from the AI', () => {
     const r = parseAiResponse('plan-dana', fence(goodPlan))
     if (!r.ok) throw new Error('bad')
-    applyAiResult('plan-dana', r.data, { add, patch, subjects: [], workoutPlan: null } as never)
+    applyAiResult('plan-dana', r.data, {
+      add,
+      patch,
+      subjects: [],
+      assessments: [],
+      workoutPlan: null,
+    } as never)
     expect(add).toHaveBeenCalledWith(
       'activities',
       expect.objectContaining({ source: 'ai', suggested: true }),
     )
+  })
+  it('importing the same schedule twice does not duplicate exams', () => {
+    const r = parseAiResponse(
+      'uvoz',
+      fence({
+        assessments: [
+          { subject: 'Fizika', type: 'kolokvijum', title: 'K1', date: '2026-11-20' },
+          { subject: 'Fizika', type: 'kolokvijum', title: 'K2', date: '2026-12-20' },
+        ],
+      }),
+    )
+    if (!r.ok) throw new Error('bad')
+    const subjects = [{ id: 's1', name: 'fizika' }]
+    const assessments = [{ subjectId: 's1', title: 'k1', date: '2026-11-20' }]
+    const st = { add, patch, subjects, assessments, workoutPlan: null } as never
+    applyAiResult('uvoz', r.data, st)
+    expect(add).toHaveBeenCalledTimes(1)
+    expect(add).toHaveBeenCalledWith('assessments', expect.objectContaining({ title: 'K2' }))
+  })
+  it('rejects impossible plans before they reach the data', () => {
+    const plan = (date: string, end: string) => ({
+      summary: 'x',
+      activities: [{ title: 'A', category: 'study', date, start: '10:00', end }],
+    })
+    expect(parseAiResponse('plan-dana', fence(plan(TODAY, '09:00'))).ok).toBe(false)
+    expect(parseAiResponse('plan-dana', fence(plan('2026-13-45', '11:00'))).ok).toBe(false)
+    expect(parseAiResponse('plan-dana', fence(plan('2026-02-31', '11:00'))).ok).toBe(false)
+    expect(parseAiResponse('plan-dana', fence(plan(TODAY, '11:00'))).ok).toBe(true)
+  })
+  it('the context tells the model what time it is', () => {
+    expect(buildContext(emptyData(), TODAY, 20 * 60 + 5)).toContain('20:05')
   })
   it('import creates a missing subject and unregistered exams', () => {
     const r = parseAiResponse(
@@ -290,7 +327,13 @@ describe('applyAiResult', () => {
       }),
     )
     if (!r.ok) throw new Error('bad')
-    applyAiResult('uvoz', r.data, { add, patch, subjects: [], workoutPlan: null } as never)
+    applyAiResult('uvoz', r.data, {
+      add,
+      patch,
+      subjects: [],
+      assessments: [],
+      workoutPlan: null,
+    } as never)
     expect(add).toHaveBeenCalledWith('subjects', expect.objectContaining({ name: 'Fizika' }))
     expect(add).toHaveBeenCalledWith(
       'assessments',
@@ -303,7 +346,13 @@ describe('applyAiResult', () => {
       fence({ name: 'PPL', days: [{ day: 1, title: 'Push', exercises: [] }] }),
     )
     if (!r.ok) throw new Error('bad')
-    applyAiResult('trening', r.data, { add, patch, subjects: [], workoutPlan: null } as never)
+    applyAiResult('trening', r.data, {
+      add,
+      patch,
+      subjects: [],
+      assessments: [],
+      workoutPlan: null,
+    } as never)
     expect(patch).toHaveBeenCalledWith({ workoutPlan: expect.objectContaining({ source: 'ai' }) })
   })
 })
