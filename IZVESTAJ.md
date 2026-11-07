@@ -47,6 +47,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **CI:** e2e test 10 je jednom pao na GitHub-u (`05e58ff`), sledeći commit je prošao, a lokalno prolazi 20/20. Verovatan uzrok (trka između brisanja i ponovnog učitavanja) nije reprodukovan; test sada čeka da se brisanje upiše.
 - **AI klijent:** limit tokena podignut (16000, čet 4000) jer se razmišljanje modela računa u `max_tokens`; odsečen odgovor, istek vremena (3 min) i preopterećenje (529) sada imaju svoju poruku.
 - **Provereno na pravom API-ju, bez ključa:** preflight sa našim zaglavljima vraća `access-control-allow-origin: *`, a zahtev sa lažnim ključem običan 401, pa pozivi iz pregledača nisu blokirani. Sam odgovor modela i dalje nije proban.
+- **Planer:** više ne predlaže termine koji su danas već prošli i ne preklapa AI predloge na čekanju.
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
 1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.

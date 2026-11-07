@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Button, Card, PageTitle } from '../components/ui'
 import { CATEGORY_META } from '../types'
-import { addDaysStr, formatLong, todayStr, weekdayOf } from '../lib/dates'
+import { addDaysStr, formatLong, nowMinutes, todayStr, weekdayOf } from '../lib/dates'
 import { planWeek, type Adjustment } from '../lib/planner'
 import { patchOccurrence } from '../lib/schedule'
 import { useT } from '../i18n'
@@ -35,6 +35,7 @@ export default function Planner() {
     const result = planWeek({
       from,
       days: sunday ? 7 : undefined,
+      nowMin: sunday ? undefined : nowMinutes(),
       settings,
       subjects,
       assessments,

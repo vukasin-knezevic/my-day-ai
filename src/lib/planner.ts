@@ -11,6 +11,8 @@ export interface PlanInput {
   from: string
   /** Number of days to plan; default = until Sunday of the week of `from` */
   days?: number
+  /** Current time when `from` is today: nothing is suggested before it */
+  nowMin?: number
   settings: Pick<
     Settings,
     | 'wakeTime'
@@ -87,8 +89,9 @@ export function planWeek(input: PlanInput): PlanResult {
   const suggestions: PlanResult['suggestions'] = []
   const adjustments: Adjustment[] = []
 
-  // pending suggestions are replaced, so they do not count as busy time
-  const fixed = input.activities.filter((a) => !a.suggested)
+  // the planner's own pending suggestions get replaced, so they are not busy time;
+  // pending AI suggestions stay in place and must not be overlapped
+  const fixed = input.activities.filter((a) => !a.suggested || a.source !== 'me')
   const data = { activities: fixed, subjects }
 
   const wake = timeToMin(settings.wakeTime)
@@ -108,6 +111,8 @@ export function planWeek(input: PlanInput): PlanResult {
   for (const date of dates) {
     const occ = occurrencesOn(data, date).filter((o) => o.status !== 'skipped')
     let free: Iv[] = [window]
+    if (date === from && input.nowMin !== undefined)
+      free = subtract(free, { s: 0, e: Math.ceil(input.nowMin / 15) * 15 })
     let load = 0
     let existingStudy = 0
     for (const o of occ) {

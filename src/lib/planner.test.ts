@@ -325,3 +325,42 @@ describe('planWeek: easy day and games', () => {
     ).toBe(false)
   })
 })
+
+describe('regressions', () => {
+  const base2 = {
+    settings: {
+      wakeTime: '07:00',
+      bedTime: '23:00',
+      studyHoursPerDay: 4,
+      workoutsPerWeek: 0,
+      rewardMinPerStudyHour: 0,
+      rewardName: '',
+    },
+    subjects: [],
+    activities: [],
+  }
+  const lateExam = exam({ date: '2026-11-13', difficulty: 5, studyHours: 12 })
+  it('does not suggest anything earlier than the current time today', () => {
+    const r = planWeek({ ...base2, from: '2026-11-09', assessments: [lateExam], nowMin: 20 * 60 })
+    const today = r.suggestions.filter((s) => s.date === '2026-11-09')
+    expect(today.length).toBeGreaterThan(0)
+    for (const s of today) expect(s.start >= '20:00').toBe(true)
+  })
+  it('does not overlap pending AI suggestions, which regenerating keeps', () => {
+    const ai = {
+      id: 'ai1',
+      title: 'AI blok',
+      category: 'study' as const,
+      date: '2026-11-09',
+      start: '07:30',
+      end: '20:00',
+      recurrence: 'none' as const,
+      status: 'planned' as const,
+      source: 'ai' as const,
+      suggested: true,
+    }
+    const r = planWeek({ ...base2, from: '2026-11-09', assessments: [lateExam], activities: [ai] })
+    for (const s of r.suggestions.filter((x) => x.date === ai.date))
+      expect(s.start >= ai.end || s.end <= ai.start).toBe(true)
+  })
+})
