@@ -80,6 +80,8 @@ export interface AwardEvent {
   xp: number
   category: Category
   rewardMin?: number
+  /** ISO time of the event; the store fills it in */
+  at?: string
 }
 
 export interface RewardInfo {
@@ -109,6 +111,7 @@ export function award(
         xp: e.xp,
         category: e.category,
         ...(e.rewardMin ? { rewardMin: e.rewardMin } : {}),
+        ...(e.at ? { at: e.at } : {}),
       },
     ].slice(-500),
   }

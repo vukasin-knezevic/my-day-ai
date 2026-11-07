@@ -150,7 +150,7 @@ export const useStore = create<Store>()(
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
       award: (e) => {
         const settings = get().settings
-        const r = awardXp(get().progress, e, {
+        const r = awardXp(get().progress, { at: new Date().toISOString(), ...e }, {
           name: rewardNameOf(settings),
           emoji: settings.rewardEmoji,
         })

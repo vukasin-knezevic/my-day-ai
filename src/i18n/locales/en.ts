@@ -114,6 +114,8 @@ const messages: Record<MessageKey, string> = {
   'level.5': 'Lecture-hall veteran',
   'level.6': 'Mentor',
   'level.7': 'Engineer',
+  'xp.history': 'XP history',
+  'xp.historyEmpty': 'No XP yet. Finish something and it will show up here.',
   'xp.gain': '+{xp} XP · {reason}',
   'xp.reward': '{emoji} +{n} min: {name}',
   'xp.levelUp': '🎉 New level: {name}!',

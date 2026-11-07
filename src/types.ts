@@ -230,6 +230,8 @@ export interface XpEvent {
   category: Category
   /** reward minutes this event gave (so taking the event back can take them back too) */
   rewardMin?: number
+  /** When it happened (ISO time). Older events have only the date. */
+  at?: string
 }
 
 export interface Progress {

@@ -113,6 +113,8 @@ const messages = {
   'level.5': 'Veteran amfiteatra',
   'level.6': 'Mentor',
   'level.7': 'Inženjer',
+  'xp.history': 'Istorija XP-a',
+  'xp.historyEmpty': 'Još nema XP-a. Završi nešto i pojaviće se ovde.',
   'xp.gain': '+{xp} XP · {reason}',
   'xp.reward': '{emoji} +{n} min: {name}',
   'xp.levelUp': '🎉 Novi nivo: {name}!',
