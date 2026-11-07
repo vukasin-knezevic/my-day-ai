@@ -114,6 +114,7 @@ function Training() {
   function save(e: React.FormEvent) {
     e.preventDefault()
     const exercises = toExercises()
+    if (exercises.length === 0) return setMsg(t('wo.needsExercise'))
     const records = newRecords({ exercises }, workouts)
     const id = add('workouts', {
       date: today,

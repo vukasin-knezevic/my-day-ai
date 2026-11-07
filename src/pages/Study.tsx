@@ -4,8 +4,18 @@ import { useStore } from '../store'
 import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
+import ConfirmButton from '../components/ConfirmButton'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
-import { formatShort, monthName, monthOf, todayStr, weekdayName, weekdayOf } from '../lib/dates'
+import {
+  formatShort,
+  monthName,
+  monthOf,
+  timeToMin,
+  todayStr,
+  weekdayName,
+  weekdayOf,
+} from '../lib/dates'
+import { uid } from '../lib/defaults'
 import {
   URGENCY_CLS,
   countdownLabel,
@@ -63,8 +73,13 @@ export default function Study() {
 /* ---------------- Timetable ---------------- */
 function Schedule() {
   const { t } = useT()
-  const { subjects, add, update, remove } = useStore(
-    useShallow((s) => ({ subjects: s.subjects, add: s.add, update: s.update, remove: s.remove })),
+  const { subjects, add, update, removeSubject } = useStore(
+    useShallow((s) => ({
+      subjects: s.subjects,
+      add: s.add,
+      update: s.update,
+      removeSubject: s.removeSubject,
+    })),
   )
   const today = todayStr()
   const unanswered = unansweredSlots(subjects)
@@ -174,7 +189,7 @@ function Schedule() {
           key={s.id}
           subject={s}
           onSlotAttendance={setAttendance}
-          onRemove={() => remove('subjects', s.id)}
+          onRemove={() => removeSubject(s.id)}
         />
       ))}
 
@@ -218,17 +233,13 @@ function SubjectCard({
   const [day, setDay] = useState<Weekday>(1)
   const [start, setStart] = useState('10:00')
   const [end, setEnd] = useState('12:00')
+  const [slotError, setSlotError] = useState('')
 
   function addSlot(e: React.FormEvent) {
     e.preventDefault()
-    const slot: ClassSlot = {
-      id: Math.random().toString(36).slice(2, 9),
-      kind,
-      day,
-      start,
-      end,
-      attendance: null,
-    }
+    if (timeToMin(end) <= timeToMin(start)) return setSlotError(t('act.errEnd'))
+    setSlotError('')
+    const slot: ClassSlot = { id: uid(), kind, day, start, end, attendance: null }
     update('subjects', subject.id, { slots: [...subject.slots, slot] })
   }
   const slots = [...subject.slots].sort((a, b) => a.day - b.day || a.start.localeCompare(b.start))
@@ -246,13 +257,12 @@ function SubjectCard({
             {t('study.espbBadge', { n: subject.espb })}
           </span>
         </h2>
-        <Button
-          variant="ghost"
-          onClick={onRemove}
-          aria-label={t('study.deleteSubject', { name: subject.name })}
+        <ConfirmButton
+          label={t('study.deleteSubject', { name: subject.name })}
+          onConfirm={onRemove}
         >
           {t('common.delete')}
-        </Button>
+        </ConfirmButton>
       </div>
       <ul className="mb-3 space-y-1 text-sm">
         {slots.length === 0 && <li className="text-slate-500">{t('study.noSlots')}</li>}
@@ -326,6 +336,11 @@ function SubjectCard({
           {t('study.addSlot')}
         </Button>
       </form>
+      {slotError && (
+        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
+          {slotError}
+        </p>
+      )}
     </Card>
   )
 }

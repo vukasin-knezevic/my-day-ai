@@ -20,6 +20,7 @@ import { computeStreaks, rewardForDone, streakMessages } from '../lib/xp'
 import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
+import ConfirmButton from '../components/ConfirmButton'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 import type { Activity } from '../types'
@@ -278,13 +279,13 @@ export default function Today() {
                 </Button>
               )}
               {o.type === 'activity' && o.activityId && (
-                <Button
-                  variant="ghost"
-                  aria-label={t('today.delete', { title: o.title })}
-                  onClick={() => store.remove('activities', o.activityId!)}
+                <ConfirmButton
+                  ask={o.recurring}
+                  label={t('today.delete', { title: o.title })}
+                  onConfirm={() => store.remove('activities', o.activityId!)}
                 >
                   ✕
-                </Button>
+                </ConfirmButton>
               )}
               {o.type === 'activity' && o.activityId && o.recurring && (
                 <Button

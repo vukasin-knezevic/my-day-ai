@@ -44,6 +44,8 @@ interface Actions {
   add: <K extends CollectionKey>(key: K, item: Omit<Item<K>, 'id'> & { id?: string }) => string
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void
   remove: (key: CollectionKey, id: string) => void
+  /** Deletes a subject together with its exams, so the planner does not keep counting them. */
+  removeSubject: (id: string) => void
   patch: (patch: Partial<AppData>) => void
   loadDemo: () => void
   clearDemo: () => void
@@ -92,8 +94,14 @@ export const useStore = create<Store>()(
           (s) =>
             ({ [key]: (s[key] as { id: string }[]).filter((x) => x.id !== id) }) as Partial<Store>,
         ),
+      removeSubject: (id) =>
+        set((s) => ({
+          subjects: s.subjects.filter((x) => x.id !== id),
+          assessments: s.assessments.filter((a) => a.subjectId !== id),
+        })),
       patch: (p) => set(p as Partial<Store>),
       loadDemo: () => {
+        if (get().hasDemo()) return
         const demo = makeDemoData(todayStr())
         set((s) => {
           const next: Partial<Store> = {}
@@ -112,7 +120,9 @@ export const useStore = create<Store>()(
               (x) => !x.demo,
             )
           }
-          // assessments of removed demo subjects are demo too, so nothing is left dangling
+          // what the user added to a demo subject goes with it, so nothing is left dangling
+          const gone = new Set(s.subjects.filter((x) => x.demo).map((x) => x.id))
+          next.assessments = next.assessments?.filter((a) => !gone.has(a.subjectId))
           return next
         }),
       hasDemo: () =>

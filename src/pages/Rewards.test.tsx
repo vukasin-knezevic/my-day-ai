@@ -11,6 +11,34 @@ beforeEach(() => {
   useStore.setState({ ...d, settings: { ...d.settings, onboarded: true }, hydrated: true })
 })
 
+test('ceo ponavljajući niz se briše tek na drugi klik, jednokratna aktivnost odmah', async () => {
+  const user = userEvent.setup()
+  const activity = (title: string, recurrence: 'none' | 'daily') =>
+    useStore.getState().add('activities', {
+      title,
+      category: 'habits',
+      date: todayStr(),
+      start: '10:00',
+      end: '11:00',
+      recurrence,
+      status: 'planned',
+      source: 'me',
+    })
+  activity('Šetnja', 'daily')
+  activity('Kafa', 'none')
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: 'Obriši Kafa' }))
+  expect(useStore.getState().activities.map((a) => a.title)).toEqual(['Šetnja'])
+  await user.click(screen.getByRole('button', { name: 'Obriši Šetnja' }))
+  expect(useStore.getState().activities).toHaveLength(1)
+  await user.click(screen.getByRole('button', { name: /Sigurno\?/ }))
+  expect(useStore.getState().activities).toHaveLength(0)
+})
+
 test('urađeno daje XP i vreme nagrade, samo jednom', async () => {
   const user = userEvent.setup()
   useStore.getState().add('activities', {
