@@ -251,13 +251,14 @@ const messages: Record<MessageKey, string> = {
   'set.notif': 'Browser notifications (before classes, deadlines, registrations and bedtime)',
   'set.notifDenied': 'The browser did not allow notifications (check the site settings).',
   'set.notifNote':
-    'Honestly: without a server, notifications on a phone are reliable only while the app is open or was used recently. For reliable reminders export the calendar (.ics) and import it into your phone calendar; the calendar then reminds you by itself.',
+    'Honestly: without a server, notifications on a phone are reliable only while the app is open or was used recently. For reliable reminders use “Add to calendar” below; the calendar then reminds you by itself.',
   'set.notifTest': 'Send a test notification',
   'set.notifTestTitle': 'Test notification',
   'set.notifTestBody': 'If you see this, notifications work. ✅',
   'set.notifTestFail':
     'The test notification could not be shown. Check the notification permission for this app in the phone settings.',
-  'set.ics': '📅 Export calendar (.ics)',
+  'set.ics': '📅 Add to calendar',
+  'set.calDone': 'The calendar entries were handed to your calendar app.',
   'set.ai': '🤖 AI',
   'set.aiMode': 'AI mode',
   'set.aiManual': 'Manual (free, you copy into a Claude chat)',

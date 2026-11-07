@@ -3,7 +3,7 @@ import { vocative } from '../lib/vocative'
 import { useState } from 'react'
 import DataCard from './DataCard'
 import { selectData, useStore } from '../store'
-import { buildIcs, downloadText } from '../lib/ics'
+import { buildIcsWithProgress, shareCalendar } from '../lib/ics'
 import { requestNotifications, showNotification } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
@@ -20,6 +20,8 @@ export default function Settings() {
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
   const [notifMsg, setNotifMsg] = useState('')
+  const [calProgress, setCalProgress] = useState<number | null>(null)
+  const [calMsg, setCalMsg] = useState('')
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
@@ -245,10 +247,41 @@ export default function Settings() {
           )}
           <Button
             variant="soft"
-            onClick={() => downloadText('my-day-ai.ics', buildIcs(selectData(useStore.getState())))}
+            disabled={calProgress !== null}
+            onClick={async () => {
+              setCalMsg('')
+              setCalProgress(0)
+              const text = await buildIcsWithProgress(selectData(useStore.getState()), (f) =>
+                setCalProgress(f * 0.9),
+              )
+              const result = await shareCalendar(text)
+              setCalProgress(1)
+              setCalMsg(result === 'cancelled' ? '' : t('set.calDone'))
+              setTimeout(() => setCalProgress(null), 600)
+            }}
           >
             {t('set.ics')}
           </Button>
+          {calProgress !== null && (
+            <div
+              role="progressbar"
+              aria-label={t('set.ics')}
+              aria-valuenow={Math.round(calProgress * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+            >
+              <div
+                className="h-full bg-blue-600 transition-[width] duration-200"
+                style={{ width: `${Math.round(calProgress * 100)}%` }}
+              />
+            </div>
+          )}
+          {calMsg && (
+            <p role="status" className="text-sm">
+              {calMsg}
+            </p>
+          )}
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.ai')}</h2>

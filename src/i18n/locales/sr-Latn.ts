@@ -250,13 +250,14 @@ const messages = {
   'set.notif': 'Notifikacije pregledača (pre predavanja, rokova, prijava i spavanja)',
   'set.notifDenied': 'Pregledač nije dozvolio notifikacije (proveri podešavanja sajta).',
   'set.notifNote':
-    'Iskreno: bez servera notifikacije na telefonu rade pouzdano samo dok je aplikacija otvorena ili nedavno korišćena. Za pouzdane podsetnike izvezi kalendar (.ics) i uvezi ga u kalendar telefona; kalendar tada podseća sam.',
+    'Iskreno: bez servera notifikacije na telefonu rade pouzdano samo dok je aplikacija otvorena ili nedavno korišćena. Za pouzdane podsetnike koristi „Dodaj u kalendar“ ispod; kalendar te onda sam podseća.',
   'set.notifTest': 'Pošalji probnu notifikaciju',
   'set.notifTestTitle': 'Probna notifikacija',
   'set.notifTestBody': 'Ako vidiš ovo, notifikacije rade. ✅',
   'set.notifTestFail':
     'Probna notifikacija nije prikazana. Proveri dozvolu za notifikacije za ovu aplikaciju u podešavanjima telefona.',
-  'set.ics': '📅 Izvezi kalendar (.ics)',
+  'set.ics': '📅 Dodaj u kalendar',
+  'set.calDone': 'Stavke su prosleđene kalendaru.',
   'set.ai': '🤖 AI',
   'set.aiMode': 'AI režim',
   'set.aiManual': 'Ručni (besplatno, kopiraš u Claude chat)',
