@@ -5,6 +5,7 @@ import { Button, Card, PageTitle } from '../components/ui'
 import { CATEGORY_META } from '../types'
 import { addDaysStr, formatLong, todayStr, weekdayOf } from '../lib/dates'
 import { planWeek, type Adjustment } from '../lib/planner'
+import { patchOccurrence } from '../lib/schedule'
 import { useT } from '../i18n'
 
 export default function Planner() {
@@ -47,7 +48,12 @@ export default function Planner() {
     setAdjustments(result.adjustments)
   }
   function applyAdjustment(a: Adjustment) {
-    update('activities', a.activityId, { end: a.newEnd })
+    const activity = activities.find((x) => x.id === a.activityId)
+    if (activity) {
+      const { updated, single } = patchOccurrence(activity, a.date, { end: a.newEnd })
+      update('activities', updated.id, updated)
+      if (single) add('activities', single)
+    }
     setAdjustments((list) => list.filter((x) => x !== a))
   }
 

@@ -105,6 +105,22 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Obriši sve podatke' }).click()
   await page.getByRole('button', { name: 'Da, obriši sve' }).click()
   await expect(page.getByRole('heading', { name: /Dobrodošao/ })).toBeVisible()
+  // the reload inside onboard() must not overtake the asynchronous IndexedDB write
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((resolve) => {
+            const open = indexedDB.open('keyval-store')
+            open.onsuccess = () => {
+              const all = open.result.transaction('keyval').objectStore('keyval').getAll()
+              all.onsuccess = () =>
+                resolve(JSON.stringify(all.result).includes('onboarded\\":true'))
+            }
+          }),
+      ),
+    )
+    .toBe(false)
   await onboard(page)
   await page.goto('/#/podesavanja')
   await page.getByLabel('Uvoz: nalepi JSON').fill(json)

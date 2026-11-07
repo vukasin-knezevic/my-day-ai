@@ -5,6 +5,7 @@ import {
   daySummary,
   freeSlots,
   occurrencesOn,
+  patchOccurrence,
   withStatus,
   withoutOccurrence,
 } from './schedule'
@@ -186,5 +187,22 @@ describe('withoutOccurrence', () => {
     expect(occurrencesOn(d, '2026-11-07')).toHaveLength(0)
     expect(occurrencesOn(d, '2026-11-08')).toHaveLength(1)
     expect(occurrencesOn(d, '2026-11-08')[0].recurring).toBe(true)
+  })
+})
+
+describe('patchOccurrence', () => {
+  it('patches a one-off in place', () => {
+    const r = patchOccurrence(act(), '2026-11-06', { end: '18:45' })
+    expect(r.updated.end).toBe('18:45')
+    expect(r.single).toBeNull()
+  })
+  it('changes one day of a series and leaves the other days alone', () => {
+    const series = act({ recurrence: 'weekly', doneDates: ['2026-11-06'] })
+    const { updated, single } = patchOccurrence(series, '2026-11-13', { end: '18:45' })
+    const d = { activities: [updated, { ...single!, id: 'one' }], subjects: [] }
+    expect(occurrencesOn(d, '2026-11-13').map((o) => o.end)).toEqual(['18:45'])
+    expect(occurrencesOn(d, '2026-11-20').map((o) => o.end)).toEqual(['19:30'])
+    expect(occurrencesOn(d, '2026-11-06')[0].status).toBe('done')
+    expect(single!.doneDates).toBeUndefined()
   })
 })

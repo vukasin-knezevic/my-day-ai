@@ -129,6 +129,30 @@ export function withoutOccurrence(a: Activity, date: string): Activity {
   return { ...a, excludedDates: [...(a.excludedDates ?? []).filter((d) => d !== date), date] }
 }
 
+/**
+ * Changes one day of an activity. A one-off is simply patched; a recurring one keeps
+ * its series, loses that date, and gets a separate one-off copy for it.
+ */
+export function patchOccurrence(
+  a: Activity,
+  date: string,
+  patch: Partial<Activity>,
+): { updated: Activity; single: Omit<Activity, 'id'> | null } {
+  if (a.recurrence === 'none') return { updated: { ...a, ...patch }, single: null }
+  const single: Omit<Activity, 'id'> & Partial<Pick<Activity, 'id'>> = {
+    ...a,
+    ...patch,
+    date,
+    recurrence: 'none',
+    status: 'planned',
+  }
+  delete single.id
+  delete single.doneDates
+  delete single.skippedDates
+  delete single.excludedDates
+  return { updated: withoutOccurrence(a, date), single }
+}
+
 export function currentAndNext(occ: Occurrence[], nowMin: number) {
   const active = occ.filter((o) => o.status === 'planned' && !o.suggested)
   const current =

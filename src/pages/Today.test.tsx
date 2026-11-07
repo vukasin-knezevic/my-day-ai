@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import Today from './Today'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
+import { todayStr } from '../lib/dates'
 
 beforeEach(() => {
   const d = emptyData()
@@ -136,4 +137,28 @@ test('neprijavljen kolokvijum se vidi kao upozorenje', () => {
     </MemoryRouter>,
   )
   expect(screen.getByText(/Neprijavljen: Kol test/)).toBeInTheDocument()
+})
+
+test('ponavljajuća aktivnost: „Samo danas“ uklanja dan, a niz ostaje', async () => {
+  const user = userEvent.setup()
+  const today = todayStr()
+  useStore.getState().add('activities', {
+    title: 'Jutarnje trčanje',
+    category: 'workout',
+    date: today,
+    start: '07:00',
+    end: '07:30',
+    recurrence: 'daily',
+    status: 'planned',
+    source: 'me',
+  })
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.click(screen.getByRole('button', { name: 'Ukloni Jutarnje trčanje samo za ovaj dan' }))
+  expect(screen.queryByText(/Jutarnje trčanje/)).toBeNull()
+  const [a] = useStore.getState().activities
+  expect(a.excludedDates).toEqual([today])
 })
