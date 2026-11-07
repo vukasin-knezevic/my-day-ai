@@ -4,6 +4,12 @@ import type { LocaleModule } from '../index'
 import { fromEnglish } from '../fromEnglish'
 
 const messages = fromEnglish({
+  'common.sure': `Sicher?`,
+  'dataio.badItem': `Eintrag {n} in „{key}“ ist beschädigt, daher ist der Import nicht sicher.`,
+  'err.body': `Deine Daten sind weiterhin auf diesem Gerät gespeichert. Versuch, die App neu zu laden.`,
+  'err.reload': `Neu laden`,
+  'err.title': `Etwas ist schiefgelaufen`,
+  'wo.needsExercise': `Füge mindestens eine Übung hinzu, um das Training zu speichern.`,
   'date.long': `EEEE, d. MMMM`,
   'date.weekdayDayMonth': `EEE, d.M.`,
   'date.dayMonth': `d.M.`,

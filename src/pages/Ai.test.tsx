@@ -48,6 +48,16 @@ test('neispravan odgovor daje jasnu poruku', async () => {
   expect(screen.getByRole('alert')).toHaveTextContent('Napiši Claude-u')
 })
 
+test('dva istovremena API poziva: potrošnja se ne gubi', () => {
+  useStore.getState().trackAiUsage(100, 10)
+  useStore.getState().trackAiUsage(200, 20)
+  expect(useStore.getState().aiUsage).toMatchObject({
+    calls: 2,
+    inputTokens: 300,
+    outputTokens: 30,
+  })
+})
+
 test('bez ključa nema API dugmeta', () => {
   render(
     <MemoryRouter>

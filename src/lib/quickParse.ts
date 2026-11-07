@@ -167,7 +167,9 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     const isBed = /^(leg|went to bed|go(?:ing)? to bed|slept)/.test(sleepMatch[0])
     const m = t.cut(new RegExp(String.raw`\b(?:(?:u|at)\s+)?${TIME}\s*h?\b`)) ?? null
     const min = m ? toMin(m[1], m[2]) : nowMin
-    const date = parseDate(t, now) ?? today
+    // "legao 23:30" typed at half past midnight means last night, not tonight
+    const lastNight = isBed && nowMin < 6 * 60 && min >= 12 * 60
+    const date = parseDate(t, now) ?? (lastNight ? addDaysStr(today, -1) : today)
     return {
       kind: 'sleep',
       event: isBed ? 'bed' : 'wake',

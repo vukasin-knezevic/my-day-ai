@@ -74,6 +74,7 @@
 ## FAZA 0 — Priprema mog računara
 
 Proveri `node -v`, `npm -v` i `git --version`.
+
 - Ako nešto fali, pokušaj instalaciju preko `winget` (Node.js LTS, Git) i traži mi dozvolu.
 - Ako ne može automatski, napiši mi **SETUP.md**: tačni koraci sa linkovima, za Windows.
 - Napiši mi i kratko uputstvo kako da napravim **GitHub nalog** i kako da posle gurnem projekat (ali ti ništa ne guraj).
@@ -123,6 +124,7 @@ Napravi **onboarding** od 5 koraka pri prvom otvaranju: ime, ritam dana, ciljevi
 ## FAZA 4 — 🧠 Planer (bez AI-ja, osnova)
 
 `src/lib/planner.ts`, čista funkcija `planWeek()`, **bar 20 testova**:
+
 - Predlaže blokove učenja pre kolokvijuma, raspoređene kroz više dana.
 - Teži i bliži rok = više učenja ranije.
 - Najviše 3 h učenja zaredom, pa pauza.
@@ -169,6 +171,7 @@ Ovaj planer radi uvek. AI (faza 8) ga samo nadograđuje.
 - Sve AI funkcije imaju **rezervu bez AI-ja** kad nema ključa ili interneta.
 
 AI funkcije:
+
 1. **AI plan dana / nedelje:** šalje moje obaveze, rokove, ciljeve i san; vraća strukturisan JSON plan koji aplikacija proveri (validacija sa `zod`) pre prikaza kao predlog.
 2. **Chat asistent:** „Šta da radim sad?", „Kako da stignem sve do petka?". Vidi moje podatke za tekuću nedelju.
 3. **Rezime nedelje:** svake nedelje uveče kratak rezime i 3 saveta.
@@ -177,6 +180,7 @@ AI funkcije:
 6. **Plan treninga** po mom cilju i rasporedu.
 
 **Ton asistenta** (stavi u sistemski prompt):
+
 - **Drugarski i kratak** kad je sve u redu.
 - **Strog**, direktno i bez izgovora, kad preskačem obaveze, kad je neprijavljen kolokvijum ili rok blizu.
 - **Smiren i podrška** kad sam umoran, kad malo spavam ili kad je teška nedelja.
@@ -185,6 +189,7 @@ AI funkcije:
 Testiraj AI deo **bez pravih poziva** (mock odgovora), uključujući neispravan JSON.
 
 ### 8b. 📋 Ručni AI mod (besplatno, bez API ključa)
+
 Svakodnevno ću koristiti ovaj mod, a API samo povremeno i za demo. Zato mora biti jednostavan i brz.
 
 - Prekidač u podešavanjima: **AI režim: API / Ručni**. Ručni je podrazumevan kad nema ključa.
@@ -220,7 +225,7 @@ Svakodnevno ću koristiti ovaj mod, a API samo povremeno i za demo. Zato mora bi
 
 ## FAZA 11 — 🗂️ Portfolio
 
-- **README.md na srpskom i engleskom:** problem koji rešava, screenshot-ovi, funkcije (posebno planer i AI), tehnologije i zašto, kako se pokreće, kako se pokreću testovi, struktura foldera, i rečenica: *„Aplikaciju sam osmislio i dizajnirao ja, a kod sam pisao uz Claude Code."*
+- **README.md na srpskom i engleskom:** problem koji rešava, screenshot-ovi, funkcije (posebno planer i AI), tehnologije i zašto, kako se pokreće, kako se pokreću testovi, struktura foldera, i rečenica: _„Aplikaciju sam osmislio i dizajnirao ja, a kod sam pisao uz Claude Code."_
 - `docs/ARHITEKTURA.md` sa Mermaid dijagramom toka podataka.
 - `LICENSE` (MIT).
 - GitHub Actions: lint, typecheck, unit i e2e testovi.

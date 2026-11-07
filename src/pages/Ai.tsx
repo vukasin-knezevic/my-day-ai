@@ -4,14 +4,13 @@ import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card, Field, Input, PageTitle } from '../components/ui'
 import { FieldContext, invalidCls } from '../components/fieldContext'
-import { todayStr, monthOf } from '../lib/dates'
-import { buildContext, buildPrompt, kindLabel, systemPrompt } from '../lib/ai/prompt'
+import { todayStr } from '../lib/dates'
+import { buildManualChat, buildPrompt, kindLabel } from '../lib/ai/prompt'
 import { useT } from '../i18n'
 import { parseAiResponse } from '../lib/ai/extract'
 import { runApi, runChat } from '../lib/ai/run'
 import { applyAiResult } from '../lib/ai/apply'
-import { addUsage } from '../lib/ai/usage'
-import { AiError } from '../lib/ai/client'
+import { AiError, type ChatMessage } from '../lib/ai/client'
 import type {
   AiKind,
   AiResult,
@@ -112,7 +111,7 @@ export default function Ai() {
   const apiReady = data.settings.aiMode === 'api' && data.settings.apiKey.trim() !== ''
   const needsText = NEEDS_TEXT[kind]
 
-  const manualPrompt = () => buildPrompt(kind, data, today, { manual: true, text }).manualText
+  const manualPrompt = () => buildPrompt(kind, data, today, text).manualText
 
   async function copy(content: string) {
     try {
@@ -120,7 +119,6 @@ export default function Ai() {
       setInfo(t('ai.copied'))
     } catch {
       setInfo(t('ai.copyFail'))
-      setPasted((p) => p)
     }
   }
 
@@ -148,9 +146,7 @@ export default function Ai() {
     setInfo('')
     try {
       const r = await runApi(kind, data, today, text)
-      store.patch({
-        aiUsage: addUsage(data.aiUsage, monthOf(today), r.reply.inputTokens, r.reply.outputTokens),
-      })
+      store.trackAiUsage(r.reply.inputTokens, r.reply.outputTokens)
       handleParsed(r.parsed)
     } catch (e) {
       setError(e instanceof AiError ? e.message : t('ai.unexpected'))
@@ -270,7 +266,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
   const today = todayStr()
   const [q, setQ] = useState('')
   const [qError, setQError] = useState('')
-  const [log, setLog] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [log, setLog] = useState<ChatMessage[]>([])
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [copied, setCopied] = useState(false)
@@ -284,9 +280,8 @@ function Chat({ apiReady }: { apiReady: boolean }) {
     setQError('')
     const question = q.trim()
     if (!apiReady) {
-      const prompt = `${systemPrompt()}\n\n${t('prompt.dataHeader')}\n${buildContext(data, today)}\n\n${t('prompt.chat.question')}: ${question}`
       try {
-        await navigator.clipboard.writeText(prompt)
+        await navigator.clipboard.writeText(buildManualChat(data, today, question))
         setCopied(true)
       } catch {
         setErr(t('ai.chat.copyFail'))
@@ -297,9 +292,7 @@ function Chat({ apiReady }: { apiReady: boolean }) {
     setErr('')
     try {
       const { reply } = await runChat(data, today, log, question)
-      store.patch({
-        aiUsage: addUsage(data.aiUsage, monthOf(today), reply.inputTokens, reply.outputTokens),
-      })
+      store.trackAiUsage(reply.inputTokens, reply.outputTokens)
       setLog((l) => [
         ...l,
         { role: 'user', content: question },

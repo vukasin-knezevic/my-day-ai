@@ -118,6 +118,8 @@ export interface Activity {
   /** true = suggestion (dashed border) until accepted */
   suggested?: boolean
   note?: string
+  /** The exam this study block prepares for (set by the planner) */
+  assessmentId?: string
   /** For recurring activities: dates on which a particular occurrence was done/skipped */
   doneDates?: string[]
   skippedDates?: string[]

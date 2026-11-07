@@ -1,10 +1,11 @@
-import { addKind, assessmentKinds, isExamType, slotKinds } from '../lib/kinds'
+import { addKind, assessmentKinds, slotKinds } from '../lib/kinds'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
-import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
+import { Badge, Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
+import ConfirmButton from '../components/ConfirmButton'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
 import {
   formatHours,
@@ -12,13 +13,18 @@ import {
   formatTimeOfDay,
   monthName,
   monthOf,
+  timeToMin,
   todayStr,
   weekdayName,
   weekdayOf,
 } from '../lib/dates'
+import { uid } from '../lib/defaults'
 import {
   URGENCY_CLS,
+  autoTitle,
   countdownLabel,
+  estimateStudyHours,
+  isExam,
   monthRegistrations,
   nextWeekStart,
   slotsToAsk,
@@ -27,10 +33,8 @@ import {
 } from '../lib/exams'
 import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
-import { autoTitle, estimateStudyHours } from '../lib/exams'
 import { XP } from '../lib/xp'
 import { useT } from '../i18n'
-import type { BaseKey } from '../i18n'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
@@ -40,29 +44,15 @@ const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 export default function Study() {
   const { t } = useT()
   const [tab, setTab] = useState<Tab>('raspored')
-  const tabs: [Tab, BaseKey][] = [
-    ['raspored', 'study.tab.schedule'],
-    ['ispiti', 'study.tab.exams'],
-    ['poeni', 'study.tab.points'],
+  const tabs: [Tab, string][] = [
+    ['raspored', t('study.tab.schedule')],
+    ['ispiti', t('study.tab.exams')],
+    ['poeni', t('study.tab.points')],
   ]
   return (
     <>
       <PageTitle>📚 {t('nav.study')}</PageTitle>
-      <div role="tablist" className="mb-4 flex gap-2">
-        {tabs.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            aria-selected={tab === k}
-            onClick={() => setTab(k)}
-            className={`min-h-10 rounded-xl px-3 text-sm font-medium ${
-              tab === k ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
-            }`}
-          >
-            {t(label)}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} active={tab} activeClass="bg-blue-600" onChange={setTab} />
       {tab === 'raspored' && <Schedule />}
       {tab === 'ispiti' && <Assessments />}
       {tab === 'poeni' && <Points />}
@@ -73,8 +63,13 @@ export default function Study() {
 /* ---------------- Timetable ---------------- */
 function Schedule() {
   const { t } = useT()
-  const { subjects, add, update, remove } = useStore(
-    useShallow((s) => ({ subjects: s.subjects, add: s.add, update: s.update, remove: s.remove })),
+  const { subjects, add, update, removeSubject } = useStore(
+    useShallow((s) => ({
+      subjects: s.subjects,
+      add: s.add,
+      update: s.update,
+      removeSubject: s.removeSubject,
+    })),
   )
   const today = todayStr()
   // "sometimes" is asked on Sunday evening for next week
@@ -149,7 +144,7 @@ function Schedule() {
           key={s.id}
           subject={s}
           onSlotAttendance={setAttendance}
-          onRemove={() => remove('subjects', s.id)}
+          onRemove={() => removeSubject(s.id)}
         />
       ))}
 
@@ -211,20 +206,16 @@ function SubjectCard({
   const [start, setStart] = useState('10:00')
   const [end, setEnd] = useState('12:00')
   const [slotMsg, setSlotMsg] = useState('')
+  const [slotError, setSlotError] = useState('')
   const [removedSlot, setRemovedSlot] = useState<ClassSlot | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(undoTimer.current), [])
 
   function addSlot(e: React.FormEvent) {
     e.preventDefault()
-    const slot: ClassSlot = {
-      id: Math.random().toString(36).slice(2, 9),
-      kind,
-      day,
-      start,
-      end,
-      attendance: 'idem',
-    }
+    if (timeToMin(end) <= timeToMin(start)) return setSlotError(t('act.errEnd'))
+    setSlotError('')
+    const slot: ClassSlot = { id: uid(), kind, day, start, end, attendance: 'idem' }
     if (hasSlot(subject.slots, slot)) {
       setSlotMsg(t('study.slotExists'))
       return
@@ -266,13 +257,12 @@ function SubjectCard({
             {t('study.espbBadge', { n: subject.espb })}
           </span>
         </h2>
-        <Button
-          variant="ghost"
-          onClick={onRemove}
-          aria-label={t('study.deleteSubject', { name: subject.name })}
+        <ConfirmButton
+          label={t('study.deleteSubject', { name: subject.name })}
+          onConfirm={onRemove}
         >
           {t('common.delete')}
-        </Button>
+        </ConfirmButton>
       </div>
       <ul className="mb-3 space-y-1 text-sm">
         {slots.length === 0 && <li className="text-slate-500">{t('study.noSlots')}</li>}
@@ -399,6 +389,11 @@ function SubjectCard({
           {t('study.addSlot')}
         </Button>
       </form>
+      {slotError && (
+        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
+          {slotError}
+        </p>
+      )}
     </Card>
   )
 }
@@ -448,7 +443,7 @@ function Assessments() {
   function submit(e?: React.FormEvent) {
     e?.preventDefault()
     const subject = subjects.find((s) => s.id === f.subjectId) ?? subjects[0]
-    const needsReg = isExamType(f.type)
+    const needsReg = isExam(f)
     // exam and midterm get their name from the app; other kinds are named by the student
     if (!subject || (!needsReg && !f.title.trim())) {
       setTitleError(t('common.required'))
@@ -501,7 +496,7 @@ function Assessments() {
 
       {sortAssessments(assessments, today).map((a) => {
         const u = urgency(a.date, today)
-        const exam = isExamType(a.type)
+        const exam = isExam(a)
         return (
           <Card key={a.id}>
             <div className="flex flex-wrap items-center gap-2">
@@ -651,7 +646,7 @@ function Assessments() {
                   {t('study.addKind')}
                 </Button>
               </div>
-              {!isExamType(f.type) && (
+              {!isExam(f) && (
                 <div className="col-span-2">
                   <Field label={t('study.f.title')} required error={titleError}>
                     <Input

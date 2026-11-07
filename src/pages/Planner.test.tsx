@@ -3,62 +3,131 @@ import userEvent from '@testing-library/user-event'
 import Planner from './Planner'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
-import { addDaysStr, todayStr, weekStartStr } from '../lib/dates'
+import type { Activity, Assessment } from '../types'
+
+const MONDAY_MORNING = new Date(2026, 10, 2, 8, 0)
+const SUNDAY_MORNING = new Date(2026, 10, 1, 8, 0)
+
+const midterm: Omit<Assessment, 'id'> = {
+  subjectId: 's1',
+  type: 'kolokvijum',
+  title: 'Kol 1',
+  date: '2026-11-06',
+  registration: 'prijavljen',
+  maxPoints: 30,
+  points: null,
+  difficulty: 4,
+  studyHours: 8,
+}
+const workoutBeforeMidterm: Omit<Activity, 'id'> = {
+  title: 'Teretana',
+  category: 'workout',
+  date: '2026-11-05',
+  start: '18:00',
+  end: '20:00',
+  recurrence: 'none',
+  status: 'planned',
+  source: 'me',
+}
+
+const studyPlan = () =>
+  useStore.getState().activities.filter((a) => a.category === 'study' && a.suggested)
+const propose = (user: ReturnType<typeof userEvent.setup>) =>
+  user.click(screen.getByRole('button', { name: 'Predloži plan' }))
 
 beforeEach(() => {
-  useStore.setState({ ...emptyData(), hydrated: true })
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(MONDAY_MORNING)
+  const d = emptyData()
+  useStore.setState({
+    ...d,
+    settings: { ...d.settings, workoutsPerWeek: 0 },
+    subjects: [{ id: 's1', name: 'Mata', color: '#000', espb: 6, passMark: 51, slots: [] }],
+    hydrated: true,
+  })
+  useStore.getState().add('assessments', midterm)
+})
+afterEach(() => {
+  vi.useRealTimers()
 })
 
-test('predlog plana se pravi i može da se prihvati', async () => {
+test('predlog učenja se pravi, a posle prihvatanja više nije predlog', async () => {
   const user = userEvent.setup()
   render(<Planner />)
-  await user.click(screen.getByRole('button', { name: 'Predloži plan' }))
-  const suggested = useStore.getState().activities.filter((a) => a.suggested)
-  // sa praznim podacima planer predlaže samo treninge (ili ništa ako je kraj nedelje)
-  expect(suggested.every((a) => a.category === 'workout')).toBe(true)
-  if (suggested.length) {
-    await user.click(screen.getByRole('button', { name: 'Prihvati sve' }))
-    expect(useStore.getState().activities.every((a) => !a.suggested)).toBe(true)
-  }
+  expect(screen.getByText(/Nema predloga/)).toBeInTheDocument()
+  await propose(user)
+  expect(studyPlan().length).toBeGreaterThan(0)
+  expect(screen.getAllByText(/Učenje: Mata/).length).toBeGreaterThan(0)
+  await user.click(screen.getByRole('button', { name: 'Prihvati sve' }))
+  expect(studyPlan()).toHaveLength(0)
+  expect(useStore.getState().activities.length).toBeGreaterThan(0)
+})
+
+test('ponovno pravljenje plana menja stari predlog umesto da ga duplira', async () => {
+  const user = userEvent.setup()
+  render(<Planner />)
+  await propose(user)
+  const first = studyPlan().length
+  await propose(user)
+  expect(studyPlan()).toHaveLength(first)
+})
+
+test('plan posle prihvatanja ne dodaje još učenja za isti kolokvijum', async () => {
+  const user = userEvent.setup()
+  render(<Planner />)
+  await propose(user)
+  await user.click(screen.getByRole('button', { name: 'Prihvati sve' }))
+  await propose(user)
+  expect(studyPlan()).toHaveLength(0)
+})
+
+test('jedan predlog može da se odbaci', async () => {
+  const user = userEvent.setup()
+  render(<Planner />)
+  await propose(user)
+  const before = studyPlan().length
+  await user.click(screen.getAllByRole('button', { name: /^Odbaci Učenje/ })[0])
+  expect(studyPlan()).toHaveLength(before - 1)
+})
+
+test('veče pred kolokvijum: nudi skraćenje treninga i primenjuje ga', async () => {
+  const user = userEvent.setup()
+  const id = useStore.getState().add('activities', workoutBeforeMidterm)
+  render(<Planner />)
+  await propose(user)
+  await user.click(screen.getByRole('button', { name: 'Skrati trening do 18:45' }))
+  expect(useStore.getState().activities.find((a) => a.id === id)?.end).toBe('18:45')
+  expect(screen.queryByRole('button', { name: /Skrati trening/ })).not.toBeInTheDocument()
+})
+
+test('u nedelju se planira cela sledeća nedelja', async () => {
+  vi.setSystemTime(SUNDAY_MORNING)
+  const user = userEvent.setup()
+  render(<Planner />)
+  await propose(user)
+  const days = studyPlan().map((a) => a.date)
+  expect(days.length).toBeGreaterThan(0)
+  expect(days.every((d) => d >= '2026-11-02')).toBe(true)
 })
 
 test('planer uvek odgovori: kad nema šta da se doda, kaže da je sve isplanirano', async () => {
   const user = userEvent.setup()
-  useStore.getState().setSettings({ workoutsPerWeek: 0 })
+  useStore.setState({ assessments: [] })
   render(<Planner />)
-  await user.click(screen.getByRole('button', { name: 'Predloži plan' }))
+  await propose(user)
   expect(screen.getByRole('status')).toHaveTextContent('Sve je već isplanirano ✅')
 })
 
-test('planer javlja odakle počinje učenje za obavezu, za izabranu nedelju', async () => {
+test('planer javlja odakle počinje učenje za obavezu, a za sledeću nedelju nema šta da doda', async () => {
   const user = userEvent.setup()
-  const monday = weekStartStr(addDaysStr(todayStr(), 7))
-  const s = useStore.getState()
-  s.setSettings({ workoutsPerWeek: 0, studyHoursPerDay: 4 })
-  const subjectId = s.add('subjects', {
-    name: 'Matematika 1',
-    color: '#2563eb',
-    espb: 8,
-    passMark: 51,
-    slots: [],
-  })
-  s.add('assessments', {
-    subjectId,
-    type: 'kolokvijum',
-    title: 'Kolokvijum 1 · Matematika 1',
-    date: addDaysStr(monday, 4),
-    registration: 'ne-treba',
-    maxPoints: 30,
-    points: null,
-    difficulty: 3,
-  })
   render(<Planner />)
-  await user.click(screen.getByRole('button', { name: 'Sledeća nedelja' }))
-  await user.click(screen.getByRole('button', { name: 'Predloži plan' }))
+  await propose(user)
   expect(screen.getByRole('status')).toHaveTextContent(
-    /Učenje za Matematika 1 počinje od .* \(kolokvijum /,
+    'Učenje za Mata počinje od pon 2. 11. (kolokvijum 6. 11.)',
   )
-  expect(useStore.getState().activities.some((a) => a.suggested && a.category === 'study')).toBe(
-    true,
-  )
+  await user.click(screen.getByRole('button', { name: 'Sledeća nedelja' }))
+  await propose(user)
+  expect(screen.getByRole('status')).toHaveTextContent('Sve je već isplanirano ✅')
+  // the suggestions of this week stay when next week is planned
+  expect(studyPlan().length).toBeGreaterThan(0)
 })

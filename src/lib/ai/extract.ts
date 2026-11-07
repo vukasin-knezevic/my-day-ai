@@ -3,7 +3,8 @@ import { t } from '../../i18n'
 import { SCHEMAS, type AiKind, type AiResult } from './schemas'
 
 export type Extracted =
-  | { ok: true; value: unknown }
+  /** `values` are all JSON objects found, best guess first */
+  | { ok: true; values: unknown[] }
   | { ok: false; reason: 'empty' | 'none' | 'invalid'; detail?: string }
 
 /** Finds the first balanced {...} starting at `start`, ignoring braces inside strings. */
@@ -22,36 +23,46 @@ function balanced(text: string, start: number): string | null {
   return null
 }
 
+const fencedBlocks = (text: string) =>
+  [...text.matchAll(/```(?:json|JSON)?\s*\n?([\s\S]*?)```/g)].map((m) => m[1].trim())
+
+function bareObjects(text: string): string[] {
+  const found: string[] = []
+  for (let i = text.indexOf('{'); i !== -1; i = text.indexOf('{', i + 1)) {
+    const b = balanced(text, i)
+    if (b) {
+      found.push(b)
+      i += b.length - 1
+    }
+  }
+  return found
+}
+
 /**
- * Finds a JSON object inside a chat answer full of other text.
- * Prefers fenced code blocks (last valid one wins, because the final answer comes last),
- * then falls back to scanning for balanced braces.
+ * Finds JSON objects inside a chat answer full of other text.
+ * Fenced code blocks come first and later ones beat earlier ones, because the final answer
+ * comes last. Only an answer without a usable code block is scanned for bare braces.
  */
 export function extractJson(text: string): Extracted {
   if (!text.trim()) return { ok: false, reason: 'empty' }
   let lastError = ''
-  const candidates: string[] = []
-  for (const m of text.matchAll(/```(?:json|JSON)?\s*\n?([\s\S]*?)```/g))
-    candidates.push(m[1].trim())
-  for (let i = text.indexOf('{'); i !== -1; i = text.indexOf('{', i + 1)) {
-    const b = balanced(text, i)
-    if (b) {
-      candidates.push(b)
-      i += b.length - 1
-    }
-  }
-  if (!candidates.length) return { ok: false, reason: 'none' }
-  const parsed: unknown[] = []
-  for (const c of candidates) {
-    try {
-      const v = JSON.parse(c)
-      if (v && typeof v === 'object') parsed.push(v)
-    } catch (e) {
-      lastError = (e as Error).message
-    }
-  }
-  if (!parsed.length) return { ok: false, reason: 'invalid', detail: lastError }
-  return { ok: true, value: parsed[parsed.length - 1] }
+  const parse = (candidates: string[]) =>
+    candidates.flatMap((c) => {
+      try {
+        const v: unknown = JSON.parse(c)
+        return v && typeof v === 'object' ? [v] : []
+      } catch (e) {
+        lastError = (e as Error).message
+        return []
+      }
+    })
+  const fenced = fencedBlocks(text)
+  const bare = bareObjects(text)
+  if (!fenced.length && !bare.length) return { ok: false, reason: 'none' }
+  const values = parse(fenced)
+  const usable = values.length ? values : parse(bare)
+  if (!usable.length) return { ok: false, reason: 'invalid', detail: lastError }
+  return { ok: true, values: usable.reverse() }
 }
 
 export type ParseResult =
@@ -75,11 +86,13 @@ export function parseAiResponse(kind: AiKind, text: string): ParseResult {
       message: t('aiparse.invalid', { detail: ex.detail ?? '' }),
     }
   }
-  const r = SCHEMAS[kind].safeParse(ex.value)
-  if (!r.success)
-    return {
-      ok: false,
-      message: t('aiparse.schema', { detail: issues(r.error) }),
-    }
-  return { ok: true, kind, data: r.data as AiResult }
+  // the first object that really is the answer wins: drafts and examples around it do not matter
+  const results = ex.values.map((v) => SCHEMAS[kind].safeParse(v))
+  const valid = results.find((r) => r.success)
+  if (valid) return { ok: true, kind, data: valid.data as AiResult }
+  const failed = results.find((r) => !r.success)
+  return {
+    ok: false,
+    message: t('aiparse.schema', { detail: failed ? issues(failed.error) : '' }),
+  }
 }

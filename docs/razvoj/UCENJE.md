@@ -4,30 +4,33 @@
 
 **JavaScript** je jezik pregledača. **TypeScript** je JavaScript sa tipovima: kao da u Pythonu pišeš `def f(x: int) -> str`, ali ovde tipove proverava alat (`npm run typecheck`) pre pokretanja i greška se vidi odmah.
 
-| Python | Ovaj projekat (TypeScript) |
-|---|---|
+| Python                                | Ovaj projekat (TypeScript)                        |
+| ------------------------------------- | ------------------------------------------------- |
 | `@dataclass class Subject: name: str` | `interface Subject { name: string }` u `types.ts` |
-| `list[dict]` | `Subject[]` (niz objekata) |
-| `requirements.txt` | `package.json` |
-| `pip install x` | `npm install x` |
-| `pytest` | Vitest (`npm test`) |
-| rečnik `{"a": 1}` | objekat `{ a: 1 }` |
-| `None` | `null` / `undefined` |
-| list comprehension | `.map()`, `.filter()` |
-| `f"Zdravo {ime}"` | `` `Zdravo ${ime}` `` |
+| `list[dict]`                          | `Subject[]` (niz objekata)                        |
+| `requirements.txt`                    | `package.json`                                    |
+| `pip install x`                       | `npm install x`                                   |
+| `pytest`                              | Vitest (`npm test`)                               |
+| rečnik `{"a": 1}`                     | objekat `{ a: 1 }`                                |
+| `None`                                | `null` / `undefined`                              |
+| list comprehension                    | `.map()`, `.filter()`                             |
+| `f"Zdravo {ime}"`                     | `` `Zdravo ${ime}` ``                             |
 
 **React** gradi ekran od **komponenti**. Komponenta je obična funkcija koja vraća „opis ekrana" (JSX, nalik HTML-u):
 
 ```tsx
-function Pozdrav({ ime }: { ime: string }) {      // kao def pozdrav(ime): ...
+function Pozdrav({ ime }: { ime: string }) {
+  // kao def pozdrav(ime): ...
   return <h1>Zdravo, {ime}!</h1>
 }
 ```
+
 Kad se podaci promene, React sam ponovo pozove funkciju i osveži ekran. Podaci koji se menjaju zovu se **stanje** (`useState`, a u ovom projektu deljeno stanje je u **Zustand store-u**).
 
 Ključna ideja projekta: **logika je odvojena od izgleda**. Pametni deo (parser, planer, ocene, XP) su obične funkcije u `src/lib/` koje bi radile i u Pythonu; React ekrani ih samo pozovu i prikažu rezultat.
 
 ## 2. Redosled čitanja fajlova
+
 1. `src/types.ts` — svi pojmovi aplikacije (Subject, Assessment, Activity…). Počni ovde.
 2. `src/lib/dates.ts` — pomoćne funkcije za datume (kratko).
 3. `src/lib/quickParse.ts` + `quickParse.test.ts` — parser rečenice u aktivnost; testovi pokazuju šta radi.
@@ -53,7 +56,7 @@ Tipovi hvataju greške pre pokretanja (npr. pogrešno ime polja) i služe kao do
 U `src/lib/` kao čiste funkcije (isti ulaz daje isti izlaz, bez pristupa pregledaču). Tako se lako testiraju (preko 200 testova) i ne zavise od izgleda.
 
 **4. Kako radi planer?**
-Za svaki dan izračuna slobodne intervale (od buđenja do spavanja minus zauzeto). Za svaki kolokvijum razdeli potrebne sate na dane pre njega: teži ispit počinje ranije. Blokovi su do 2 h sa pauzom, poštuje se dnevni limit, bira se lakši dan, trening se skraćuje dan pred ispit, a igra je nagrada. Rezultat su *predlozi* koje korisnik prihvata.
+Za svaki dan izračuna slobodne intervale (od buđenja do spavanja minus zauzeto). Za svaki kolokvijum razdeli potrebne sate na dane pre njega: teži ispit počinje ranije. Blokovi su do 2 h sa pauzom, poštuje se dnevni limit, bira se lakši dan, trening se skraćuje dan pred ispit, a igra je nagrada. Rezultat su _predlozi_ koje korisnik prihvata.
 
 **5. Kako si rešio da AI ne pokvari podatke?**
 AI nikad direktno ne piše u store. Odgovor prođe `zod` šemu (provera tipova u vreme izvršavanja); tek ispravan JSON postaje predlog sa isprekidanom ivicom, koji korisnik prihvata. Ako je JSON loš, korisnik dobija poruku šta da zatraži od Claude-a.
@@ -74,6 +77,7 @@ Tri nivoa: unit testovi čiste logike (Vitest, pokrivenost `lib/` oko 93%), komp
 Nema servera, pa notifikacije na telefonu nisu pouzdane (zato `.ics` izvoz); nema sinhronizacije između uređaja; san sa pametnog sata se unosi ručno jer nisam mogao da potvrdim format izvoza (vidi `docs/SMARTWATCH.md`). Dalje: sinhronizacija, Google Calendar, push notifikacije preko servera, pametniji planer. I da sam deo koda pisao uz Claude Code, ali da razumem arhitekturu i mogu da objasnim svaku odluku.
 
 ## 4. Kako da učiš iz ovog projekta
+
 - Promeni jedno pravilo u `planner.ts` (npr. `MAX_STUDY_BLOCK`), pokreni `npm test` i vidi koji testovi pucaju i zašto.
 - Dodaj jednu rečenicu u `quickParse.test.ts` koja ne radi, pa popravi parser dok ne prođe.
 - Pročitaj `DNEVNIK.md` redom: za svaku fazu piše šta je napravljeno i šta si naučio.
@@ -81,19 +85,22 @@ Nema servera, pa notifikacije na telefonu nisu pouzdane (zato `.ics` izvoz); nem
 ## 5. Novo u verziji 1.1: tri ideje koje vredi razumeti
 
 ### Šta je i18n (internacionalizacija)
+
 **i18n** znači da aplikacija ne drži tekst u kodu, nego u fajlovima prevoda. U Pythonu bi to bio rečnik po jeziku:
 
 ```python
 PREVODI = {"en": {"save": "Save"}, "sr-Latn": {"save": "Sačuvaj"}}
 def t(kljuc): return PREVODI[jezik][kljuc]
 ```
+
 Ovde je isto: `t('common.add')` vrati „Dodaj" ili „Add", zavisno od izabranog jezika. Fajlovi su u `src/i18n/locales/`. Novi jezik = novi fajl, bez menjanja koda, jer aplikacija sama pronađe sve fajlove u toj fascikli. Test `i18n.test.ts` proverava da svaki jezik ima **iste ključeve** i iste `{parametre}`, kao `assert set(en) == set(sr)` u pytest-u. Datumi i brojevi se ne prevode ručno nego ih formatiraju `date-fns` locale i `Intl` (ugrađeno u pregledač). Množina („1 dan, 2 dana, 5 dana") ima tri oblika u srpskom, pa ključevi imaju nastavke `.one`, `.few`, `.other`.
 
 ### Šta je migracija podataka
+
 Kad promeniš oblik sačuvanih podataka (npr. polje `ps5EarnedMin` postane `rewardEarnedMin`), ljudi koji već imaju stare podatke ne smeju da ih izgube. **Migracija** je funkcija koja stari oblik pretvori u novi. U projektu je to `migrateData()` u `lib/defaults.ts`: čista funkcija koja premesti polja i može da se pokrene više puta bez štete. Pokreće se pri učitavanju iz IndexedDB-a i pri uvozu JSON-a. Slično je Django migracijama ili `ALTER TABLE` u bazama, samo što su ovde podaci u pregledaču.
 
 ### Kako radi zajednička `NumberInput` komponenta
+
 Običan `<input type="number">` u Reactu pravi grešku: kad obrišeš broj, kod ga pretvori u `0`, pa kad ukucaš `3` dobiješ `03`. `NumberInput` zato **čuva ono što kucaš kao tekst** (`"3"`, ili prazno), a roditelju uvek šalje ispravan broj ograničen na `min`/`max`. Polje sme da bude prazno dok kucaš; kad ga napustiš, tekst se uskladi sa sačuvanom vrednošću. Zato popravka važi svuda gde se komponenta koristi: jedna komponenta umesto petnaest kopija iste greške. Za polja koja smeju da budu prazna (npr. „poeni" koji još nisu uneseni) postoji `onEmpty`, koji sačuva `null`.
 
 U istom duhu je `KeyScope`: mala komponenta koja daje `Enter` (potvrdi) i `Esc` (otkaži) jednom koraku ili dijalogu, pa se tastatura ponaša isto svuda.
-

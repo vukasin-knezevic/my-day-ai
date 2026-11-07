@@ -24,7 +24,12 @@ const messages = {
   'common.add': 'Dodaj',
   'common.cancel': 'Otkaži',
   'common.giveUp': 'Odustani',
+  'err.title': 'Nešto je pošlo naopako',
+  'err.body':
+    'Tvoji podaci su i dalje sačuvani na ovom uređaju. Probaj da učitaš aplikaciju ponovo.',
+  'err.reload': 'Učitaj ponovo',
   'common.delete': 'Obriši',
+  'common.sure': 'Sigurno?',
   'common.when.none': '—',
   'when.today': 'danas',
   'when.tomorrow': 'sutra',
@@ -214,6 +219,7 @@ const messages = {
   'dataio.structure': 'JSON nema očekivanu strukturu.',
   'dataio.unknown': 'Ovo ne liči na izvoz iz My Day AI (nema poznatih polja).',
   'dataio.notList': 'Polje „{key}" mora biti lista.',
+  'dataio.badItem': 'Stavka {n} u „{key}" je oštećena, pa uvoz nije bezbedan.',
   'dataio.badSettings': 'Polje „settings" nije ispravno.',
   'set.title': '⚙️ Podešavanja',
   'set.appearance': 'Izgled',
@@ -248,11 +254,14 @@ const messages = {
   'set.version': 'My Day AI, verzija {v}',
   'ios.title': 'Instaliraj na iPhone',
   'ios.body': 'Dodaj na početni ekran: Deli ⬆️ → Dodaj na početni ekran',
-  'set.notifIos': 'Na iPhone-u notifikacije rade samo kad je aplikacija dodata na početni ekran (iOS 16.4 ili novije). Otvori aplikaciju u Safariju, dodirni Deli ⬆️ → Dodaj na početni ekran, pa je otvori sa nove ikonice i tu uključi notifikacije.',
-  'set.notifUnsupported': 'Ovaj pregledač ne može da prikaže notifikacije. Za podsetnike koristi „Dodaj u kalendar“ ispod.',
+  'set.notifIos':
+    'Na iPhone-u notifikacije rade samo kad je aplikacija dodata na početni ekran (iOS 16.4 ili novije). Otvori aplikaciju u Safariju, dodirni Deli ⬆️ → Dodaj na početni ekran, pa je otvori sa nove ikonice i tu uključi notifikacije.',
+  'set.notifUnsupported':
+    'Ovaj pregledač ne može da prikaže notifikacije. Za podsetnike koristi „Dodaj u kalendar“ ispod.',
   'set.updates': '🔄 Ažuriranje',
   'set.autoUpdate': 'Automatsko ažuriranje',
-  'set.autoUpdateNote': 'Uključeno: nova verzija se preuzme u pozadini i uključi kad izađeš iz aplikacije. Isključeno: ti biraš kad ćeš da restartuješ. U oba slučaja vidiš poruku „Novi update".',
+  'set.autoUpdateNote':
+    'Uključeno: nova verzija se preuzme u pozadini i uključi kad izađeš iz aplikacije. Isključeno: ti biraš kad ćeš da restartuješ. U oba slučaja vidiš poruku „Novi update".',
   'set.reminders': '🔔 Podsetnici',
   'set.notif': 'Notifikacije pregledača (pre predavanja, rokova, prijava i spavanja)',
   'set.notifDenied': 'Pregledač nije dozvolio notifikacije (proveri podešavanja sajta).',
@@ -272,7 +281,7 @@ const messages = {
   'set.apiKey': 'Anthropic API ključ',
   'set.keyWarn':
     '⚠️ Ključ se čuva samo na ovom uređaju, ali je vidljiv u pregledaču (alati za programere). Nikome ga ne deli, ne stavljaj ga na tuđ računar i postavi mesečni limit potrošnje u Anthropic konzoli.',
-  'set.modelFast': 'Brži model (unos, uvoz)',
+  'set.modelFast': 'Brži model (unos, uvoz, čet)',
   'set.modelStrong': 'Jači model (planiranje)',
   'set.usage':
     'Potrošnja ovog meseca ({month}): {calls} poziva, {input} ulaznih i {output} izlaznih tokena{cost}.',
@@ -416,8 +425,6 @@ const messages = {
   'prompt.dataHeader': '--- MOJI PODACI ---',
   'prompt.schemaHeader': 'ŠEMA ODGOVORA (JSON, u jednom bloku koda):',
   'prompt.jsonAtEnd': 'Na kraju vrati JSON u bloku koda po šemi iznad.',
-  'prompt.chat.student': 'Student',
-  'prompt.chat.assistant': 'Asistent',
   'prompt.chat.instruction': 'Odgovori kratko (do 6 rečenica), konkretno, na srpskom.',
   'prompt.chat.question': 'PITANJE',
   'schema.plan-dana':
@@ -555,6 +562,7 @@ const messages = {
   'wo.saved': '💪 Trening sačuvan!',
   'wo.record': '🎉 Novi rekord: {list}',
   'wo.recordItem': '{name} {kg} kg (bilo {before})',
+  'wo.needsExercise': 'Dodaj bar jednu vežbu da bi sačuvao trening.',
   'wo.tplNeedsExercise': 'Dodaj bar jednu vežbu da bi sačuvao šablon.',
   'wo.tplSaved': '📌 Šablon „{name}" sačuvan.',
   'wo.tplDefaultName': 'Šablon',

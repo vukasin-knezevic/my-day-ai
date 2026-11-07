@@ -54,10 +54,6 @@ const refDay = (d: Weekday) => fromDateStr(`2024-01-0${d}`)
 export function weekdayName(d: Weekday): string {
   return capitalize(format(refDay(d), 'EEEE', { locale: locale() }))
 }
-/** Short weekday name ("Pet" / "Fri"). */
-export function weekdayShort(d: Weekday): string {
-  return capitalize(format(refDay(d), 'EEE', { locale: locale() }))
-}
 /** Month name (1-12) in the selected language, capitalised. */
 export function monthName(month: number): string {
   return capitalize(format(new Date(2024, month - 1, 1), 'LLLL', { locale: locale() }))

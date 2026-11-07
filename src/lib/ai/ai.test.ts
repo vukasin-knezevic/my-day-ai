@@ -2,7 +2,7 @@ import { extractJson, parseAiResponse } from './extract'
 import { buildContext, buildPrompt, toneHint, manualQuestions, systemPrompt } from './prompt'
 import { AiError, API_URL, callClaude, DEFAULT_MAX_TOKENS } from './client'
 import { addUsage, estimateCost } from './usage'
-import { modelFor, runApi } from './run'
+import { modelFor, runApi, runChat } from './run'
 import { applyAiResult } from './apply'
 import { emptyData } from '../defaults'
 import { makeDemoData } from '../demo'
@@ -22,15 +22,23 @@ describe('extractJson', () => {
     const r = extractJson(
       `Evo plana! 🎉 Ovo je dosta priče {sa vitičastim zagradama}.\n${fence(goodPlan)}\nSrećno!`,
     )
-    expect(r).toEqual({ ok: true, value: goodPlan })
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
   })
   it('works without code fence (bare JSON in text)', () => {
     const r = extractJson(`Evo: ${JSON.stringify(goodPlan)} gotovo`)
-    expect(r).toEqual({ ok: true, value: goodPlan })
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
   })
   it('last valid block wins (draft first, final later)', () => {
     const r = extractJson(`${fence({ a: 1 })}\nispravka:\n${fence({ a: 2 })}`)
-    expect(r).toEqual({ ok: true, value: { a: 2 } })
+    expect(r).toEqual({ ok: true, values: [{ a: 2 }, { a: 1 }] })
+  })
+  it('a code block beats bare braces that come after it', () => {
+    const r = extractJson(`${fence(goodPlan)}\nFormat je {"a":1}, srećno!`)
+    expect(r).toEqual({ ok: true, values: [goodPlan] })
+  })
+  it('a broken code block falls back to bare JSON in the text', () => {
+    const r = extractJson('```json\n{oops}\n```\nIspravljeno: {"a":1}')
+    expect(r).toEqual({ ok: true, values: [{ a: 1 }] })
   })
   it('braces inside strings do not break balancing', () => {
     const r = extractJson('{"summary": "tekst sa } u sredini", "activities": []}')
@@ -68,6 +76,20 @@ describe('parseAiResponse (shared by API and manual mode)', () => {
       }),
     )
     expect(wrong).toMatchObject({ ok: false, message: expect.stringContaining('ne prati šemu') })
+  })
+  it('a draft or an example near the answer does not hide the valid object', () => {
+    const later = `${fence(goodPlan)}\nGotovo. Primer drugog formata:\n${fence({ a: 1 })}`
+    expect(parseAiResponse('plan-dana', later)).toMatchObject({ ok: true, data: goodPlan })
+  })
+  it('accepts reps written as a number', () => {
+    const plan = (reps: unknown) => ({
+      name: 'PPL',
+      days: [{ day: 1, title: 'Push', exercises: [{ name: 'Bench', sets: 4, reps }] }],
+    })
+    const r = parseAiResponse('trening', fence(plan(8)))
+    expect(r).toMatchObject({ ok: true })
+    if (r.ok) expect(r.data).toEqual(plan('8'))
+    expect(parseAiResponse('trening', fence(plan(null))).ok).toBe(false)
   })
   it('validates other kinds', () => {
     expect(parseAiResponse('rezime', fence({ summary: 'ok', tips: ['a', 'b', 'c'] })).ok).toBe(true)
@@ -119,7 +141,7 @@ describe('prompt generation', () => {
   const data: AppData = { ...emptyData(), ...makeDemoData(TODAY) } as AppData
   data.settings = { ...data.settings, name: 'Vuk', wakeTime: '09:00', bedTime: '01:00' }
   it('includes my data, schema, tone rules and the ask-questions-first request', () => {
-    const { manualText } = buildPrompt('plan-nedelje', data, TODAY, { manual: true })
+    const { manualText } = buildPrompt('plan-nedelje', data, TODAY)
     expect(manualText).toContain('Predmet 1 (primer)')
     expect(manualText).toContain('"activities"')
     expect(manualText).toContain(systemPrompt().slice(0, 40))
@@ -131,11 +153,27 @@ describe('prompt generation', () => {
     expect(user).not.toContain(manualQuestions())
   })
   it('import prompt carries the pasted text', () => {
-    const { user } = buildPrompt('uvoz', data, TODAY, {
-      manual: false,
-      text: 'MAT1 kolokvijum 20.11.',
-    })
+    const { user } = buildPrompt('uvoz', data, TODAY, 'MAT1 kolokvijum 20.11.')
     expect(user).toContain('MAT1 kolokvijum 20.11.')
+  })
+  it('tone: only recent skips count, old ones are forgiven', () => {
+    const skip = (date: string, i: number) => ({
+      id: `s${i}`,
+      title: 'x',
+      category: 'habits' as const,
+      date,
+      start: '10:00',
+      end: '11:00',
+      recurrence: 'none' as const,
+      status: 'skipped' as const,
+      source: 'me' as const,
+    })
+    const old = emptyData()
+    old.activities = ['2026-01-01', '2026-01-02', '2026-01-03'].map(skip)
+    expect(toneHint(old, TODAY)).toBe('friendly')
+    const recent = emptyData()
+    recent.activities = ['2026-11-04', '2026-11-05', '2026-11-06'].map(skip)
+    expect(toneHint(recent, TODAY)).toBe('strict')
   })
   it('never invents data: empty app gives an empty-ish context', () => {
     expect(buildContext(emptyData(), TODAY)).toContain('nema unetih')
@@ -172,7 +210,7 @@ describe('callClaude (mocked fetch)', () => {
       apiKey: 'sk-test',
       model: 'm',
       system: 's',
-      user: 'u',
+      messages: [{ role: 'user', content: 'u' }],
       fetchImpl: f,
     })
     expect(r).toEqual({ text: 'zdravo', inputTokens: 100, outputTokens: 50 })
@@ -190,13 +228,13 @@ describe('callClaude (mocked fetch)', () => {
   it('no key -> AiError no-key, no network call', async () => {
     const f = vi.fn()
     await expect(
-      callClaude({ apiKey: ' ', model: 'm', system: '', user: '', fetchImpl: f }),
+      callClaude({ apiKey: ' ', model: 'm', system: '', messages: [], fetchImpl: f }),
     ).rejects.toMatchObject({ kind: 'no-key' })
     expect(f).not.toHaveBeenCalled()
   })
   it('offline, 401, 429, 500', async () => {
     const run = (f: typeof fetch) =>
-      callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f })
+      callClaude({ apiKey: 'k', model: 'm', system: '', messages: [], fetchImpl: f })
     await expect(run(vi.fn().mockRejectedValue(new TypeError('fail')))).rejects.toMatchObject({
       kind: 'offline',
     })
@@ -214,7 +252,7 @@ describe('callClaude (mocked fetch)', () => {
   it('timeout has its own message, not offline', async () => {
     const f = vi.fn().mockRejectedValue(new DOMException('slow', 'TimeoutError'))
     await expect(
-      callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f }),
+      callClaude({ apiKey: 'k', model: 'm', system: '', messages: [], fetchImpl: f }),
     ).rejects.toMatchObject({ kind: 'timeout' })
   })
   it('a cut-off answer is reported instead of being parsed as broken JSON', async () => {
@@ -224,15 +262,33 @@ describe('callClaude (mocked fetch)', () => {
       json: async () => ({ content: [{ type: 'text', text: '{"a":' }], stop_reason: 'max_tokens' }),
     })
     await expect(
-      callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f }),
+      callClaude({ apiKey: 'k', model: 'm', system: '', messages: [], fetchImpl: f }),
     ).rejects.toMatchObject({ kind: 'truncated' })
   })
   it('leaves room for thinking in max_tokens and sets a timeout', async () => {
     const f = vi.fn().mockResolvedValue(okResponse('x'))
-    await callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f })
+    await callClaude({ apiKey: 'k', model: 'm', system: '', messages: [], fetchImpl: f })
     const init = f.mock.calls[0][1]
     expect(JSON.parse(init.body).max_tokens).toBe(DEFAULT_MAX_TOKENS)
     expect(init.signal).toBeInstanceOf(AbortSignal)
+  })
+})
+
+describe('runChat', () => {
+  const data = emptyData()
+  data.settings.apiKey = 'sk-test'
+  it('sends the conversation as real messages, with my data in the system prompt', async () => {
+    const f = vi.fn().mockResolvedValue(okResponse('Uči matu.'))
+    const history = [
+      { role: 'user' as const, content: 'Zdravo' },
+      { role: 'assistant' as const, content: 'Ćao!' },
+    ]
+    const { reply, model } = await runChat(data, TODAY, history, 'Šta danas?', f)
+    expect(reply.text).toBe('Uči matu.')
+    expect(model).toBe(data.settings.modelFast)
+    const body = JSON.parse(f.mock.calls[0][1].body)
+    expect(body.messages).toEqual([...history, { role: 'user', content: 'Šta danas?' }])
+    expect(body.system).toContain(TODAY)
   })
 })
 
@@ -314,6 +370,19 @@ describe('applyAiResult', () => {
     applyAiResult('uvoz', r.data, st)
     expect(add).toHaveBeenCalledTimes(1)
     expect(add).toHaveBeenCalledWith('assessments', expect.objectContaining({ title: 'K2' }))
+  })
+  it('the same exam listed twice in one import is added once', () => {
+    const one = { subject: 'Novi', type: 'kolokvijum', title: 'K1', date: '2026-11-20' }
+    const r = parseAiResponse('uvoz', fence({ assessments: [one, one] }))
+    if (!r.ok) throw new Error('bad')
+    applyAiResult('uvoz', r.data, {
+      add,
+      patch,
+      subjects: [],
+      assessments: [],
+      workoutPlan: null,
+    } as never)
+    expect(add.mock.calls.map((c) => (c as unknown[])[0])).toEqual(['subjects', 'assessments'])
   })
   it('rejects impossible plans before they reach the data', () => {
     const plan = (date: string, end: string) => ({

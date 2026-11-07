@@ -48,7 +48,6 @@ export function applyParsed(p: Parsed, st: Actions): string {
     case 'sleep': {
       const iso = `${p.date}T${p.time}:00`
       if (p.event === 'bed') {
-        // a bedtime of 00:00–05:59 entered "today" belongs to the night that just started
         st.add('sleep', {
           date: p.date,
           bedtime: iso,

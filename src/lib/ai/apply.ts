@@ -1,8 +1,8 @@
 import type { Store } from '../../store'
 import type { Assessment } from '../../types'
 import { t } from '../../i18n'
+import { isExam } from '../exams'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
-import { isExamType } from '../kinds'
 
 type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'>
 
@@ -21,30 +21,23 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
   }
   if (kind === 'uvoz') {
     const imp = data as ImportResult
-    let subjects = st.subjects
+    const subjects = [...st.subjects]
+    const known: Pick<Assessment, 'subjectId' | 'date' | 'title'>[] = [...st.assessments]
+    const sameText = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
     let n = 0
     for (const a of imp.assessments) {
-      let sub = subjects.find((s) => s.name.toLowerCase() === a.subject.toLowerCase())
+      let sub = subjects.find((s) => sameText(s.name, a.subject))
       if (!sub) {
-        const id = st.add('subjects', {
-          name: a.subject,
-          color: '#2563eb',
-          espb: 6,
-          passMark: 51,
-          slots: [],
-        })
-        sub = { id, name: a.subject, color: '#2563eb', espb: 6, passMark: 51, slots: [] }
-        subjects = [...subjects, sub]
+        const fresh = { name: a.subject, color: '#2563eb', espb: 6, passMark: 51, slots: [] }
+        sub = { ...fresh, id: st.add('subjects', fresh) }
+        subjects.push(sub)
       }
       const subjectId = sub.id
-      const duplicate = st.assessments.some(
-        (x) =>
-          x.subjectId === subjectId &&
-          x.date === a.date &&
-          x.title.toLowerCase() === a.title.toLowerCase(),
+      const duplicate = known.some(
+        (x) => x.subjectId === subjectId && x.date === a.date && sameText(x.title, a.title),
       )
       if (duplicate) continue
-      const exam = isExamType(a.type)
+      known.push({ subjectId, date: a.date, title: a.title })
       const item: Omit<Assessment, 'id'> = {
         subjectId: sub.id,
         type: a.type,
@@ -52,7 +45,7 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
         date: a.date,
         time: a.time,
         registrationDeadline: a.registrationDeadline,
-        registration: exam ? 'nije-prijavljen' : 'ne-treba',
+        registration: isExam(a) ? 'nije-prijavljen' : 'ne-treba',
         maxPoints: 30,
         points: null,
         difficulty: 3,

@@ -1,4 +1,4 @@
-﻿import type { AppData, Settings } from '../types'
+import type { AppData, Settings } from '../types'
 import { messageIn, resolveLanguage } from '../i18n'
 
 export const DEFAULT_SETTINGS: Settings = {

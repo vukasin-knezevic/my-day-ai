@@ -43,6 +43,37 @@ export function Button({ variant = 'primary', className = '', ...p }: BtnProps) 
   )
 }
 
+/** Tab bar of a page; `activeClass` carries the color of that part of the app. */
+export function Tabs<T extends string>({
+  tabs,
+  active,
+  activeClass,
+  onChange,
+}: {
+  tabs: [T, string][]
+  active: T
+  activeClass: string
+  onChange: (tab: T) => void
+}) {
+  return (
+    <div role="tablist" className="mb-4 flex gap-2">
+      {tabs.map(([key, label]) => (
+        <button
+          key={key}
+          role="tab"
+          aria-selected={active === key}
+          onClick={() => onChange(key)}
+          className={`min-h-10 rounded-xl px-3 text-sm font-medium ${
+            active === key ? `${activeClass} text-white` : 'bg-slate-100 dark:bg-slate-800'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 /**
  * A labelled control.
  * - `required`: a discreet * after the name; the field looks like any other until a final action fails.

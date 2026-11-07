@@ -7,11 +7,15 @@ export const API_URL = 'https://api.anthropic.com/v1/messages'
 /** Version header value from the official API overview (docs, Nov 2026). */
 export const API_VERSION = '2026-10-21'
 
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
 export interface ClaudeCall {
   apiKey: string
   model: string
   system: string
-  user: string
+  messages: ChatMessage[]
   maxTokens?: number
   fetchImpl?: typeof fetch
 }
@@ -66,7 +70,7 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
         model: c.model,
         max_tokens: c.maxTokens ?? DEFAULT_MAX_TOKENS,
         system: c.system,
-        messages: [{ role: 'user', content: c.user }],
+        messages: c.messages,
       }),
     })
   } catch (e) {

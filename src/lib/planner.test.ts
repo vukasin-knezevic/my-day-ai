@@ -92,6 +92,32 @@ describe('planWeek: study', () => {
     const total = study(planWeek(input())).reduce((n, s) => n + mins(s), 0)
     expect(total).toBe(8 * 60)
   })
+  it.each([
+    [5, 4],
+    [5, 1],
+    [5, 6],
+    [3, 2],
+    [3, 6],
+    [2, 1],
+    [1, 6],
+    [4, 0.5],
+  ])('difficulty %i, %f h: every requested hour lands in the plan', (difficulty, studyHours) => {
+    const far = exam({ date: '2026-11-15', difficulty: difficulty as 1, studyHours })
+    const r = planWeek(input({ days: 14, assessments: [far] }))
+    expect(study(r).reduce((n, s) => n + mins(s), 0)).toBe(studyHours * 60)
+  })
+  it('a very small request still gets one real block', () => {
+    const r = planWeek(input({ assessments: [exam({ studyHours: 0.25 })] }))
+    expect(study(r).map(mins)).toEqual([30])
+  })
+  it('no study requested -> no block', () => {
+    expect(study(planWeek(input({ assessments: [exam({ studyHours: 0 })] })))).toHaveLength(0)
+  })
+  it('does not warn about an exam after the planned days: the next plan continues', () => {
+    const next = exam({ date: '2026-11-20', difficulty: 5, studyHours: 100 })
+    const r = planWeek(input({ days: 7, assessments: [next] }))
+    expect(r.notes.some((n) => n.includes('ne stiže'))).toBe(false)
+  })
   it('spreads study over multiple days', () => {
     const days = new Set(study(planWeek(input())).map((s) => s.date))
     expect(days.size).toBeGreaterThanOrEqual(3)
@@ -123,10 +149,9 @@ describe('planWeek: study', () => {
     const v = [...byDay.entries()].sort().map((x) => x[1])
     expect(v[v.length - 1]).toBeGreaterThanOrEqual(v[0])
   })
-  it('a single block is never longer than 3 h (limit is 2 h)', () => {
+  it('a single block respects the limit', () => {
     const r = study(planWeek(input({ assessments: [exam({ studyHours: 12 })] })))
-    expect(Math.max(...r.map(mins))).toBeLessThanOrEqual(MAX_STUDY_BLOCK)
-    expect(MAX_STUDY_BLOCK).toBeLessThanOrEqual(180)
+    expect(Math.max(...r.map(mins))).toBe(MAX_STUDY_BLOCK)
   })
   it('breaks between study blocks on the same day', () => {
     const r = study(planWeek(input({ assessments: [exam({ studyHours: 12 })] })))
@@ -164,6 +189,47 @@ describe('planWeek: study', () => {
   it('warns when there is not enough time', () => {
     const r = planWeek(input({ from: '2026-11-04', assessments: [exam({ studyHours: 100 })] }))
     expect(r.notes.some((n) => n.includes('ne stiže'))).toBe(true)
+  })
+})
+
+describe('planWeek: planning again', () => {
+  const accepted = (r: ReturnType<typeof planWeek>) =>
+    r.suggestions.map((s, i) => ({ ...s, id: `x${i}`, suggested: false }))
+
+  it('study blocks remember their exam', () => {
+    expect(study(planWeek(input())).every((s) => s.assessmentId === 'e1')).toBe(true)
+  })
+  it('planning again after accepting adds no extra study', () => {
+    const first = planWeek(input())
+    expect(study(planWeek(input({ activities: accepted(first) })))).toHaveLength(0)
+  })
+  it('later in the week only the part not yet covered is planned', () => {
+    const blocks = accepted(planWeek(input())).filter((a) => a.category === 'study')
+    const done = blocks[0]
+    const stillAhead = blocks[blocks.length - 1]
+    const r = planWeek(
+      input({
+        from: '2026-11-04',
+        settings: { ...input().settings, studyHoursPerDay: 8 },
+        activities: [{ ...done, status: 'done' }, stillAhead],
+      }),
+    )
+    const covered = mins(done) + mins(stillAhead)
+    expect(study(r).reduce((n, s) => n + mins(s), 0)).toBe(8 * 60 - covered)
+  })
+  it('a block that was skipped, or left unmarked in the past, does not count as studied', () => {
+    const block = act({
+      category: 'study',
+      date: MON,
+      start: '10:00',
+      end: '12:00',
+      assessmentId: 'e1',
+    })
+    const from = '2026-11-03'
+    const total = (a: Activity) =>
+      study(planWeek(input({ from, activities: [a] }))).reduce((n, s) => n + mins(s), 0)
+    expect(total({ ...block, status: 'skipped' })).toBe(8 * 60)
+    expect(total(block)).toBe(8 * 60)
   })
 })
 
@@ -251,6 +317,17 @@ describe('planWeek: workouts and the exam eve', () => {
     expect(r.adjustments[0].reason).toContain('kolokvijum')
     expect(r.notes.some((n) => n.includes('skraćen'))).toBe(true)
   })
+  it('two long workouts on the same exam eve give one note and two adjustments', () => {
+    const r = planWeek(
+      input({ activities: [act(), act({ id: 'a2', start: '10:00', end: '12:00' })] }),
+    )
+    expect(r.adjustments).toHaveLength(2)
+    expect(r.notes.filter((n) => n.includes('skraćen'))).toHaveLength(1)
+  })
+  it('notes show dates the way people read them', () => {
+    const r = planWeek(input({ activities: [act()] }))
+    expect(r.notes.join(' ')).not.toMatch(/\d{4}-\d{2}-\d{2}/)
+  })
   it('does not touch a workout that is already short', () => {
     const r = planWeek(input({ activities: [act({ end: '18:40' })] }))
     expect(r.adjustments).toHaveLength(0)
@@ -265,6 +342,22 @@ describe('planWeek: workouts and the exam eve', () => {
     ).toHaveLength(3)
     const withOne = planWeek(input({ assessments: [], activities: [act({ date: MON })] }))
     expect(withOne.suggestions.filter((s) => s.category === 'workout')).toHaveLength(2)
+  })
+  it('counts workouts from earlier this week towards the weekly goal', () => {
+    const done = ['2026-11-02', '2026-11-03', '2026-11-04'].map((date, i) =>
+      act({ id: `w${i}`, date, status: 'done' }),
+    )
+    const r = planWeek(input({ from: '2026-11-05', assessments: [], activities: done }))
+    expect(r.suggestions.filter((s) => s.category === 'workout')).toHaveLength(0)
+  })
+  it('a skipped workout earlier this week leaves the goal open', () => {
+    const skipped = act({ date: '2026-11-02', status: 'skipped' })
+    const r = planWeek(input({ from: '2026-11-05', assessments: [], activities: [skipped] }))
+    expect(r.suggestions.filter((s) => s.category === 'workout')).toHaveLength(2)
+  })
+  it('does not offer to shorten a workout that is already done', () => {
+    const r = planWeek(input({ activities: [act({ status: 'done' })] }))
+    expect(r.adjustments).toHaveLength(0)
   })
   it('spreads workouts (no two in a row when avoidable)', () => {
     const days = planWeek(input({ assessments: [] }))
@@ -291,6 +384,11 @@ describe('planWeek: easy day and games', () => {
         .reduce((n, s) => n + mins(s), 0),
     ).toBeLessThanOrEqual(60)
     expect(r.suggestions.some((s) => s.date === d && s.category === 'workout')).toBe(false)
+  })
+  it('the easy day never allows more than the daily limit', () => {
+    const settings = { ...input().settings, studyHoursPerDay: 0 }
+    const r = planWeek(input({ settings, assessments: [exam({ studyHours: 20 })] }))
+    expect(study(r)).toHaveLength(0)
   })
   it('no easy day when planning fewer than 3 days', () => {
     expect(planWeek(input({ days: 2 })).easyDay).toBeNull()

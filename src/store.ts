@@ -4,7 +4,7 @@ import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
-import { setTimeFormat, todayStr } from './lib/dates'
+import { monthOf, setTimeFormat, todayStr } from './lib/dates'
 import {
   award as awardXp,
   revokeWhere,
@@ -14,6 +14,7 @@ import {
 } from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
+import { addUsage } from './lib/ai/usage'
 import { resolveLanguage, setGender, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
@@ -57,6 +58,8 @@ interface Actions {
   add: <K extends CollectionKey>(key: K, item: Omit<Item<K>, 'id'> & { id?: string }) => string
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void
   remove: (key: CollectionKey, id: string) => void
+  /** Deletes a subject together with its exams, so the planner does not keep counting them. */
+  removeSubject: (id: string) => void
   patch: (patch: Partial<AppData>) => void
   loadDemo: () => void
   clearDemo: () => void
@@ -71,6 +74,8 @@ interface Actions {
   spendReward: (min: number, game?: string) => string | null
   /** Takes back a recorded use of reward time (the "Undo" after a click). */
   unspendReward: (gameId: string) => void
+  /** Adds one API call to this month's usage. */
+  trackAiUsage: (inputTokens: number, outputTokens: number) => void
 }
 
 export type Store = AppData & Actions
@@ -112,8 +117,22 @@ export const useStore = create<Store>()(
         const next = revokeWhere(p, (x) => (REWARD_IDS[key]?.(id) ?? (() => false))(x))
         if (next !== p) set({ progress: next })
       },
+      removeSubject: (id) => {
+        const gone = get()
+          .assessments.filter((a) => a.subjectId === id)
+          .map((a) => a.id)
+        set((s) => ({
+          subjects: s.subjects.filter((x) => x.id !== id),
+          assessments: s.assessments.filter((a) => a.subjectId !== id),
+        }))
+        // the registrations of the removed assessments paid XP: take it back too
+        const p = get().progress
+        const next = revokeWhere(p, (x) => gone.some((a) => x === `reg-${a}`))
+        if (next !== p) set({ progress: next })
+      },
       patch: (p) => set(p as Partial<Store>),
       loadDemo: () => {
+        if (get().hasDemo()) return
         const demo = makeDemoData(todayStr())
         set((s) => {
           const next: Partial<Store> = {}
@@ -132,7 +151,9 @@ export const useStore = create<Store>()(
               (x) => !x.demo,
             )
           }
-          // assessments of removed demo subjects are demo too, so nothing is left dangling
+          // what the user added to a demo subject goes with it, so nothing is left dangling
+          const goneSubjects = new Set(s.subjects.filter((x) => x.demo).map((x) => x.id))
+          next.assessments = next.assessments?.filter((a) => !goneSubjects.has(a.subjectId))
           // the XP / reward minutes the demo items paid out go with them
           const gone = COLLECTIONS.flatMap((k) =>
             (s[k] as { id: string; demo?: boolean }[])
@@ -140,7 +161,12 @@ export const useStore = create<Store>()(
               .map((x) => REWARD_IDS[k]?.(x.id))
               .filter((m) => m !== undefined),
           )
-          const progress = revokeWhere(s.progress, (id) => gone.some((m) => m(id)))
+          // assessments removed together with their demo subject
+          const goneAssessments = s.assessments.filter((a) => goneSubjects.has(a.subjectId))
+          const progress = revokeWhere(
+            s.progress,
+            (id) => gone.some((m) => m(id)) || goneAssessments.some((a) => id === `reg-${a.id}`),
+          )
           if (progress !== s.progress) next.progress = progress
           return next
         }),
@@ -150,10 +176,14 @@ export const useStore = create<Store>()(
       resetAll: () => set({ ...emptyData(), settings: { ...DEFAULT_SETTINGS } }),
       award: (e) => {
         const settings = get().settings
-        const r = awardXp(get().progress, { at: new Date().toISOString(), ...e }, {
-          name: rewardNameOf(settings),
-          emoji: settings.rewardEmoji,
-        })
+        const r = awardXp(
+          get().progress,
+          { at: new Date().toISOString(), ...e },
+          {
+            name: rewardNameOf(settings),
+            emoji: settings.rewardEmoji,
+          },
+        )
         if (r.progress !== get().progress) set({ progress: r.progress })
         useToast.getState().push(r.messages)
       },
@@ -182,6 +212,8 @@ export const useStore = create<Store>()(
           },
         }))
       },
+      trackAiUsage: (input, output) =>
+        set((s) => ({ aiUsage: addUsage(s.aiUsage, monthOf(todayStr()), input, output) })),
     }),
     {
       name: 'my-day-ai',

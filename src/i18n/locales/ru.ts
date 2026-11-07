@@ -5,6 +5,12 @@ import type { LocaleModule } from '../index'
 import { fromEnglish } from '../fromEnglish'
 
 const messages = fromEnglish({
+  'common.sure': `Уверен(а)?`,
+  'dataio.badItem': `Запись {n} в «{key}» повреждена, поэтому импортировать её небезопасно.`,
+  'err.body': `Твои данные по-прежнему сохранены на этом устройстве. Попробуй загрузить приложение заново.`,
+  'err.reload': `Загрузить снова`,
+  'err.title': `Что-то пошло не так`,
+  'wo.needsExercise': `Добавь хотя бы одно упражнение, чтобы сохранить тренировку.`,
   'date.long': `EEEE, d MMMM`,
   'date.weekdayDayMonth': `EEE, d.M`,
   'date.dayMonth': `d.M`,

@@ -4,6 +4,12 @@ import type { LocaleModule } from '../index'
 import { fromEnglish } from '../fromEnglish'
 
 const messages = fromEnglish({
+  'common.sure': `Sûr ?`,
+  'dataio.badItem': `L'élément {n} de « {key} » est endommagé : l'importer n'est pas sûr.`,
+  'err.body': `Tes données sont toujours enregistrées sur cet appareil. Essaie de recharger l'appli.`,
+  'err.reload': `Recharger`,
+  'err.title': `Quelque chose s'est mal passé`,
+  'wo.needsExercise': `Ajoute au moins un exercice pour enregistrer la séance.`,
   'date.long': `EEEE d MMMM`,
   'date.weekdayDayMonth': `EEE d/M`,
   'date.dayMonth': `d/M`,

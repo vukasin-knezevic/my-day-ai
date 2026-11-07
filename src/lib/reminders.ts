@@ -2,9 +2,9 @@
 // or recently used; for reliable phone reminders use the .ics export (see lib/ics.ts).
 import type { AppData } from '../types'
 import { addDaysStr, daysUntil, timeToMin, todayStr } from './dates'
+import { isExam } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
-import { isExamType } from './kinds'
 
 export interface Reminder {
   id: string
@@ -42,7 +42,7 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
           body: t(d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', { title: a.title }),
         })
     }
-    if (!isExamType(a.type) && !a.done) {
+    if (!isExam(a) && !a.done) {
       const d = daysUntil(a.date, today)
       if (d >= 0 && d <= 1 && nowMin >= 9 * 60)
         out.push({

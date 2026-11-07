@@ -4,6 +4,9 @@ import { t } from '../i18n'
 import { isExamType } from './kinds'
 import { assessmentLabel } from './labels'
 
+/** Exams need registration and study; every other kind (homework, lab...) only has a due date. */
+export const isExam = (a: Pick<Assessment, 'type'>) => isExamType(a.type)
+
 export type Urgency = 'past' | 'red' | 'orange' | 'yellow' | 'green'
 
 export function urgency(date: string, today: string): Urgency {
@@ -34,7 +37,7 @@ export function countdownLabel(date: string, today: string): string {
 /** Exams that need registration (kolokvijum / ispit) of a month with their status - shown as "<month>: registrations". */
 export function monthRegistrations(assessments: Assessment[], month: string) {
   return assessments
-    .filter((a) => isExamType(a.type) && monthOf(a.date) === month)
+    .filter((a) => isExam(a) && monthOf(a.date) === month)
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 

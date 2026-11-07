@@ -5,7 +5,6 @@ import { categoryLabel, rewardNameOf } from '../labels'
 import {
   addDaysStr,
   daysUntil,
-  formatShort,
   minToTime,
   nowMinutes,
   weekDates,
@@ -31,10 +30,11 @@ export function toneHint(data: AppData, today: string): Tone {
   const alerts = buildAlerts(data, today)
   const avg = avgSleep(data.sleep, today)
   const lowSleep = avg !== null && avg < 6
-  const skipped = data.activities.filter(
-    (a) =>
-      a.status === 'skipped' ||
-      (a.skippedDates ?? []).some((d) => daysUntil(today, d) >= 0 && daysUntil(today, d) <= 3),
+  const lastDays = (d: string) => daysUntil(today, d) >= 0 && daysUntil(today, d) <= 3
+  const skipped = data.activities.filter((a) =>
+    a.recurrence === 'none'
+      ? a.status === 'skipped' && lastDays(a.date)
+      : (a.skippedDates ?? []).some(lastDays),
   ).length
   if (lowSleep) return 'support'
   if (alerts.some((a) => a.level === 'red') || skipped >= 3) return 'strict'
@@ -167,17 +167,17 @@ const TASKS: Record<AiKind, (today: string, text: string) => string> = {
 
 export const manualQuestions = () => t('prompt.questions')
 
-/** Full prompt text. In manual mode it also asks Claude to ask questions first. */
+/** `user` is sent in API mode; `manualText` also asks Claude to ask questions first. */
 export function buildPrompt(
   kind: AiKind,
   data: AppData,
   today: string,
-  opts: { manual: boolean; text?: string } = { manual: false },
+  text = '',
 ): { system: string; user: string; manualText: string } {
   const user = [
     buildContext(data, today),
     '',
-    TASKS[kind](today, opts.text ?? ''),
+    TASKS[kind](today, text),
     '',
     t('prompt.schemaHeader'),
     schemaText(kind),
@@ -194,6 +194,21 @@ export function buildPrompt(
   return { system: systemPrompt(), user, manualText }
 }
 
-export const kindLabel = (k: AiKind) => t(`ai.kind.${k}`)
+/** The chat assistant's instructions, with this week's data. */
+export function buildChatSystem(data: AppData, today: string): string {
+  return [
+    systemPrompt(),
+    '',
+    t('prompt.dataHeader'),
+    buildContext(data, today),
+    '',
+    t('prompt.chat.instruction'),
+  ].join('\n')
+}
 
-export { formatShort }
+/** The same chat question as one text to paste into claude.ai (manual mode). */
+export function buildManualChat(data: AppData, today: string, question: string): string {
+  return `${buildChatSystem(data, today)}\n\n${t('prompt.chat.question')}: ${question}`
+}
+
+export const kindLabel = (k: AiKind) => t(`ai.kind.${k}`)

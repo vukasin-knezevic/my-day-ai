@@ -26,6 +26,15 @@ test('trening se čuva, a drugi sa većom kilažom javlja rekord', async () => {
   expect(useStore.getState().workouts).toHaveLength(2)
 })
 
+test('prazan trening se ne čuva i ne daje XP', async () => {
+  const user = userEvent.setup()
+  render(<Workout />)
+  await user.click(screen.getByRole('button', { name: 'Sačuvaj trening' }))
+  expect(screen.getByRole('status')).toHaveTextContent('Dodaj bar jednu vežbu')
+  expect(useStore.getState().workouts).toHaveLength(0)
+  expect(useStore.getState().progress.xp).toBe(0)
+})
+
 test('obrok povećava protein', async () => {
   const user = userEvent.setup()
   render(<Workout />)
