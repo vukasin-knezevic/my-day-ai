@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   timeFormat: '24h',
   autoUpdate: true,
+  iosHintDismissed: false,
   customAssessmentKinds: [],
   customSlotKinds: [],
   language: '',

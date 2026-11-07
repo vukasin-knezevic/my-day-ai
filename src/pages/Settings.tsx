@@ -1,3 +1,4 @@
+import { currentEnv, notificationSupport } from '../lib/ios'
 import { isSerbian } from '../lib/address'
 import { vocative } from '../lib/vocative'
 import { useState } from 'react'
@@ -19,6 +20,7 @@ export default function Settings() {
   const loadDemo = useStore((s) => s.loadDemo)
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
+  const support = notificationSupport(currentEnv())
   const [notifMsg, setNotifMsg] = useState('')
   const [calProgress, setCalProgress] = useState<number | null>(null)
   const [calMsg, setCalMsg] = useState('')
@@ -213,28 +215,36 @@ export default function Settings() {
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.reminders')}</h2>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="size-5"
-              checked={settings.reminders}
-              onChange={async (e) => {
-                if (e.target.checked) {
-                  const ok = await requestNotifications()
-                  setNotifMsg(ok ? '' : t('set.notifDenied'))
-                  setSettings({ reminders: ok })
-                } else setSettings({ reminders: false })
-              }}
-            />
-            {t('set.notif')}
-          </label>
-          {notifMsg && (
-            <p role="alert" className="text-sm text-red-700">
-              {notifMsg}
+          {support === 'ok' ? (
+            <>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={settings.reminders}
+                  onChange={async (e) => {
+                    if (e.target.checked) {
+                      const ok = await requestNotifications()
+                      setNotifMsg(ok ? '' : t('set.notifDenied'))
+                      setSettings({ reminders: ok })
+                    } else setSettings({ reminders: false })
+                  }}
+                />
+                {t('set.notif')}
+              </label>
+              {notifMsg && (
+                <p role="alert" className="text-sm text-red-700">
+                  {notifMsg}
+                </p>
+              )}
+            </>
+          ) : (
+            <p role="note" className="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950">
+              {t(support === 'ios-install' ? 'set.notifIos' : 'set.notifUnsupported')}
             </p>
           )}
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.notifNote')}</p>
-          {settings.reminders && (
+          {support === 'ok' && settings.reminders && (
             <Button
               variant="soft"
               onClick={async () => {

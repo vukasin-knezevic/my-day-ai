@@ -257,6 +257,8 @@ export interface Settings {
   studyHoursPerDay: number
   proteinGoal: number
   theme: 'system' | 'light' | 'dark'
+  /** The iPhone card "Add to Home Screen" was closed */
+  iosHintDismissed: boolean
   /** Switch to a downloaded new version by itself when the app is out of sight (otherwise the user restarts it) */
   autoUpdate: boolean
   /** 24h (13:00) or 12h (1:00 PM) */
