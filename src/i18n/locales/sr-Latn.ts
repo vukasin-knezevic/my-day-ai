@@ -15,7 +15,8 @@ const messages = {
   'common.cancel': 'Otkaži',
   'common.giveUp': 'Odustani',
   'err.title': 'Nešto je pošlo naopako',
-  'err.body': 'Tvoji podaci su i dalje sačuvani na ovom uređaju. Probaj da učitaš aplikaciju ponovo.',
+  'err.body':
+    'Tvoji podaci su i dalje sačuvani na ovom uređaju. Probaj da učitaš aplikaciju ponovo.',
   'err.reload': 'Učitaj ponovo',
   'common.delete': 'Obriši',
   'common.sure': 'Sigurno?',

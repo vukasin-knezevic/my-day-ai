@@ -240,4 +240,3 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
   if (!parts.length) return studyAndWorkoutLabel ? t('day.free') : ''
   return t('day.prefix', { parts: parts.join(', ') })
 }
-

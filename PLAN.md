@@ -17,5 +17,6 @@
 - [x] Faza 12 — Završetak (IZVESTAJ, UCENJE, ideje za v2)
 
 ## Napomene
+
 - Folder projekta je `C:\Projects\my-ai-app` (ne `C:\Projekti\my-day-ai`), jer je Claude Code već pokrenut ovde.
 - Instaliran je React 18 (kako zadatak traži), ostalo najnovije verzije.

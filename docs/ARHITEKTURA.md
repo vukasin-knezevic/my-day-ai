@@ -37,28 +37,32 @@ flowchart LR
 ```
 
 ## Slojevi
-| Sloj | Fajlovi | Uloga |
-|---|---|---|
-| Tipovi | `src/types.ts` | jedan izvor istine za sve podatke |
-| Jezici | `src/i18n/` | `t('ključ')`, fajlovi prevoda u `locales/`, izbor jezika; srpska ćirilica se izvodi iz latinice |
-| Stanje | `src/store.ts`, `lib/storage.ts` | Zustand; `persist` u IndexedDB; sve u try/catch |
-| Logika | `src/lib/*.ts` | čiste funkcije: parser, planer, ocene, XP, ics, podsetnici |
-| AI | `src/lib/ai/*` | prompt → (API ili ručno) → izvlačenje JSON-a → `zod` → predlog |
-| UI | `src/pages`, `src/components` | React ekrani i zajednički elementi (`NumberInput` za sva brojčana polja, `KeyScope` za Enter/Esc) |
-| Testovi | `*.test.ts(x)`, `e2e/` | Vitest (unit, komponente), Playwright + axe (e2e) |
+
+| Sloj    | Fajlovi                          | Uloga                                                                                             |
+| ------- | -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Tipovi  | `src/types.ts`                   | jedan izvor istine za sve podatke                                                                 |
+| Jezici  | `src/i18n/`                      | `t('ključ')`, fajlovi prevoda u `locales/`, izbor jezika; srpska ćirilica se izvodi iz latinice   |
+| Stanje  | `src/store.ts`, `lib/storage.ts` | Zustand; `persist` u IndexedDB; sve u try/catch                                                   |
+| Logika  | `src/lib/*.ts`                   | čiste funkcije: parser, planer, ocene, XP, ics, podsetnici                                        |
+| AI      | `src/lib/ai/*`                   | prompt → (API ili ručno) → izvlačenje JSON-a → `zod` → predlog                                    |
+| UI      | `src/pages`, `src/components`    | React ekrani i zajednički elementi (`NumberInput` za sva brojčana polja, `KeyScope` za Enter/Esc) |
+| Testovi | `*.test.ts(x)`, `e2e/`           | Vitest (unit, komponente), Playwright + axe (e2e)                                                 |
 
 ## Jezici (i18n)
+
 - **Jedan fajl = jedan jezik.** `src/i18n/locales/*.ts` se otkrivaju automatski (`import.meta.glob`); fajl izvozi `code`, `name`, `dateLocale` (date-fns) i `messages`. Spisak ključeva je `sr-Latn.ts`; TypeScript i test (`i18n.test.ts`) padaju ako drugom jeziku neki ključ ili `{parametar}` fali.
 - **`t(ključ, parametri)`** radi i van Reacta, pa čista logika u `lib/` (upozorenja, planer, prompt) vraća tekst na izabranom jeziku. `useT()` ponovo iscrtava ekran kad se jezik promeni. Množina: ključevi `.one/.few/.other` preko `Intl.PluralRules`.
 - **Unutrašnji ID-evi se ne prevode.** Kategorije, tipovi i statusi u podacima ostaju isti (`'kolokvijum'`, `'ne-idem'`...), a prevode se samo oznake (`lib/labels.ts`). Zato promena jezika ne menja sačuvane podatke.
 - **Podrazumevane vrednosti zavise od jezika.** Prazno ime nagrade i valute znače „podrazumevano za izabrani jezik".
 
 ## Migracija podataka
+
 Sačuvani podaci imaju verziju (`DATA_VERSION`). `migrateData()` u `lib/defaults.ts` pretvara stari oblik u novi (npr. `ps5EarnedMin` → `rewardEarnedMin`). Pokreće se pri učitavanju iz IndexedDB-a i pri uvozu JSON-a, čista je funkcija i bezbedno se pokreće više puta.
 
 ## Zašto ovako
+
 - **Dva AI režima, jedan kod.** Ručni i API režim dele `buildPrompt`, `parseAiResponse` i prikaz. Razlika je samo u tome ko šalje prompt (ja kopiranjem, ili `fetch`).
-- **AI nikad ne menja podatke direktno.** Rezultat postaje *predlog* (`suggested: true`, isprekidana ivica) koji korisnik prihvata.
+- **AI nikad ne menja podatke direktno.** Rezultat postaje _predlog_ (`suggested: true`, isprekidana ivica) koji korisnik prihvata.
 - **Validacija na granici.** Sve što dolazi spolja (AI odgovor, uvezeni JSON) prolazi proveru pre nego što dodirne store.
 - **Idempotentan XP.** Svaki događaj ima `id`; isti `id` nikad ne daje XP dvaput (`progress.awarded`).
 - **Offline.** `vite-plugin-pwa` kešira aplikaciju; podaci su u IndexedDB; samo AI poziv traži internet.
@@ -66,6 +70,7 @@ Sačuvani podaci imaju verziju (`DATA_VERSION`). `migrateData()` u `lib/defaults
 - **Bez servera.** Zato su notifikacije ograničene (vidi README), a `.ics` izvoz je rezerva.
 
 ## Planer (`lib/planner.ts`)
+
 1. Za svaki dan: slobodni intervali = prozor (buđenje–spavanje) minus zauzeto (aktivnosti + časovi koje pohađam).
 2. Biranje lakšeg dana, skraćivanje treninga na dan pred ispit, raspoređivanje novih treninga.
 3. Potražnja za učenjem po ispitu: težina određuje koliko dana ranije se kreće i da li je ravnomerno ili raste ka ispitu.

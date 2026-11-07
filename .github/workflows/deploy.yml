@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
 # Runs on every push to main. Pages must be enabled once (Settings -> Pages -> Source: GitHub Actions).
+# The checks run here too, so a broken commit never replaces the live app.
 on:
   push:
     branches: [main]
@@ -25,6 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
+      - run: npm test
       - run: npm run build
         env:
           VITE_BASE: /my-day-ai/

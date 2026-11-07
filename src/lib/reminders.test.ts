@@ -97,8 +97,7 @@ describe('buildIcs folding', () => {
   const ics = buildIcs(data, new Date(2026, 10, 6, 9), 1)
   it('no line is longer than 75 octets, even with Serbian letters and emoji', () => {
     const utf8 = new TextEncoder()
-    for (const line of ics.split('\r\n'))
-      expect(utf8.encode(line).length).toBeLessThanOrEqual(75)
+    for (const line of ics.split('\r\n')) expect(utf8.encode(line).length).toBeLessThanOrEqual(75)
   })
   it('unfolding gives back the whole text', () => {
     expect(ics.replace(/\r\n /g, '')).toContain(`SUMMARY:${title}`)
