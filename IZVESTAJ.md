@@ -45,13 +45,15 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 - **„Samo danas" za ponavljajuće aktivnosti:** uklanja jedan dan, niz ostaje; važi i za `.ics`.
 - **Greška u planeru ispravljena:** skraćenje treninga pred ispit menjalo je ceo ponavljajući niz, sada menja samo taj dan.
 - **CI:** e2e test 10 je jednom pao na GitHub-u (`05e58ff`), sledeći commit je prošao, a lokalno prolazi 20/20. Verovatan uzrok (trka između brisanja i ponovnog učitavanja) nije reprodukovan; test sada čeka da se brisanje upiše.
+- **AI klijent:** limit tokena podignut (16000, čet 4000) jer se razmišljanje modela računa u `max_tokens`; odsečen odgovor, istek vremena (3 min) i preopterećenje (529) sada imaju svoju poruku.
+- **Provereno na pravom API-ju, bez ključa:** preflight sa našim zaglavljima vraća `access-control-allow-origin: *`, a zahtev sa lažnim ključem običan 401, pa pozivi iz pregledača nisu blokirani. Sam odgovor modela i dalje nije proban.
 
 ## Šta NIJE urađeno ili nije potpuno (iskreno)
-1. **Pravi API pozivi nisu testirani.** AI sloj je testiran samo sa lažnim (mock) odgovorima, kako zadatak traži. Nikad nisam poslao zahtev sa pravim ključem. Pri prvom pravom pozivu proveri da radi; poruka o grešci će reći šta je pogrešno.
-2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) potvrđuju samo nezvanični izvori (Simon Willison, DEV članci); nije na zvaničnoj stranici API pregleda. Vrednost `anthropic-version: 2026-10-21` je iz zvanične stranice. Ako Anthropic odbije poziv iz pregledača (CORS), aplikacija javlja „offline / blokirano" i nudi ručni režim.
-3. **Nazivi modela** (`claude-haiku-5-5`, `claude-sonnet-5-5`) su iz referentne tabele koju koristi Claude Code, a ne iz javne dokumentacije koju sam otvorio. Menjaju se u Podešavanja → AI. Cene u proceni potrošnje (Haiku 5.5 $0.10/$0.50, Sonnet 5.5 $2/$10 po milion tokena) su iz iste tabele; za druge modele nema procene u dolarima. Procena računa sve tokene po ceni jačeg modela (gornja granica).
+1. **Pravi odgovor modela nije testiran** jer nemam API ključ. Mreža, CORS i odbijanje lošeg ključa jesu provereni na pravom API-ju (vidi popravke gore), ali nikad nije stigao pravi odgovor sa ključem. Pri prvom pravom pozivu proveri da radi.
+2. **Zaglavlje za pozive iz pregledača** (`anthropic-dangerous-direct-browser-access: true`) radi: pravi API ga prihvata u preflight-u. Ako ipak dođe do blokade, aplikacija javlja „offline / blokirano" i nudi ručni režim.
+3. **Nazivi modela i cene** (`claude-haiku-5-5` $0.10/$0.50, `claude-sonnet-5-5` $2/$10 po milion tokena) i verzija `2026-10-21` potvrđeni su u Anthropic-ovoj referenci za API (keš od 6. 10. 2026). Haiku iznad 100K tokena u jednom zahtevu košta $0.50/$2.50, što procena ne računa; tako veliki zahtevi ovde nisu očekivani. Za druge modele nema procene u dolarima. Procena računa sve tokene po ceni jačeg modela (gornja granica).
 4. **Podaci sa pametnog sata:** nema uvoza fajla jer nisam mogao da potvrdim format izvoza ni da Health Kit radi bez servera (vidi `docs/SMARTWATCH.md`). San se unosi ručno.
-5. **GitHub Actions:** `deploy.yml` je pokrenut i objava na Pages radi (stranica odgovara). Status `ci.yml` (lint, typecheck, testovi, e2e na GitHub-ovom računaru) proveri na stranici Actions, jer sam ga pratio samo preko javnog API-ja.
+5. **GitHub Actions:** `ci.yml` i `deploy.yml` su provereni preko GitHub API-ja. Oba rade; jedan povremeni pad e2e testa opisan je u popravkama.
 6. **Notifikacije nisu probane na telefonu.** Logika (`dueReminders`) je testirana, ali prikaz notifikacija zavisi od pregledača. `.ics` izvoz je pouzdaniji.
 7. **Ograničenja funkcija:**
    - Izmena ponavljajuće aktivnosti kroz formu menja ceo niz; „samo ovaj dan" postoji za uklanjanje i za skraćenje pred ispit. Brzi unos ne pravi ponavljajuće aktivnosti, samo forma.
@@ -63,7 +65,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
    - Skala ocenjivanja (51–100 → 6–10) je srpska i u engleskoj verziji ostaje ista; ESPB se prikazuje kao ECTS.
 8. **Pristupačnost:** axe (automatska provera) ne nalazi greške WCAG A/AA, ali nije zamena za ručno testiranje čitačem ekrana.
 9. **Putanja projekta** je `C:\Projects\my-ai-app`, a ne `C:\Projekti\my-day-ai` (Claude Code je već bio pokrenut tu).
-10. Verzije paketa su najnovije u trenutku instalacije (osim React 18, kako zadatak traži). `npm audit` prijavljuje upozorenja u razvojnim zavisnostima; nisam ih „forsirao" (`--force`) da ne pokvarim projekat.
+10. Verzije paketa su najnovije u trenutku instalacije (osim React 18, kako zadatak traži). `npm audit --omit=dev` ne nalazi ništa; 15 upozorenja (2 niska, 13 umerenih) je samo u razvojnim alatima (eslint lanac), ne ulaze u objavljenu aplikaciju. `npm audit fix` ih ne rešava, a `--force` nisam koristio.
 
 ## Poznati problemi
 - Prvi `git push` je tražio prijavu; posle toga radi sam.

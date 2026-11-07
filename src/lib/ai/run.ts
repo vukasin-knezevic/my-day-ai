@@ -55,7 +55,7 @@ export async function runChat(
     model,
     system: systemPrompt(),
     user,
-    maxTokens: 1000,
+    maxTokens: 4000,
     fetchImpl,
   })
   return { reply, model }

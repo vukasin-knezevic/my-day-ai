@@ -24,11 +24,28 @@ export interface ClaudeReply {
 export class AiError extends Error {
   constructor(
     message: string,
-    public kind: 'no-key' | 'offline' | 'auth' | 'rate' | 'cors' | 'http' | 'refusal',
+    public kind:
+      | 'no-key'
+      | 'offline'
+      | 'timeout'
+      | 'auth'
+      | 'rate'
+      | 'overloaded'
+      | 'http'
+      | 'refusal'
+      | 'truncated',
   ) {
     super(message)
   }
 }
+
+/**
+ * Current models think by default and thinking counts towards max_tokens,
+ * so this must leave room well beyond the visible answer.
+ */
+export const DEFAULT_MAX_TOKENS = 16000
+/** A non-streaming request with thinking can take a while, but must not hang forever. */
+export const REQUEST_TIMEOUT_MS = 180_000
 
 export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
   if (!c.apiKey.trim()) throw new AiError(t('aierr.noKey'), 'no-key')
@@ -37,6 +54,7 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
   try {
     res = await f(API_URL, {
       method: 'POST',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       headers: {
         'content-type': 'application/json',
         'x-api-key': c.apiKey.trim(),
@@ -46,12 +64,13 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
       },
       body: JSON.stringify({
         model: c.model,
-        max_tokens: c.maxTokens ?? 4000,
+        max_tokens: c.maxTokens ?? DEFAULT_MAX_TOKENS,
         system: c.system,
         messages: [{ role: 'user', content: c.user }],
       }),
     })
-  } catch {
+  } catch (e) {
+    if ((e as Error)?.name === 'TimeoutError') throw new AiError(t('aierr.timeout'), 'timeout')
     throw new AiError(t('aierr.offline'), 'offline')
   }
   if (!res.ok) {
@@ -64,6 +83,7 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
     if (res.status === 401 || res.status === 403)
       throw new AiError(t('aierr.auth', { status: res.status, detail }), 'auth')
     if (res.status === 429) throw new AiError(t('aierr.rate'), 'rate')
+    if (res.status === 529) throw new AiError(t('aierr.overloaded'), 'overloaded')
     throw new AiError(t('aierr.http', { status: res.status, detail }), 'http')
   }
   const body = (await res.json()) as {
@@ -72,6 +92,7 @@ export async function callClaude(c: ClaudeCall): Promise<ClaudeReply> {
     stop_reason?: string
   }
   if (body.stop_reason === 'refusal') throw new AiError(t('aierr.refusal'), 'refusal')
+  if (body.stop_reason === 'max_tokens') throw new AiError(t('aierr.truncated'), 'truncated')
   const text = (body.content ?? [])
     .filter((b) => b.type === 'text')
     .map((b) => b.text ?? '')

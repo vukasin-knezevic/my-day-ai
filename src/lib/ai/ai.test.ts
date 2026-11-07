@@ -1,6 +1,6 @@
 import { extractJson, parseAiResponse } from './extract'
 import { buildContext, buildPrompt, toneHint, manualQuestions, systemPrompt } from './prompt'
-import { AiError, API_URL, callClaude } from './client'
+import { AiError, API_URL, callClaude, DEFAULT_MAX_TOKENS } from './client'
 import { addUsage, estimateCost } from './usage'
 import { modelFor, runApi } from './run'
 import { applyAiResult } from './apply'
@@ -200,6 +200,30 @@ describe('callClaude (mocked fetch)', () => {
     await expect(run(status(401))).rejects.toMatchObject({ kind: 'auth' })
     await expect(run(status(429))).rejects.toMatchObject({ kind: 'rate' })
     await expect(run(status(500))).rejects.toBeInstanceOf(AiError)
+    await expect(run(status(529))).rejects.toMatchObject({ kind: 'overloaded' })
+  })
+  it('timeout has its own message, not offline', async () => {
+    const f = vi.fn().mockRejectedValue(new DOMException('slow', 'TimeoutError'))
+    await expect(
+      callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f }),
+    ).rejects.toMatchObject({ kind: 'timeout' })
+  })
+  it('a cut-off answer is reported instead of being parsed as broken JSON', async () => {
+    const f = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ content: [{ type: 'text', text: '{"a":' }], stop_reason: 'max_tokens' }),
+    })
+    await expect(
+      callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f }),
+    ).rejects.toMatchObject({ kind: 'truncated' })
+  })
+  it('leaves room for thinking in max_tokens and sets a timeout', async () => {
+    const f = vi.fn().mockResolvedValue(okResponse('x'))
+    await callClaude({ apiKey: 'k', model: 'm', system: '', user: '', fetchImpl: f })
+    const init = f.mock.calls[0][1]
+    expect(JSON.parse(init.body).max_tokens).toBe(DEFAULT_MAX_TOKENS)
+    expect(init.signal).toBeInstanceOf(AbortSignal)
   })
 })
 
