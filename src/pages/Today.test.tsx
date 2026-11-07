@@ -163,3 +163,20 @@ test('ponavljajuća aktivnost: „Samo danas“ uklanja dan, a niz ostaje', asyn
   const [a] = useStore.getState().activities
   expect(a.excludedDates).toEqual([today])
 })
+
+test('ekran Danas: Trenutno i Sledeće na vrhu, podnaslov bez razmaka pre zareza', () => {
+  useStore.getState().setSettings({ name: 'Vukašin', onboarded: true })
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  const headings = screen.getAllByRole('heading').map((h) => h.textContent)
+  expect(headings.indexOf('Obaveze')).toBeGreaterThan(-1)
+  expect(screen.getByText('Trenutno')).toBeInTheDocument()
+  // the quick entry is clearly labelled and comes after the duties
+  const duties = screen.getByText('Obaveze')
+  const quick = screen.getByText('Brzi unos')
+  expect(duties.compareDocumentPosition(quick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.getByText(/^Vukašin, danas/)).toBeInTheDocument()
+})

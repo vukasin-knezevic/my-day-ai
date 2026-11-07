@@ -28,7 +28,6 @@ import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
 import { useT } from '../i18n'
-import Rich from '../i18n/Rich'
 import type { Activity } from '../types'
 
 const PX_PER_HOUR = 44
@@ -139,14 +138,16 @@ export default function Today() {
     if (o.activityId) store.update('activities', o.activityId, { suggested: false })
   }
 
+  const summary = daySummary(occ)
+  const subtitle = data.settings.name
+    ? `${data.settings.name}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
+    : summary
+
   return (
     <>
       <header className="mb-4">
         <h1 className="text-2xl font-bold">🌅 {formatLong(today)}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {data.settings.name ? `${data.settings.name}, ` : ''}
-          {daySummary(occ)}
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
       </header>
 
       {now.getDay() === 0 && now.getHours() >= 18 && (
@@ -163,7 +164,38 @@ export default function Today() {
         </Card>
       )}
 
-      <ProgressCard />
+      <section aria-label={t('today.nowNext')} className="mb-4 space-y-2">
+        <Card className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <p className="text-xs font-semibold tracking-wide text-blue-800 uppercase dark:text-blue-200">
+            {t('today.nowLabel')}
+          </p>
+          {current ? (
+            <>
+              <p className="user-text mt-1 text-xl font-bold">
+                {CATEGORY_META[current.category].emoji} {current.title}
+              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                {t('today.until', { end: formatTimeOfDay(current.end) })}
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-slate-700 dark:text-slate-300">{t('today.nothing')}</p>
+          )}
+        </Card>
+        {next && (
+          <div className="rounded-2xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-800">
+            <span className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              {t('today.nextLabel')}
+            </span>
+            <p className="user-text">
+              {CATEGORY_META[next.category].emoji} {next.title} · {formatTimeOfDay(next.start)}{' '}
+              <span className="text-slate-600 dark:text-slate-400">
+                ({t('today.in', { d: formatDuration(minutesToNext!) })})
+              </span>
+            </p>
+          </div>
+        )}
+      </section>
 
       {alerts.length > 0 && (
         <Card className="mb-4 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950">
@@ -180,50 +212,6 @@ export default function Today() {
           </ul>
         </Card>
       )}
-
-      <form onSubmit={submit} className="mb-4 flex gap-2" role="search">
-        <Input
-          id="quick-input"
-          aria-label={t('today.quick')}
-          placeholder={t('today.quickPlaceholder')}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setText('')
-          }}
-        />
-        <Button type="submit">{t('common.add')}</Button>
-      </form>
-      {msg && (
-        <p role="status" className="mb-4 text-sm text-slate-700 dark:text-slate-300">
-          {msg}
-        </p>
-      )}
-
-      <Card className="mb-4">
-        {current ? (
-          <p>
-            <Rich
-              text={t('today.now', {
-                emoji: CATEGORY_META[current.category].emoji,
-                title: current.title,
-                end: current.end,
-              })}
-            />
-          </p>
-        ) : (
-          <p className="text-slate-600 dark:text-slate-400">{t('today.nothing')}</p>
-        )}
-        {next && (
-          <p className="mt-1 text-sm">
-            {t('today.next', {
-              title: next.title,
-              start: formatTimeOfDay(next.start),
-              d: formatDuration(minutesToNext!),
-            })}
-          </p>
-        )}
-      </Card>
 
       {editing && (
         <ActivityForm
@@ -324,6 +312,31 @@ export default function Today() {
         </ul>
       </Card>
 
+      <Card className="mb-4">
+        <form onSubmit={submit} role="search" className="space-y-2">
+          <label htmlFor="quick-input" className="block text-sm font-semibold">
+            {t('today.quick')}
+          </label>
+          <div className="flex gap-2">
+            <Input
+              id="quick-input"
+              placeholder={t('today.quickPlaceholder')}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setText('')
+              }}
+            />
+            <Button type="submit">{t('common.add')}</Button>
+          </div>
+        </form>
+        {msg && (
+          <p role="status" className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+            {msg}
+          </p>
+        )}
+      </Card>
+
       <Card>
         <h2 className="mb-3 font-semibold">{t('today.timeline')}</h2>
         <Timeline
@@ -333,6 +346,10 @@ export default function Today() {
           nowMin={nowMin}
         />
       </Card>
+
+      <div className="mt-4">
+        <ProgressCard />
+      </div>
     </>
   )
 }
