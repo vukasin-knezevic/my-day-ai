@@ -83,3 +83,20 @@ export function latinToCyrillic(text: string): string {
   }
   return out + convert(text.slice(last))
 }
+
+const REVERSE: Record<string, string> = Object.fromEntries([
+  ...Object.entries(MAP).map(([latin, cyr]) => [cyr, latin]),
+  ...Object.entries(DIGRAPHS).map(([latin, cyr]) => [cyr, latin]),
+])
+
+/** Serbian Cyrillic -> Latin (used for names typed in Cyrillic). Other characters stay as they are. */
+export function cyrillicToLatin(text: string): string {
+  let out = ''
+  for (const ch of text) {
+    const lower = ch.toLowerCase()
+    const latin = REVERSE[lower]
+    if (!latin) out += ch
+    else out += ch === lower ? latin : latin.charAt(0).toUpperCase() + latin.slice(1)
+  }
+  return out
+}

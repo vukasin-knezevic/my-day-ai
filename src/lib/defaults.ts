@@ -3,6 +3,8 @@ import { messageIn, resolveLanguage } from '../i18n'
 
 export const DEFAULT_SETTINGS: Settings = {
   name: '',
+  addressName: '',
+  gender: 'm',
   wakeTime: '09:00',
   bedTime: '01:00',
   sleepGoalHours: 8,

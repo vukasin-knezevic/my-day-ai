@@ -220,8 +220,10 @@ const messages = {
   'set.time24': '24 sata (13:00)',
   'set.time12': '12 sati (1:00 PM)',
   'set.language': 'Jezik',
-  'set.langAuto': 'Automatski (prema pregledaču)',
+  'set.langAuto': 'Automatski (jezik telefona)',
   'set.rhythm': 'Ritam i ciljevi',
+  'set.address': 'Kako ti se obraćam',
+  'set.gender': 'Rod (za rečenice na srpskom)',
   'set.name': 'Ime',
   'set.wake': 'Buđenje',
   'set.bed': 'Spavanje',
@@ -282,6 +284,11 @@ const messages = {
   'ob.s.ai': 'AI režim',
   'ob.lang.intro': 'Izaberi jezik aplikacije. Možeš da ga promeniš i kasnije u podešavanjima.',
   'ob.name.label': 'Kako da te zovem?',
+  'ob.address.label': 'Kako da ti se obraćam?',
+  'ob.address.hint': 'Predlog je u zvaničnom obliku (vokativ). Ispravi ga ako nije dobar.',
+  'ob.gender.label': 'Tvoj rod (za pravilne rečenice)',
+  'ob.gender.m': 'Muški (spreman, uradio)',
+  'ob.gender.f': 'Ženski (spremna, uradila)',
   'ob.name.placeholder': 'npr. Marko',
   'ob.wake': 'Obično ustajem u (između 8 i 10)',
   'ob.bed': 'Obično legnem u (između 00 i 02)',
@@ -659,10 +666,22 @@ const messages = {
 
 export type MessageKey = keyof typeof messages
 
+/** Feminine forms (the default texts above are masculine). */
+const feminine: Partial<Record<MessageKey, string>> = {
+  'alert.sleep': '😴 Spavala si samo {d}. Danas polako.',
+  'apply.bed': '😴 Legla u {time}. Laku noć!',
+  'apply.wake': '🌅 Ustala u {time}. Dobro jutro!',
+  'progress.use': 'Iskoristila {n} min',
+  'study.askRegistered': 'Da li si prijavila?',
+  'life.bed': '😴 Legla',
+  'life.wake': '🌅 Ustala',
+}
+
 const locale: LocaleModule = {
   code: 'sr-Latn',
   name: 'Srpski (latinica)',
   dateLocale: srLatn,
   messages,
+  feminine,
 }
 export default locale

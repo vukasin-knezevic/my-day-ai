@@ -1,3 +1,5 @@
+import { isSerbian } from '../lib/address'
+import { vocative } from '../lib/vocative'
 import { useState } from 'react'
 import DataCard from './DataCard'
 import { selectData, useStore } from '../store'
@@ -11,7 +13,7 @@ import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
 
 export default function Settings() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const settings = useStore((s) => s.settings)
   const setSettings = useStore((s) => s.setSettings)
   const loadDemo = useStore((s) => s.loadDemo)
@@ -70,8 +72,39 @@ export default function Settings() {
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.rhythm')}</h2>
           <Field label={t('set.name')} optional>
-            <Input value={settings.name} onChange={(e) => setSettings({ name: e.target.value })} />
+            <Input
+              value={settings.name}
+              onChange={(e) => {
+                // while the address is not corrected by hand it follows the name
+                const follows = settings.addressName === vocative(settings.name)
+                setSettings({
+                  name: e.target.value,
+                  ...(follows || !settings.addressName
+                    ? { addressName: vocative(e.target.value) }
+                    : {}),
+                })
+              }}
+            />
           </Field>
+          {isSerbian(lang) && (
+            <>
+              <Field label={t('set.address')} optional>
+                <Input
+                  value={settings.addressName}
+                  onChange={(e) => setSettings({ addressName: e.target.value })}
+                />
+              </Field>
+              <Field label={t('set.gender')}>
+                <Select
+                  value={settings.gender}
+                  onChange={(e) => setSettings({ gender: e.target.value as SettingsT['gender'] })}
+                >
+                  <option value="m">{t('ob.gender.m')}</option>
+                  <option value="f">{t('ob.gender.f')}</option>
+                </Select>
+              </Field>
+            </>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <Field label={t('set.wake')}>
               <Input

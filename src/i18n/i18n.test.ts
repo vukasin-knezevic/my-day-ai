@@ -1,5 +1,13 @@
 import { afterEach } from 'vitest'
-import { LANGUAGES, detectLanguage, getLanguage, resolveLanguage, setLanguage, t } from './index'
+import {
+  LANGUAGES,
+  detectLanguage,
+  getLanguage,
+  resolveLanguage,
+  setGender,
+  setLanguage,
+  t,
+} from './index'
 import { latinToCyrillic } from './translit'
 import { formatLong, formatShort, weekdayName, monthName } from '../lib/dates'
 import { planWeek } from '../lib/planner'
@@ -216,5 +224,26 @@ describe('defaults that depend on the language', () => {
     expect(fmtMoney(1234567, 'RSD')).toMatch(/^1\.234\.567 RSD$|^1\s?234\s?567 RSD$/)
     setLanguage('en')
     expect(fmtMoney(1234567, 'USD')).toBe('1,234,567 USD')
+  })
+})
+
+describe('gender (feminine forms)', () => {
+  afterEach(() => setGender('m'))
+  it('masculine by default, feminine when chosen, other texts unchanged', () => {
+    expect(t('life.wake')).toBe('🌅 Ustao')
+    setGender('f')
+    expect(t('life.wake')).toBe('🌅 Ustala')
+    expect(t('progress.use', { n: 30 })).toBe('Iskoristila 30 min')
+    expect(t('common.cancel')).toBe(source.messages['common.cancel'])
+  })
+  it('Cyrillic gets the feminine forms too', () => {
+    setLanguage('sr-Cyrl')
+    setGender('f')
+    expect(t('life.wake')).toBe(latinToCyrillic('🌅 Ustala'))
+  })
+  it('every feminine key is a real key', () => {
+    for (const lang of LANGUAGES)
+      for (const k of Object.keys(lang.feminine ?? {}))
+        expect(Object.keys(lang.messages)).toContain(k)
   })
 })

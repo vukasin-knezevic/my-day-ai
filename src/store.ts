@@ -14,7 +14,7 @@ import {
 } from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
-import { resolveLanguage, setLanguage } from './i18n'
+import { resolveLanguage, setGender, setLanguage } from './i18n'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -200,8 +200,10 @@ export const useStore = create<Store>()(
 )
 
 // Keep the UI language in sync with the saved setting ('' = automatic, from the browser).
-const syncLanguage = (s: Pick<AppData, 'settings'>) =>
+const syncLanguage = (s: Pick<AppData, 'settings'>) => {
   setLanguage(resolveLanguage(s.settings.language))
+  setGender(s.settings.gender === 'f' ? 'f' : 'm')
+}
 syncLanguage(useStore.getState())
 useStore.subscribe(syncLanguage)
 

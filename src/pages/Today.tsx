@@ -1,3 +1,4 @@
+import { addressName } from '../lib/address'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
@@ -144,8 +145,9 @@ export default function Today() {
   }
 
   const summary = daySummary(occ)
-  const subtitle = data.settings.name
-    ? `${data.settings.name}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
+  const callName = addressName(data.settings)
+  const subtitle = callName
+    ? `${callName}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
     : summary
 
   return (

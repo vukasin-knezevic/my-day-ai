@@ -244,6 +244,10 @@ export interface Progress {
 
 export interface Settings {
   name: string
+  /** How the app addresses the user in Serbian (the vocative: "Vukašine"); empty = made from the name */
+  addressName: string
+  /** Grammatical gender for Serbian texts ("spreman / spremna", "uradio / uradila") */
+  gender: 'm' | 'f'
   wakeTime: string // 'HH:mm'
   bedTime: string
   sleepGoalHours: number

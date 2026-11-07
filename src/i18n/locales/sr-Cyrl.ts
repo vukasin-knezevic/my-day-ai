@@ -26,5 +26,8 @@ const locale: LocaleModule = {
   name: 'Српски (ћирилица)',
   dateLocale: sr,
   messages,
+  feminine: Object.fromEntries(
+    Object.entries(srLatnLocale.feminine ?? {}).map(([k, v]) => [k, latinToCyrillic(v)]),
+  ),
 }
 export default locale

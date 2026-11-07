@@ -178,7 +178,7 @@ test('ekran Danas: Trenutno i Sledeće na vrhu, podnaslov bez razmaka pre zareza
   const duties = screen.getByText('Obaveze')
   const quick = screen.getByText('Brzi unos')
   expect(duties.compareDocumentPosition(quick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  expect(screen.getByText(/^Vukašin, danas/)).toBeInTheDocument()
+  expect(screen.getByText(/^Vukašine, danas/)).toBeInTheDocument()
 })
 
 test('obavezno polje nije crveno unapred; crveno i poruka tek posle pokušaja, nestaje kad se popuni', async () => {
