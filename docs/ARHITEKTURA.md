@@ -73,6 +73,8 @@ Sačuvani podaci imaju verziju (`DATA_VERSION`). `migrateData()` u `lib/defaults
 
 1. Za svaki dan: slobodni intervali = prozor (buđenje–spavanje) minus zauzeto (aktivnosti + časovi koje pohađam).
 2. Biranje lakšeg dana, skraćivanje treninga na dan pred ispit, raspoređivanje novih treninga.
-3. Potražnja za učenjem po ispitu: težina određuje koliko dana ranije se kreće i da li je ravnomerno ili raste ka ispitu.
+3. Potražnja za učenjem po ispitu: od traženih sati oduzima se ono što je već urađeno ili zakazano (blok pamti `assessmentId`), a težina određuje koliko dana ranije se kreće i da li je ravnomerno ili raste ka ispitu. Zbir dnevnih udela je uvek tačno onoliko koliko treba.
 4. Blokovi do 2 h, pauza 30 min, prvo u terminima „ne idem", ograničenje dnevnog učenja; višak se prenosi na sledeći dan.
-5. Igra kao nagrada posle poslednjeg bloka učenja.
+5. Nagrada posle poslednjeg bloka učenja.
+
+`planWeek` je samo redosled ovih koraka; svaki korak je zasebna funkcija. Primeri su u `planner.test.ts`, a `planner.invariants.test.ts` proverava pravila koja moraju da važe za bilo koju nedelju (300 nasumičnih, ali ponovljivih scenarija).

@@ -44,7 +44,7 @@ Verzija 1.0 završena 2026-11-06, verzija **1.1** 2026-11-07. Repozitorijum: htt
 
 ## Šta je urađeno u verziji 1.0 (faze 0–12)
 
-Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `PLAN.md`): 0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
+Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `git log` i `docs/razvoj/PLAN.md`): 0. Priprema (Node, Git instalirani preko winget-a, repo povezan), 1. model podataka + onboarding, 2. ekran Danas + parser, 3. Faks, 4. planer, 5. trening i ishrana, 6. san/novac/navike + istraživanje podataka sa pametnog sata, 7. XP/nivoi/nizovi/PS5, 8 i 8b. AI (API + ručni režim), 9. podsetnici, .ics i pregledi, 10. izvoz/uvoz, pristupačnost, prečice, e2e, screenshot-ovi, 11. README (sr/en), arhitektura, MIT, CI i Pages workflow-i, 12. ovaj izveštaj i `UCENJE.md`.
 
 ## Popravke posle verzije 1.1
 
@@ -94,7 +94,7 @@ Sve faze iz zadatka su implementirane i pushovane (svaka u svom commit-u, vidi `
 
 ## Pregled koda pre portfolija (7. 11. 2026.)
 
-Grana `pregled-koda`. Popravke su poređane po važnosti; svaka ima svoj commit i test koji bez nje pada.
+Grana `pregled-koda`. Popravke su poređane po važnosti, svaka je u svom commit-u i uz nju su testovi.
 
 - **Planer je tiho gubio sate učenja.** Dnevni udeo manji od 30 min se brisao bez upozorenja, pa je kolokvijum težine 5 sa 4 h dobijao 0 h plana. Sad se ukupno vreme deli tako da zbir uvek odgovara traženom, a ostatak prelazi na sledeći dan. Ispit posle planiranih dana više ne daje lažno upozorenje.
 - **Ponovno planiranje je dupliralo učenje.** Posle prihvatanja plana drugi klik je dodavao još 8 h za isti kolokvijum. Blokovi sada pamte ispit (`assessmentId`), pa se planira samo ono što nije pokriveno; preskočen ili neoznačen blok iz prošlosti ne računa se kao naučen. Nedeljni cilj treninga sada broji i dane pre današnjeg (u četvrtak sa 3/3 predlagala su se još 2), a planer ne nudi skraćenje već završenog treninga.
@@ -106,3 +106,4 @@ Grana `pregled-koda`. Popravke su poređane po važnosti; svaka ima svoj commit 
 - **`planWeek` razbijen na korake.** Funkcija od preko 200 linija sada ima 11 i čita se kao recept (lakši dan, skraćivanje pred ispit, treninzi, učenje, nagrade); „magični" brojevi su dobili imena. Provera tipa ispita bila je kopirana na 8 mesta i sad je jedan `isExam`. Uz to: napomene pokazuju čitljiv datum umesto ISO oblika, dva treninga iste večeri daju jednu napomenu, a uklonjen je i dupli računski deo za sate sna i nekorišćen kod.
 - **Testovi planera.** `Planner.test.tsx` je zavisio od dana u nedelji, a tvrdnje su mu stajale iza `if`, pa ponekad nije proveravao ništa; sada ima fiksiran datum i šest pravih scenarija. Dodat je `planner.invariants.test.ts`: 300 ponovljivih nasumičnih nedelja proverava pravila koja uvek moraju da važe (bez preklapanja, unutar budnih sati, limiti, pre ispita). Odmah je našao pravu grešku: lakši dan je dozvoljavao 60 min i kad je dnevni limit manji.
 - **CI i objava.** Objava više ne ide na živi sajt ako lint ili testovi padnu. CI sada proverava i format i `build` (do sada se build pokretao tek pri objavi). Svih 14 fajlova koji su odstupali je formatirano, verzija u `package.json` je usklađena sa 1.1.0, a iz `defaults.ts` je uklonjen zalutali BOM znak.
+- **Uređen koren repoa.** Zadaci, planovi, dnevnik i beleške za učenje premešteni su u `docs/razvoj/`, pa se u korenu vide README, licenca i izveštaj. Ništa nije obrisano. Arhitektura je dopunjena novim ponašanjem planera. Napomena: `docs/razvoj/MY_DAY_AI_ZADATAK.md` i dalje sadrži lične detalje, a ostaju i u git istoriji.

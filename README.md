@@ -102,7 +102,7 @@ npm run dev          # http://localhost:5173 (i adresa za telefon na istoj Wi-Fi
 
 ```bash
 npm run lint && npm run typecheck
-npm test                 # unit + komponente (Vitest), uključujući proveru prevoda
+npm test                 # unit + komponente (Vitest), prevodi i pravila planera na 300 nasumičnih nedelja
 npm run test:coverage    # pokrivenost src/lib
 npx playwright install chromium   # jednom
 npm run e2e              # end-to-end + axe pristupačnost
