@@ -164,10 +164,14 @@ export function streakMessages(s: Streaks): string[] {
   return keys.filter((k) => isMilestone(s[k])).map((k) => t(`streak.${k}`, { n: s[k] }))
 }
 
+/** Spends reward time. Cannot spend more than the balance: then nothing changes. */
 export function spendReward(p: Progress, minutes: number): Progress {
-  return { ...p, rewardSpentMin: p.rewardSpentMin + Math.max(0, minutes) }
+  const n = Math.max(0, minutes)
+  if (n > rewardBalance(p)) return p
+  return { ...p, rewardSpentMin: p.rewardSpentMin + n }
 }
-export const rewardBalance = (p: Progress) => p.rewardEarnedMin - p.rewardSpentMin
+/** Earned minus spent; never below 0. */
+export const rewardBalance = (p: Progress) => Math.max(0, p.rewardEarnedMin - p.rewardSpentMin)
 
 /* ---- streaks ---- */
 /** Consecutive days ending today (or yesterday, if today is not done yet). */

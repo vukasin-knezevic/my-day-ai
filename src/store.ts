@@ -5,7 +5,13 @@ import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { todayStr } from './lib/dates'
-import { award as awardXp, revokeWhere, spendReward as spendTime, type AwardEvent } from './lib/xp'
+import {
+  award as awardXp,
+  revokeWhere,
+  rewardBalance,
+  spendReward as spendTime,
+  type AwardEvent,
+} from './lib/xp'
 import { useToast } from './lib/toast'
 import { rewardNameOf } from './lib/labels'
 import { resolveLanguage, setLanguage } from './i18n'
@@ -62,7 +68,9 @@ interface Actions {
   /** Takes back XP and reward minutes of one award id (exact) or of every id with the given prefix. */
   revoke: (id: string, opts?: { prefix?: boolean }) => void
   /** Records reward time I used (no judging). */
-  spendReward: (min: number, game?: string) => void
+  spendReward: (min: number, game?: string) => string | null
+  /** Takes back a recorded use of reward time (the "Undo" after a click). */
+  unspendReward: (gameId: string) => void
 }
 
 export type Store = AppData & Actions
@@ -146,9 +154,23 @@ export const useStore = create<Store>()(
         if (next !== p) set({ progress: next })
       },
       spendReward: (min, game = rewardNameOf(get().settings)) => {
+        if (min <= 0 || min > rewardBalance(get().progress)) return null
+        const id = uid()
         set((s) => ({
           progress: spendTime(s.progress, min),
-          games: [...s.games, { id: uid(), date: todayStr(), game, durationMin: min }],
+          games: [...s.games, { id, date: todayStr(), game, durationMin: min }],
+        }))
+        return id
+      },
+      unspendReward: (gameId) => {
+        const g = get().games.find((x) => x.id === gameId)
+        if (!g) return
+        set((s) => ({
+          games: s.games.filter((x) => x.id !== gameId),
+          progress: {
+            ...s.progress,
+            rewardSpentMin: Math.max(0, s.progress.rewardSpentMin - g.durationMin),
+          },
         }))
       },
     }),

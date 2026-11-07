@@ -159,6 +159,7 @@ const messages = {
   'progress.toNext': 'Još {xp} XP do nivoa „{name}"',
   'progress.reward':
     '{emoji} {name}: zarađeno **{earned}** min · potrošeno **{spent}** min · stanje **{bal}** min',
+  'progress.undo': 'Poništi',
   'progress.use': 'Iskoristio {n} min',
   'act.edit': 'Izmeni aktivnost',
   'act.new': 'Nova aktivnost',

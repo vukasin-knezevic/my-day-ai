@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card } from './ui'
@@ -12,6 +13,10 @@ export default function ProgressCard() {
   const { t } = useT()
   const data = useStore(useShallow(selectData))
   const spendReward = useStore((s) => s.spendReward)
+  const unspendReward = useStore((s) => s.unspendReward)
+  const [undo, setUndo] = useState<{ id: string; timer: ReturnType<typeof setTimeout> } | null>(
+    null,
+  )
   const p = data.progress
   const lvl = levelFor(p.xp)
   const streaks = computeStreaks(data, todayStr())
@@ -57,12 +62,32 @@ export default function ProgressCard() {
           />
         </span>
         <span className="ml-auto flex gap-1">
-          <Button variant="soft" onClick={() => spendReward(30)}>
-            {t('progress.use', { n: 30 })}
-          </Button>
-          <Button variant="soft" onClick={() => spendReward(60)}>
-            {t('progress.use', { n: 60 })}
-          </Button>
+          {undo ? (
+            <Button
+              variant="soft"
+              onClick={() => {
+                clearTimeout(undo.timer)
+                unspendReward(undo.id)
+                setUndo(null)
+              }}
+            >
+              {t('progress.undo')}
+            </Button>
+          ) : (
+            [30, 60].map((n) => (
+              <Button
+                key={n}
+                variant="soft"
+                disabled={balance < n}
+                onClick={() => {
+                  const id = spendReward(n)
+                  if (id) setUndo({ id, timer: setTimeout(() => setUndo(null), 6000) })
+                }}
+              >
+                {t('progress.use', { n })}
+              </Button>
+            ))
+          )}
         </span>
       </div>
     </Card>

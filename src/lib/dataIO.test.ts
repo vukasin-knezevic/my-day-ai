@@ -82,3 +82,8 @@ describe('migration of older data (PS5 -> reward)', () => {
     expect(d.settings.rewardName).toBe('PS5 vreme')
   })
 })
+
+test('an old negative reward balance is repaired on load', () => {
+  const d = normalizeData({ progress: { rewardEarnedMin: 30, rewardSpentMin: 930 } } as never)
+  expect(d.progress.rewardSpentMin).toBe(30)
+})

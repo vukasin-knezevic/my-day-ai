@@ -160,6 +160,7 @@ const messages: Record<MessageKey, string> = {
   'progress.toNext': 'Another {xp} XP to level “{name}”',
   'progress.reward':
     '{emoji} {name}: earned **{earned}** min · used **{spent}** min · balance **{bal}** min',
+  'progress.undo': 'Undo',
   'progress.use': 'Used {n} min',
   'act.edit': 'Edit activity',
   'act.new': 'New activity',

@@ -69,6 +69,11 @@ export function migrateData(raw: unknown): Partial<AppData> {
   return r as Partial<AppData>
 }
 
+/** Reward time spent can never exceed what was earned (older versions allowed a negative balance). */
+function clampReward(p: AppData['progress']): AppData['progress'] {
+  return p.rewardSpentMin > p.rewardEarnedMin ? { ...p, rewardSpentMin: p.rewardEarnedMin } : p
+}
+
 /** Fills in missing fields of (older / imported) data with defaults. */
 export function normalizeData(input: Partial<AppData> | null | undefined): AppData {
   const base = emptyData()
@@ -76,7 +81,7 @@ export function normalizeData(input: Partial<AppData> | null | undefined): AppDa
   return {
     ...base,
     ...r,
-    progress: { ...base.progress, ...(r.progress ?? {}) },
+    progress: clampReward({ ...base.progress, ...(r.progress ?? {}) }),
     settings: { ...base.settings, ...(r.settings ?? {}) },
     aiUsage: { ...base.aiUsage, ...(r.aiUsage ?? {}) },
     budget: r.budget ?? {},

@@ -92,8 +92,8 @@ describe('reward time', () => {
     expect(rewardBalance(p)).toBe(15)
     expect(rewardBalance(spendReward(p, -100))).toBe(15)
   })
-  it('can go negative (no scolding) — shown as is', () => {
-    expect(rewardBalance(spendReward(empty(), 30))).toBe(-30)
+  it('spending without earned minutes changes nothing (never negative)', () => {
+    expect(rewardBalance(spendReward(empty(), 30))).toBe(0)
   })
 })
 
@@ -203,5 +203,13 @@ describe('revoke', () => {
     const back = revokeWhere(p, (id) => id.startsWith('pr-1-'))
     expect(back.xp).toBe(10)
     expect(back.awarded).toEqual(['other'])
+  })
+})
+
+describe('reward balance', () => {
+  it('cannot be spent below zero', () => {
+    const p = { ...empty(), rewardEarnedMin: 20 }
+    expect(spendReward(p, 30)).toBe(p)
+    expect(rewardBalance(spendReward(p, 20))).toBe(0)
   })
 })
