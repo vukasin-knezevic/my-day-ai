@@ -3,7 +3,14 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store'
 import { Button, Card, PageTitle } from '../components/ui'
 import { CATEGORY_META } from '../types'
-import { addDaysStr, formatLong, nowMinutes, todayStr, weekdayOf } from '../lib/dates'
+import {
+  addDaysStr,
+  formatLong,
+  formatTimeOfDay,
+  nowMinutes,
+  todayStr,
+  weekdayOf,
+} from '../lib/dates'
 import { planWeek, type Adjustment } from '../lib/planner'
 import { patchOccurrence } from '../lib/schedule'
 import { useT } from '../i18n'
@@ -116,7 +123,7 @@ export default function Planner() {
             >
               <span className="font-medium">{formatLong(a.date)}</span>
               <span>
-                {a.start}–{a.end}
+                {formatTimeOfDay(a.start)}–{formatTimeOfDay(a.end)}
               </span>
               <span>
                 {CATEGORY_META[a.category].emoji} {a.title}

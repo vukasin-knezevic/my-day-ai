@@ -80,6 +80,25 @@ export function minToTime(min: number): string {
   const m = ((Math.round(min) % 1440) + 1440) % 1440
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 }
+// ---- how times and dates are shown ----
+let clock: '24h' | '12h' = '24h'
+/** 24h ("13:00") or 12h ("1:00 PM"); set from the settings. */
+export function setTimeFormat(f: '24h' | '12h') {
+  clock = f
+}
+/** 'HH:mm' as the user wants to see it. Stored values always stay 'HH:mm'. */
+export function formatTimeOfDay(hhmm: string, f: '24h' | '12h' = clock): string {
+  if (f === '24h') return hhmm
+  const [h, m] = hhmm.split(':').map(Number)
+  if (!Number.isFinite(h)) return hhmm
+  return `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
+}
+/** 'yyyy-MM-dd' as DD.MM.YYYY (07.11.2026), never month/day/year. */
+export function formatDateNumeric(s: string): string {
+  const [y, m, d] = s.split('-')
+  return y && m && d ? `${d}.${m}.${y}` : s
+}
+
 /**
  * The one way to show a length of time: "2 h 36 min", "7 min", "2 h". Never decimal ("2.6 h"),
  * never "0 h 7 min" or "2 h 0 min". Takes minutes (rounded).

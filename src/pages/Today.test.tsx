@@ -1,11 +1,11 @@
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Today from './Today'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { todayStr } from '../lib/dates'
-import { pick } from '../test/pick'
+import { pick, setTime } from '../test/pick'
 
 beforeEach(() => {
   const d = emptyData()
@@ -107,7 +107,7 @@ test('kraj pre početka daje grešku', async () => {
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
   await user.type(screen.getByLabelText('Naziv'), 'X')
-  fireEvent.change(screen.getByLabelText('Kraj'), { target: { value: '17:00' } })
+  await setTime(user, 'Kraj', '17:00')
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
   expect(screen.getByRole('alert')).toHaveTextContent('Kraj mora biti posle početka')
   expect(useStore.getState().activities).toHaveLength(0)

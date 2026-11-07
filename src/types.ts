@@ -248,6 +248,8 @@ export interface Settings {
   studyHoursPerDay: number
   proteinGoal: number
   theme: 'system' | 'light' | 'dark'
+  /** 24h (13:00) or 12h (1:00 PM) */
+  timeFormat: '24h' | '12h'
   /** UI language code ('sr-Latn', 'en', ...). '' = automatic, from the browser. */
   language: string
   /** Currency shown next to amounts, e.g. RSD, EUR, $ */

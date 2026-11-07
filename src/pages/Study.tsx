@@ -5,7 +5,15 @@ import { Badge, Button, Card, Field, Input, PageTitle, Select } from '../compone
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
 import type { Assessment, AssessmentType, Attendance, ClassSlot, Subject, Weekday } from '../types'
-import { formatShort, monthName, monthOf, todayStr, weekdayName, weekdayOf } from '../lib/dates'
+import {
+  formatShort,
+  formatTimeOfDay,
+  monthName,
+  monthOf,
+  todayStr,
+  weekdayName,
+  weekdayOf,
+} from '../lib/dates'
 import {
   URGENCY_CLS,
   countdownLabel,
@@ -284,8 +292,8 @@ function SubjectCard({
             <span>
               {t('study.slotLine', {
                 day: weekdayName(sl.day),
-                start: sl.start,
-                end: sl.end,
+                start: formatTimeOfDay(sl.start),
+                end: formatTimeOfDay(sl.end),
                 kind: slotKindLabel(sl.kind),
               })}
             </span>

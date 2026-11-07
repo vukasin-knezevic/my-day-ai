@@ -40,6 +40,17 @@ export default function Settings() {
               ))}
             </Select>
           </Field>
+          <Field label={t('set.timeFormat')}>
+            <Select
+              value={settings.timeFormat}
+              onChange={(e) =>
+                setSettings({ timeFormat: e.target.value as SettingsT['timeFormat'] })
+              }
+            >
+              <option value="24h">{t('set.time24')}</option>
+              <option value="12h">{t('set.time12')}</option>
+            </Select>
+          </Field>
           <Field label={t('set.language')}>
             <Select
               value={settings.language || ''}

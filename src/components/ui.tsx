@@ -9,6 +9,8 @@ import {
   type SelectHTMLAttributes,
 } from 'react'
 import Sheet from './Sheet'
+import { DateField, TimeField } from './Pickers'
+import { inputCls } from './styles'
 import { useT } from '../i18n'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -49,9 +51,33 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   )
 }
 
-const inputCls =
-  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-800'
 export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
+  // time and date fields use the app's own pickers
+  if (p.type === 'time')
+    return (
+      <TimeField
+        value={String(p.value ?? '')}
+        onChange={(v) => p.onChange?.({ target: { value: v } } as never)}
+        className={p.className}
+        id={p.id}
+        disabled={p.disabled}
+        ariaLabel={p['aria-label']}
+      />
+    )
+  if (p.type === 'date')
+    return (
+      <DateField
+        id={p.id}
+        aria-label={p['aria-label']}
+        disabled={p.disabled}
+        min={p.min}
+        max={p.max}
+        required={p.required}
+        value={String(p.value ?? '')}
+        onChange={(e) => p.onChange?.(e as never)}
+        className={p.className}
+      />
+    )
   // no browser suggestions in the fields unless a field asks for them
   return <input autoComplete="off" {...p} className={`${inputCls} ${p.className ?? ''}`} />
 }

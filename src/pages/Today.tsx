@@ -4,7 +4,14 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore, selectData } from '../store'
 import { Badge, Button, Card, Input } from '../components/ui'
 import { CATEGORY_META } from '../types'
-import { formatDuration, formatLong, minToTime, timeToMin, todayStr } from '../lib/dates'
+import {
+  formatDuration,
+  formatTimeOfDay,
+  formatLong,
+  minToTime,
+  timeToMin,
+  todayStr,
+} from '../lib/dates'
 import {
   buildAlerts,
   currentAndNext,
@@ -211,7 +218,7 @@ export default function Today() {
           <p className="mt-1 text-sm">
             {t('today.next', {
               title: next.title,
-              start: next.start,
+              start: formatTimeOfDay(next.start),
               d: formatDuration(minutesToNext!),
             })}
           </p>
@@ -239,7 +246,7 @@ export default function Today() {
           {occ.map((o) => (
             <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
               <span className="w-24 shrink-0 tabular-nums">
-                {o.start}–{o.end}
+                {formatTimeOfDay(o.start)}–{formatTimeOfDay(o.end)}
               </span>
               <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
                 <span className="user-text">

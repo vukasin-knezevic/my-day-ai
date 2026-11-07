@@ -4,7 +4,7 @@ import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
 import { idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
-import { todayStr } from './lib/dates'
+import { setTimeFormat, todayStr } from './lib/dates'
 import {
   award as awardXp,
   revokeWhere,
@@ -204,3 +204,8 @@ const syncLanguage = (s: Pick<AppData, 'settings'>) =>
   setLanguage(resolveLanguage(s.settings.language))
 syncLanguage(useStore.getState())
 useStore.subscribe(syncLanguage)
+
+// Times are shown as 24h or 12h, as set in the settings.
+const syncTimeFormat = (s: Pick<AppData, 'settings'>) => setTimeFormat(s.settings.timeFormat)
+syncTimeFormat(useStore.getState())
+useStore.subscribe(syncTimeFormat)

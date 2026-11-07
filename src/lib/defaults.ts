@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   studyHoursPerDay: 3,
   proteinGoal: 120,
   theme: 'system',
+  timeFormat: '24h',
   language: '',
   currency: '',
   aiMode: 'manual',
