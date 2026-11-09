@@ -10,5 +10,18 @@
       "Read(./graphify-out/cache/**)",
       "Read(./**/*.log)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/format.mjs", "timeout": 60 }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/check.mjs", "timeout": 180 }]
+      }
+    ]
   }
 }
