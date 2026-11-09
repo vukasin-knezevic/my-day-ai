@@ -11,3 +11,4 @@ test-results
 .DS_Store
 dev-dist
 *.tsbuildinfo
+graphify-out/
