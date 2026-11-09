@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./node_modules/**)",
+      "Read(./dist/**)",
+      "Read(./build/**)",
+      "Read(./venv/**)",
+      "Read(./.idea/**)",
+      "Read(./test-results/**)",
+      "Read(./graphify-out/cache/**)",
+      "Read(./**/*.log)"
+    ]
+  }
+}
