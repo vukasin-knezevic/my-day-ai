@@ -1,7 +1,7 @@
 // Browser notifications logic (pure part). The browser can only show them while the app is open
 // or recently used; for reliable phone reminders use the .ics export (see lib/ics.ts).
 import type { AppData } from '../types'
-import { addDaysStr, daysUntil, timeToMin, todayStr } from './dates'
+import { addDaysStr, daysUntil, formatTimeOfDay, timeToMin, todayStr } from './dates'
 import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
@@ -27,7 +27,7 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
       out.push({
         id: `ev-${o.key}`,
         title: o.type === 'class' ? t('rem.class') : t('rem.soon'),
-        body: t('rem.body', { title: o.title, start: o.start, n: until }),
+        body: t('rem.body', { title: o.title, start: formatTimeOfDay(o.start), n: until }),
       })
     }
   }
@@ -66,7 +66,7 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     out.push({
       id: `bed-${key}`,
       title: t('rem.bed.title'),
-      body: t('rem.bed.body', { time: data.settings.bedTime }),
+      body: t('rem.bed.body', { time: formatTimeOfDay(data.settings.bedTime) }),
     })
   }
 

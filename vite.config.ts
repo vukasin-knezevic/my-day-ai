@@ -20,6 +20,11 @@ export default defineConfig({
     VitePWA({
       // a new version is downloaded in the background, the app shows "New update" and restarts when the user agrees
       registerType: 'prompt',
+      // our own service worker (src/sw.ts): the same offline cache, plus what a generated one cannot
+      // do: a tap on a notification opens the app, and buttons inside a notification
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       manifest: {
         name: 'My Day AI',
         short_name: 'My Day',
@@ -37,7 +42,11 @@ export default defineConfig({
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg}'] },
+      injectManifest: {
+        // the icons are needed offline too (notifications, the install screen); the big iPhone start
+        // screens are not
+        globPatterns: ['**/*.{js,css,html,svg}', '*.png'],
+      },
     }),
   ],
   test: {

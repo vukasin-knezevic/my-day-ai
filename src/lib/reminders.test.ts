@@ -1,3 +1,4 @@
+import { setTimeFormat } from './dates'
 import { dueReminders } from './reminders'
 import { buildIcs } from './ics'
 import { hoursByCategory, overview, periodDates } from './overview'
@@ -38,6 +39,15 @@ describe('dueReminders', () => {
     const r = dueReminders(data({ activities: [act()] }), at(17, 50), new Set())
     expect(r).toHaveLength(1)
     expect(r[0].body).toContain('18:00')
+  })
+  it('A-10: the time in the text follows the 12h / 24h setting', () => {
+    setTimeFormat('12h')
+    try {
+      const r = dueReminders(data({ activities: [act()] }), at(17, 50), new Set())
+      expect(r[0].body).toMatch(/6:00\s?PM/i)
+    } finally {
+      setTimeFormat('24h')
+    }
   })
   it('does not fire too early, after start, or twice', () => {
     expect(dueReminders(data({ activities: [act()] }), at(17, 0), new Set())).toHaveLength(0)

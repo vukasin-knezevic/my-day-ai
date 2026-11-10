@@ -34,6 +34,23 @@ for (const [size, file] of [
   await page.close()
 }
 
+// The small icon of a notification (Android status bar): only the shape matters, Android paints
+// every opaque pixel white. So: the logo in white on a transparent background, with thicker lines.
+{
+  const size = 96
+  const badge = svg
+    .replace(/<rect[^>]*\/>/, '')
+    .replaceAll('#3b82f6', '#ffffff')
+    .replace('stroke-width="26"', 'stroke-width="40"')
+    .replace(' opacity=".55"', '')
+    .replace('viewBox="0 0 512 512"', 'viewBox="40 90 432 332"')
+    .replace('<svg ', `<svg width="${size}" height="${size}" `)
+  const page = await browser.newPage({ viewport: { width: size, height: size } })
+  await page.setContent(`<body style="margin:0;background:transparent">${badge}</body>`)
+  await page.screenshot({ path: 'public/badge-96.png', omitBackground: true })
+  await page.close()
+}
+
 // blue logo on the dark blue background, in the middle
 mkdirSync('public/splash', { recursive: true })
 for (const [w, h, ratio] of SPLASH) {

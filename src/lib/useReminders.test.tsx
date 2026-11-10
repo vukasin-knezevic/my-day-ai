@@ -1,7 +1,13 @@
 import { render } from '@testing-library/react'
 import { useStore } from '../store'
 import { emptyData } from './defaults'
-import { requestNotifications, showNotification, useReminders } from './useReminders'
+import {
+  loadSent,
+  requestNotifications,
+  saveSent,
+  showNotification,
+  useReminders,
+} from './useReminders'
 
 const NOW = new Date(2026, 10, 6, 17, 50)
 
@@ -21,6 +27,7 @@ function Host() {
 
 beforeEach(() => {
   shown.mockClear()
+  localStorage.clear()
   FakeNotification.permission = 'granted'
   vi.stubGlobal('Notification', FakeNotification)
   vi.useFakeTimers({ now: NOW })
@@ -125,5 +132,50 @@ describe('showNotification', () => {
   it('does nothing without permission', async () => {
     vi.stubGlobal('Notification', Object.assign(vi.fn(), { permission: 'denied' }))
     expect(await showNotification('T', 'B')).toBe(false)
+  })
+})
+
+describe('A-10: notifications do not repeat and carry the logo', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('a reminder shown before the app was closed is not shown again after reopening', () => {
+    const first = render(<Host />)
+    expect(shown).toHaveBeenCalledTimes(1)
+    first.unmount()
+    render(<Host />)
+    expect(shown).toHaveBeenCalledTimes(1)
+  })
+
+  it('remembers today and yesterday only', () => {
+    saveSent(
+      new Map([
+        ['old', '2026-11-04'],
+        ['bed-2026-11-05', '2026-11-05'],
+        ['ev-x', '2026-11-06'],
+      ]),
+    )
+    expect([...loadSent('2026-11-06').keys()]).toEqual(['bed-2026-11-05', 'ev-x'])
+  })
+
+  it('damaged memory starts empty instead of breaking reminders', () => {
+    localStorage.setItem('my-day-ai-sent', '{oops')
+    expect(loadSent('2026-11-06').size).toBe(0)
+  })
+
+  it('has a tag (no duplicates), the small one-colour icon and the large one', async () => {
+    const showSw = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('Notification', Object.assign(vi.fn(), { permission: 'granted' }))
+    vi.stubGlobal('navigator', {
+      serviceWorker: { ready: Promise.resolve({ showNotification: showSw }) },
+    })
+    await showNotification('T', 'B', { tag: 'ev-a' })
+    expect(showSw).toHaveBeenCalledWith(
+      'T',
+      expect.objectContaining({
+        tag: 'ev-a',
+        badge: expect.stringContaining('badge-96.png'),
+        icon: expect.stringContaining('icon-192.png'),
+      }),
+    )
   })
 })
