@@ -25,6 +25,12 @@ Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, 
 - **Nije urađeno:** objašnjenje dugmeta za kalendar u tutorijalu dolazi sa tutorijalom (faza E).
 - **Proveriti na telefonu:** iPhone: traka ispod sata uspravno i položeno; „Dodaj u kalendar“ otvara ekran „Dodaj sve“ (ako ne, radi li „Podeli fajl“); prevlačenje od leve ivice. Android: dugme i gest Nazad kroz svih 7 koraka; „Napusti“ zaista zatvara instaliranu aplikaciju.
 
+### Faza D: faks, trening, obraćanje
+
+- **Urađeno:** Forme za termin i obavezu otvaraju se iza dugmeta u donjem panelu, a sačuvani termini su jasni redovi sa ✎ i ✕ (R-01). Poeni se prikazuju kao „0 / 100“ (R-09). Predmet bez obaveza nudi dodavanje kolokvijuma i ispita umesto poruke „ne može se doći do 51“ (R-11). Polje „Kako ti se obraćam“ u Podešavanjima počinje predlogom vokativa (R-10). Trening je jedna stvar (R-06, A-05): novi trening traži dan i vreme, pojavljuje se na ekranu Danas i ima podsetnik; vežbe su log vezan za zakazani trening (`Workout.activityId`), „Urađeno“ sa bilo kog ekrana daje XP jednom (`src/lib/workoutFlow.ts`), a brojač „Ove nedelje“, niz, planer i Pregled čitaju isti izvor (`doneWorkouts`). Trajanje je procena iz broja serija ili stvarno trajanje, osećaj je opcion i pita se posle. Gotovi splitovi: „Koristi ovaj plan“ otvara panel „Kada treniraš?“ sa upozorenjem o poklapanju sa terminom na faksu, plan ponavlja treninge svake nedelje, ima „✓ Aktivan“, „Promeni vreme“ i „Prekini plan“ (`until` na nizu). Predlozi naziva vežbi dolaze iz sopstvenog panela (A-36). Brisanje evidencije treninga vraća trening u „planirano“, a „Poništi“ vraća i to.
+- **Nije urađeno:** ništa iz faze nije preskočeno.
+- **Proveriti na telefonu:** iPhone i Android: panel „Kada treniraš?“ i polja za vežbe sa tastaturom; podsetnik za zakazani trening.
+
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
 - **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).

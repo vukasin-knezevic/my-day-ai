@@ -5,6 +5,7 @@ import { occurrencesOn } from './schedule'
 import { avgSleep } from './life'
 import { subjectPoints } from './grades'
 import { computeStreaks } from './xp'
+import { doneWorkouts } from './workout'
 
 export type Period = 'week' | 'month'
 
@@ -70,7 +71,7 @@ export function overview(data: AppData, period: Period, today: string): Overview
     dates,
     hours,
     workouts: {
-      done: data.workouts.filter((w) => inRange(w.date)).length,
+      done: doneWorkouts(data).filter((w) => inRange(w.date)).length,
       goal: Math.round(data.settings.workoutsPerWeek * scale),
     },
     studyHours: {

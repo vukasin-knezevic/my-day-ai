@@ -15,7 +15,7 @@ import { buildAlerts, occurrencesOn } from '../schedule'
 import { avgSleep } from '../life'
 import { subjectPoints } from '../grades'
 import { computeStreaks, rewardBalance } from '../xp'
-import { workoutsInWeek, proteinOn } from '../workout'
+import { workoutsDoneInWeek, proteinOn } from '../workout'
 import { schemaText, type AiKind } from './schemas'
 
 export type Tone = 'friendly' | 'strict' | 'support'
@@ -134,7 +134,7 @@ export function buildContext(data: AppData, today: string, nowMin = nowMinutes()
   const st = computeStreaks(data, today)
   lines.push(
     t('prompt.ctx.workout', {
-      n: workoutsInWeek(data.workouts, today).length,
+      n: workoutsDoneInWeek(data, today),
       s: st.study,
       w: st.workout,
       sl: st.sleep,

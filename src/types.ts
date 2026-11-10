@@ -125,6 +125,10 @@ export interface Activity {
   skippedDates?: string[]
   /** Occurrences removed ("only this day") without deleting the whole series */
   excludedDates?: string[]
+  /** Last day of a repeating series (a workout plan that was stopped); none = it goes on */
+  until?: string
+  /** Set on the weekly workouts made from the active workout plan: which day of the plan this is */
+  planDay?: Weekday
   demo?: boolean
 }
 
@@ -142,7 +146,12 @@ export interface Workout {
   type: string
   durationMin: number
   exercises: WorkoutExercise[]
-  feeling: 1 | 2 | 3 | 4 | 5
+  /** Optional, asked after the workout */
+  feeling: 1 | 2 | 3 | 4 | 5 | null
+  /** The scheduled workout (an activity) these exercises belong to */
+  activityId?: string
+  /** true = exercises planned for a scheduled workout that is not done yet (not in the history) */
+  planned?: boolean
   demo?: boolean
 }
 
@@ -155,6 +164,8 @@ export interface WorkoutPlan {
   name: string
   source: 'template' | 'ai' | 'manual'
   days: WorkoutPlanDay[]
+  /** Set while the plan is in use: when each of its days is trained (same order as `days`) */
+  schedule?: { day: Weekday; start: string }[]
 }
 
 /** A saved workout the user can load into the "new workout" form again. */

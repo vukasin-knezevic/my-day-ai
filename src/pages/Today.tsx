@@ -27,6 +27,7 @@ import {
 } from '../lib/schedule'
 import { parseQuick } from '../lib/quickParse'
 import { applyParsed } from '../lib/apply'
+import { setWorkoutDone } from '../lib/workoutFlow'
 import { computeStreaks, rewardForDone, streakMessages } from '../lib/xp'
 import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
@@ -166,6 +167,14 @@ export default function Today() {
   function mark(o: Occurrence, status: 'done' | 'skipped' | 'planned') {
     const a = data.activities.find((x) => x.id === o.activityId)
     if (!a) return
+    // a workout is one thing: marking it here also saves its exercises and pays XP once
+    if (a.category === 'workout' && status !== 'skipped') {
+      setWorkoutDone(a.id, day, status === 'done')
+      const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
+      if (status === 'done' && streaks.length)
+        useToast.getState().push([...useToast.getState().messages, ...streaks])
+      return
+    }
     store.update('activities', a.id, withStatus(a, day, status))
     // anything but "done" takes back what "done" paid out
     if (status !== 'done') {

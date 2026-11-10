@@ -26,6 +26,8 @@ type XpEvent = AppData['progress']['events'][number]
 export interface Removal {
   /** Removed items per list, each with the place it had. */
   items: Partial<Record<CollectionKey, { index: number; item: AnyItem }[]>>
+  /** Activities that a delete changed without removing (a deleted workout log un-does its workout). */
+  changed: AppData['activities']
   /** XP events that were taken back with them. */
   events: XpEvent[]
   /** Award ids that were freed (so the same thing could pay again). */
@@ -41,17 +43,26 @@ export function removedBetween(before: AppData, after: AppData): Removal {
       .filter((x) => !left.has(x.item.id))
     if (gone.length) items[k] = gone
   }
+  const was = new Map(before.activities.map((a) => [a.id, a]))
+  const changed = after.activities.flatMap((a) => {
+    const old = was.get(a.id)
+    return old && old !== a ? [old] : []
+  })
   const eventsLeft = new Set(after.progress.events.map((e) => e.id))
   const awardedLeft = new Set(after.progress.awarded)
   return {
     items,
+    changed,
     events: before.progress.events.filter((e) => !eventsLeft.has(e.id)),
     awarded: before.progress.awarded.filter((id) => !awardedLeft.has(id)),
   }
 }
 
 export const isEmptyRemoval = (r: Removal) =>
-  Object.keys(r.items).length === 0 && r.events.length === 0 && r.awarded.length === 0
+  Object.keys(r.items).length === 0 &&
+  r.changed.length === 0 &&
+  r.events.length === 0 &&
+  r.awarded.length === 0
 
 /** Puts back what `removal` took, on top of the data as it is now (later changes are kept). */
 export function restoreRemoval(now: AppData, removal: Removal): Partial<AppData> {
@@ -67,6 +78,11 @@ export function restoreRemoval(now: AppData, removal: Removal): Partial<AppData>
       list.splice(Math.min(index, list.length), 0, item)
     }
     ;(patch as Record<string, unknown>)[k] = list
+  }
+  if (removal.changed.length) {
+    const old = new Map(removal.changed.map((a) => [a.id, a]))
+    const base = (patch.activities ?? now.activities) as AppData['activities']
+    patch.activities = base.map((a) => old.get(a.id) ?? a)
   }
   const p = now.progress
   const have = new Set(p.events.map((e) => e.id))

@@ -1,7 +1,9 @@
 // XP, levels, streaks and the user-named reward time. Pure functions.
-import type { Activity, AppData, Category, Progress } from '../types'
+import type { AppData, Category, Progress } from '../types'
 import { addDaysStr, durationMin } from './dates'
 import { habitDone, sleepHours } from './life'
+import { doneDates } from './schedule'
+import { doneWorkouts } from './workout'
 import { t } from '../i18n'
 
 /** XP needed for each level; the names are translated (`level.0` ... `level.7`). */
@@ -192,10 +194,6 @@ export function streakOf(days: Iterable<string>, today: string): number {
 export const MILESTONES = [3, 7, 14, 30, 60, 100]
 export const isMilestone = (n: number) => MILESTONES.includes(n)
 
-function doneDates(a: Activity): string[] {
-  return a.recurrence === 'none' ? (a.status === 'done' ? [a.date] : []) : (a.doneDates ?? [])
-}
-
 export interface Streaks {
   study: number
   workout: number
@@ -205,10 +203,7 @@ export interface Streaks {
 
 export function computeStreaks(data: AppData, today: string, minSleepHours = 7): Streaks {
   const studyDays = data.activities.filter((a) => a.category === 'study').flatMap(doneDates)
-  const workoutDays = [
-    ...data.workouts.map((w) => w.date),
-    ...data.activities.filter((a) => a.category === 'workout').flatMap(doneDates),
-  ]
+  const workoutDays = doneWorkouts(data).map((w) => w.date)
   const sleepDays = data.sleep
     .filter((s) => (sleepHours(s) ?? 0) >= minSleepHours)
     .map((s) => s.date)

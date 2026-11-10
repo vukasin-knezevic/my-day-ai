@@ -1,6 +1,7 @@
-import type { Meal, Weekday, Workout, WorkoutPlan } from '../types'
+import type { AppData, Meal, Weekday, Workout, WorkoutPlan } from '../types'
 import { t } from '../i18n'
 import { addDaysStr, weekStartStr } from './dates'
+import { doneDates } from './schedule'
 
 const norm = (s: string) => s.trim().toLowerCase()
 
@@ -14,6 +15,54 @@ export function maxWeight(w: Workout, exercise: string): number {
 }
 
 /** Best weight ever lifted per exercise (lowercase key). */
+/** Workouts that really happened (exercises planned for a scheduled workout are not history yet). */
+export const logged = (workouts: Workout[]): Workout[] => workouts.filter((w) => !w.planned)
+
+/**
+ * How long a workout will take, judged by its sets: about 3 minutes a set plus warming up.
+ * Nothing entered = an hour.
+ */
+export function estimateMinutes(exercises: { sets: number | unknown[] }[]): number {
+  const sets = exercises.reduce((n, e) => n + (Array.isArray(e.sets) ? e.sets.length : e.sets), 0)
+  if (sets === 0) return 60
+  return Math.max(20, Math.round((sets * 3 + 10) / 5) * 5)
+}
+
+/** One workout that was done, whatever screen it was marked on. */
+export interface DoneWorkout {
+  key: string
+  date: string
+}
+
+/**
+ * THE source for "workouts done": the weekly counter, the streak, the planner and the overview all
+ * read this. A scheduled workout counts through its activity; exercises logged for it are the same
+ * workout, not a second one. A log without a scheduled workout (older data) counts by itself.
+ */
+export function doneWorkouts(data: Pick<AppData, 'activities' | 'workouts'>): DoneWorkout[] {
+  const out: DoneWorkout[] = []
+  const scheduled = new Set<string>()
+  for (const a of data.activities) {
+    if (a.category !== 'workout') continue
+    scheduled.add(a.id)
+    for (const date of doneDates(a)) out.push({ key: `act-${a.id}-${date}`, date })
+  }
+  for (const w of logged(data.workouts)) {
+    if (w.activityId && scheduled.has(w.activityId)) continue
+    out.push({ key: `workout-${w.id}`, date: w.date })
+  }
+  return out
+}
+
+/** How many workouts were done in the week of the given date. */
+export function workoutsDoneInWeek(
+  data: Pick<AppData, 'activities' | 'workouts'>,
+  dateInWeek: string,
+): number {
+  const [start, end] = [weekStartStr(dateInWeek), addDaysStr(weekStartStr(dateInWeek), 6)]
+  return doneWorkouts(data).filter((w) => w.date >= start && w.date <= end).length
+}
+
 export function personalRecords(workouts: Workout[]): Record<string, number> {
   const rec: Record<string, number> = {}
   for (const w of workouts)
@@ -25,13 +74,16 @@ export function personalRecords(workouts: Workout[]): Record<string, number> {
   return rec
 }
 
+export interface NewRecord {
+  name: string
+  weight: number
+  before: number
+}
+
 /** Exercises in `workout` that beat all earlier workouts (weight > 0 and strictly higher). */
-export function newRecords(
-  workout: Pick<Workout, 'exercises'>,
-  previous: Workout[],
-): { name: string; weight: number; before: number }[] {
+export function newRecords(workout: Pick<Workout, 'exercises'>, previous: Workout[]): NewRecord[] {
   const prev = personalRecords(previous)
-  const out: { name: string; weight: number; before: number }[] = []
+  const out: NewRecord[] = []
   for (const e of workout.exercises) {
     const weight = Math.max(0, ...e.sets.map((s) => s.weight))
     const before = prev[norm(e.name)] ?? 0

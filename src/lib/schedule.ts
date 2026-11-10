@@ -33,6 +33,7 @@ export interface Occurrence {
 
 function occursOn(a: Activity, date: string): boolean {
   if (date < a.date) return false
+  if (a.until !== undefined && date > a.until) return false
   if (a.excludedDates?.includes(date)) return false
   switch (a.recurrence) {
     case 'none':
@@ -121,6 +122,11 @@ export function occurrencesOn(
   return [...acts, ...classOccurrences(data.subjects, date)].sort(
     (x, y) => timeToMin(x.start) - timeToMin(y.start),
   )
+}
+
+/** The days on which an activity was done (a repeating one keeps a list). */
+export function doneDates(a: Activity): string[] {
+  return a.recurrence === 'none' ? (a.status === 'done' ? [a.date] : []) : (a.doneDates ?? [])
 }
 
 /** Marks one occurrence done/skipped (handles recurring activities). */
