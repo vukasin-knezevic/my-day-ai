@@ -686,6 +686,10 @@ const messages = {
   'ai.chat.copyFail': 'Kopiranje nije uspelo.',
   'ai.chat.error': 'Greška. Probaj ručni režim.',
   'ai.chat.manualNote': 'Bez API ključa chat radi ručno: kopiraš pitanje + podatke u claude.ai.',
+  'load.failTitle': 'Podaci nisu mogli da se učitaju',
+  'load.failBody':
+    'Ništa nije obrisano i ništa se ne upisuje dok se podaci ne učitaju. Zatvori druge kartice sa aplikacijom i pokušaj ponovo.',
+  'load.retry': 'Pokušaj ponovo',
 }
 
 export type MessageKey = keyof typeof messages

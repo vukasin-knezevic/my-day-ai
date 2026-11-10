@@ -694,6 +694,10 @@ const messages: Record<MessageKey, string> = {
   'ai.chat.error': 'Error. Try manual mode.',
   'ai.chat.manualNote':
     'Without an API key the chat works manually: you copy the question + data into claude.ai.',
+  'load.failTitle': 'Your data could not be loaded',
+  'load.failBody':
+    'Nothing was deleted and nothing is saved until the data loads. Close other tabs with the app and try again.',
+  'load.retry': 'Try again',
 }
 
 const locale: LocaleModule = {

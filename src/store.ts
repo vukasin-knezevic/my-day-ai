@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { AppData, Settings } from './types'
 import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
-import { idbStorage } from './lib/storage'
+import { allowWrites, idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { monthOf, setTimeFormat, todayStr } from './lib/dates'
 import {
@@ -54,6 +54,8 @@ type Item<K extends CollectionKey> = AppData[K][number]
 
 interface Actions {
   hydrated: boolean
+  /** The saved data could not be read: the app shows "try again" and writes nothing (see lib/storage.ts). */
+  hydrationError: boolean
   setSettings: (patch: Partial<Settings>) => void
   add: <K extends CollectionKey>(key: K, item: Omit<Item<K>, 'id'> & { id?: string }) => string
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void
@@ -94,6 +96,7 @@ export const useStore = create<Store>()(
     (set, get) => ({
       ...emptyData(),
       hydrated: false,
+      hydrationError: false,
       setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
       add: (key, item) => {
         const id = item.id ?? uid()
@@ -224,8 +227,14 @@ export const useStore = create<Store>()(
         ...current,
         ...normalizeData(persisted as Partial<AppData>),
       }),
-      onRehydrateStorage: () => () => {
-        useStore.setState({ hydrated: true })
+      onRehydrateStorage: () => (_state, error) => {
+        if (error) {
+          console.error('Saved data could not be read', error)
+          useStore.setState({ hydrationError: true })
+          return
+        }
+        allowWrites()
+        useStore.setState({ hydrated: true, hydrationError: false })
       },
     },
   ),

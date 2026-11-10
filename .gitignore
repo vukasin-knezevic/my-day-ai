@@ -12,3 +12,4 @@ test-results
 dev-dist
 *.tsbuildinfo
 graphify-out/
+scripts/.batch.json

@@ -4,6 +4,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useStore } from './store'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
+import LoadError from './components/LoadError'
 import Onboarding from './pages/Onboarding'
 import Planner from './pages/Planner'
 import Ai from './pages/Ai'
@@ -23,6 +24,7 @@ const Overview = lazy(() => import('./pages/Overview'))
 export default function App() {
   const { t } = useT()
   const hydrated = useStore((s) => s.hydrated)
+  const hydrationError = useStore((s) => s.hydrationError)
   const onboarded = useStore((s) => s.settings.onboarded)
   const theme = useStore((s) => s.settings.theme)
 
@@ -37,6 +39,7 @@ export default function App() {
     return watchSystemTheme(() => applyTheme('system'))
   }, [theme])
 
+  if (hydrationError) return <LoadError />
   if (!hydrated) return <p className="p-6">{t('common.loading')}</p>
   if (!onboarded) return <Onboarding />
 

@@ -2,6 +2,7 @@
 // turns that into a small state the UI can show: nothing / downloading (0-100%) / ready to restart.
 import { create } from 'zustand'
 import { registerSW } from 'virtual:pwa-register'
+import { flushStorage } from './storage'
 
 export type UpdatePhase = 'idle' | 'downloading' | 'ready'
 
@@ -49,6 +50,8 @@ export function initUpdates(autoUpdate: () => boolean) {
     onRegisteredSW(_url, registration) {
       if (!registration) return
       const watch = () => {
+        // the very first install of the service worker also fires `updatefound`: that is not an update
+        if (!navigator.serviceWorker.controller) return
         const worker = registration.installing
         if (!worker) return
         startProgress()
@@ -63,9 +66,11 @@ export function initUpdates(autoUpdate: () => boolean) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') check()
         // "automatic updates": once a downloaded version is waiting and the app is out of sight, switch to it
-        else if (autoUpdate() && useUpdate.getState().phase === 'ready') void update(true)
+        else if (autoUpdate() && useUpdate.getState().phase === 'ready') void restart()
       })
     },
   })
-  useUpdate.setState({ restart: () => void update(true) })
+  // a change made a moment ago may still be on its way to the database: wait for it, then restart
+  const restart = () => flushStorage().then(() => update(true))
+  useUpdate.setState({ restart: () => void restart() })
 }

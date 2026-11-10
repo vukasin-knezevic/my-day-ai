@@ -601,6 +601,10 @@ const messages = fromEnglish({
   'ai.chat.copyFail': `No se pudo copiar.`,
   'ai.chat.error': `Error. Prueba el modo manual.`,
   'ai.chat.manualNote': `Sin clave API el chat funciona en manual: copias la pregunta + los datos en claude.ai.`,
+  'load.failTitle': 'No se pudieron cargar tus datos',
+  'load.failBody':
+    'No se ha borrado nada y no se guarda nada hasta que se carguen los datos. Cierra otras pestañas con la app y vuelve a intentarlo.',
+  'load.retry': 'Reintentar',
 })
 
 const locale: LocaleModule = {
