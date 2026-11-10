@@ -1,7 +1,7 @@
 import { currentEnv, notificationSupport } from '../lib/ios'
 import { isSerbian } from '../lib/address'
 import { vocative } from '../lib/vocative'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DataCard from './DataCard'
 import { useStore } from '../store'
 import CalendarButton from '../components/CalendarButton'
@@ -21,6 +21,12 @@ export default function Settings() {
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
   const support = notificationSupport(currentEnv())
+  // R-10: an empty "how do I address you" starts with the suggested form of the name
+  useEffect(() => {
+    const s = useStore.getState().settings
+    if (isSerbian(getLanguage()) && !s.addressName.trim() && s.name.trim())
+      setSettings({ addressName: vocative(s.name) })
+  }, [setSettings])
   const [notifMsg, setNotifMsg] = useState('')
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
@@ -93,6 +99,7 @@ export default function Settings() {
               <Field label={t('set.address')} optional>
                 <Input
                   value={settings.addressName}
+                  placeholder={vocative(settings.name)}
                   onChange={(e) => setSettings({ addressName: e.target.value })}
                 />
               </Field>

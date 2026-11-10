@@ -523,7 +523,7 @@ const messages = {
   'study.importNote': 'Uvoz rasporeda kolokvijuma iz nalepljenog teksta radi na stranici 🤖 AI.',
   'study.xp.registered': 'Prijavljen: {title}',
   'study.points.empty': 'Dodaj predmete da vidiš poene.',
-  'study.points.graded': '/ {graded} ocenjeno ({total} ukupno)',
+  'study.points.graded': 'Ocenjeno do sada: {graded} od {total} unetih poena.',
   'study.points.secured': '✅ Prolaz je obezbeđen.',
   'study.points.missing': 'Fali {n} poena do prolaza ({pass}).',
   'study.points.cannot': '⚠️ Sa preostalim obavezama ({n} poena) ne može se doći do {pass}.',
@@ -760,6 +760,8 @@ const messages = {
   'study.editSlotTitle': 'Izmena termina',
   'study.editSlot': 'Izmeni termin {kind} {day} {start}',
   'study.addAssessment': '+ Nova obaveza',
+  'study.points.noAssessments': 'Dodaj kolokvijume i ispit da vidiš koliko ti fali do prolaza.',
+  'study.points.add': '+ Dodaj obavezu',
 }
 
 export type MessageKey = keyof typeof messages

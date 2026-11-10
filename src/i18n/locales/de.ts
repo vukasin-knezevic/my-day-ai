@@ -440,7 +440,7 @@ const messages = fromEnglish({
   'study.importNote': `Einen Prüfungsplan aus eingefügtem Text zu importieren geht auf der Seite 🤖 KI.`,
   'study.xp.registered': `Angemeldet: {title}`,
   'study.points.empty': `Füge Fächer hinzu, um Punkte zu sehen.`,
-  'study.points.graded': `/ {graded} bewertet ({total} insgesamt)`,
+  'study.points.graded': 'Bisher bewertet: {graded} von {total} eingetragenen Punkten.',
   'study.points.secured': `✅ Das Bestehen ist gesichert.`,
   'study.points.missing': `Es fehlen {n} Punkte zum Bestehen ({pass}).`,
   'study.points.cannot': `⚠️ Mit den restlichen Aufgaben ({n} Punkte) sind {pass} nicht mehr erreichbar.`,
@@ -677,6 +677,9 @@ const messages = fromEnglish({
   'study.editSlotTitle': 'Termin bearbeiten',
   'study.editSlot': '{kind} {day} {start} bearbeiten',
   'study.addAssessment': '+ Neue Leistung',
+  'study.points.noAssessments':
+    'Füge Klausuren und die Prüfung hinzu, um zu sehen, wie viel dir zum Bestehen fehlt.',
+  'study.points.add': '+ Leistung hinzufügen',
 })
 
 const locale: LocaleModule = {

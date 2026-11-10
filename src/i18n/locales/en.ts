@@ -527,7 +527,7 @@ const messages: Record<MessageKey, string> = {
   'study.importNote': 'Importing an exam schedule from pasted text works on the 🤖 AI page.',
   'study.xp.registered': 'Registered: {title}',
   'study.points.empty': 'Add subjects to see points.',
-  'study.points.graded': '/ {graded} graded ({total} total)',
+  'study.points.graded': 'Graded so far: {graded} of the {total} points entered.',
   'study.points.secured': '✅ Passing is secured.',
   'study.points.missing': '{n} points missing to pass ({pass}).',
   'study.points.cannot': '⚠️ With the remaining tasks ({n} points) {pass} cannot be reached.',
@@ -768,6 +768,8 @@ const messages: Record<MessageKey, string> = {
   'study.editSlotTitle': 'Edit class',
   'study.editSlot': 'Edit {kind} {day} {start}',
   'study.addAssessment': '+ New assessment',
+  'study.points.noAssessments': 'Add the midterms and the exam to see how much you need to pass.',
+  'study.points.add': '+ Add an assessment',
 }
 
 const locale: LocaleModule = {

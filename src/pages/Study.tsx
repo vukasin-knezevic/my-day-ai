@@ -47,6 +47,8 @@ const ATTENDANCES: Attendance[] = ['idem', 'ne-idem', 'ponekad']
 export default function Study() {
   const { t } = useT()
   const [tab, setTab] = useState<Tab>('raspored')
+  // "Add an assessment" on the Points tab opens the form on the assessments tab, for that subject
+  const [addFor, setAddFor] = useState<string | null>(null)
   const tabs: [Tab, string][] = [
     ['raspored', t('study.tab.schedule')],
     ['ispiti', t('study.tab.exams')],
@@ -57,8 +59,15 @@ export default function Study() {
       <PageTitle>📚 {t('nav.study')}</PageTitle>
       <Tabs tabs={tabs} active={tab} activeClass="bg-blue-600" onChange={setTab} />
       {tab === 'raspored' && <Schedule />}
-      {tab === 'ispiti' && <Assessments />}
-      {tab === 'poeni' && <Points />}
+      {tab === 'ispiti' && <Assessments addFor={addFor} onAddForUsed={() => setAddFor(null)} />}
+      {tab === 'poeni' && (
+        <Points
+          onAdd={(subjectId) => {
+            setAddFor(subjectId)
+            setTab('ispiti')
+          }}
+        />
+      )}
     </>
   )
 }
@@ -457,7 +466,14 @@ function SlotSheet({
 }
 
 /* ---------------- Exams ---------------- */
-function Assessments() {
+function Assessments({
+  addFor,
+  onAddForUsed,
+}: {
+  /** Open the form at once, for this subject (asked for on the Points tab). */
+  addFor: string | null
+  onAddForUsed: () => void
+}) {
   const { t } = useT()
   const { subjects, assessments, add, update, remove, award, revoke, settings, setSettings } =
     useStore(
@@ -523,7 +539,12 @@ function Assessments() {
     })
     closeForm()
   }
-  const [adding, setAdding] = useState(false)
+  const [adding, setAdding] = useState(addFor !== null)
+  useEffect(() => {
+    if (addFor === null) return
+    setF((x) => ({ ...x, subjectId: addFor }))
+    onAddForUsed()
+  }, [addFor, onAddForUsed])
   function closeForm() {
     setAdding(false)
     setF((x) => ({ ...x, title: '', time: '', regDeadline: '' }))
@@ -801,7 +822,7 @@ function Assessments() {
 }
 
 /* ---------------- Points ---------------- */
-function Points() {
+function Points({ onAdd }: { onAdd: (subjectId: string) => void }) {
   const { t } = useT()
   const { subjects, assessments, update } = useStore(
     useShallow((s) => ({ subjects: s.subjects, assessments: s.assessments, update: s.update })),
@@ -811,6 +832,7 @@ function Points() {
     <div className="space-y-4">
       {subjects.map((s) => {
         const p = subjectPoints(s, assessments)
+        const none = !assessments.some((a) => a.subjectId === s.id)
         return (
           <Card key={s.id}>
             <h2 className="flex items-center gap-2 font-semibold">
@@ -821,19 +843,30 @@ function Points() {
               />
               {s.name}
             </h2>
-            <p className="mt-1 text-2xl font-bold">
-              {p.earned}{' '}
-              <span className="text-base font-normal text-slate-500">
-                {t('study.points.graded', { graded: p.maxGraded, total: p.maxTotal })}
-              </span>
+            <p className="mt-1 text-2xl font-bold tabular-nums">
+              {p.earned} <span className="text-base font-normal text-slate-500">/ 100</span>
             </p>
-            <p className="text-sm">
-              {p.missingToPass === 0
-                ? t('study.points.secured')
-                : p.canPass
-                  ? t('study.points.missing', { n: p.missingToPass, pass: s.passMark })
-                  : t('study.points.cannot', { n: p.remaining, pass: s.passMark })}
-            </p>
+            {none ? (
+              <div className="my-2 space-y-2">
+                <p className="text-sm">{t('study.points.noAssessments')}</p>
+                <Button variant="soft" onClick={() => onAdd(s.id)}>
+                  {t('study.points.add')}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  {t('study.points.graded', { graded: p.maxGraded, total: p.maxTotal })}
+                </p>
+                <p className="text-sm">
+                  {p.missingToPass === 0
+                    ? t('study.points.secured')
+                    : p.canPass
+                      ? t('study.points.missing', { n: p.missingToPass, pass: s.passMark })
+                      : t('study.points.cannot', { n: p.remaining, pass: s.passMark })}
+                </p>
+              </>
+            )}
             <p className="text-sm">
               <Rich text={t('study.points.grade', { grade: p.grade ?? '—' })} />
               {p.grade !== null && p.earned < 100 && t('study.points.gradeNote', { n: p.earned })}

@@ -440,7 +440,7 @@ const messages = fromEnglish({
   'study.importNote': `Importar un calendario de exámenes desde un texto pegado se hace en la página 🤖 IA.`,
   'study.xp.registered': `Inscrito: {title}`,
   'study.points.empty': `Añade asignaturas para ver los puntos.`,
-  'study.points.graded': `/ {graded} calificados ({total} en total)`,
+  'study.points.graded': 'Calificado hasta ahora: {graded} de {total} puntos introducidos.',
   'study.points.secured': `✅ El aprobado está asegurado.`,
   'study.points.missing': `Faltan {n} puntos para aprobar ({pass}).`,
   'study.points.cannot': `⚠️ Con las pruebas restantes ({n} puntos) no se puede llegar a {pass}.`,
@@ -676,6 +676,9 @@ const messages = fromEnglish({
   'study.editSlotTitle': 'Editar clase',
   'study.editSlot': 'Editar {kind} {day} {start}',
   'study.addAssessment': '+ Nueva evaluación',
+  'study.points.noAssessments':
+    'Añade los parciales y el examen para ver cuánto te falta para aprobar.',
+  'study.points.add': '+ Añadir evaluación',
 })
 
 const locale: LocaleModule = {

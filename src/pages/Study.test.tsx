@@ -144,3 +144,18 @@ test('ispit i kolokvijum dobijaju naziv sami, a ostale vrste imenuje korisnik', 
   const added = useStore.getState().assessments[2]
   expect(added).toMatchObject({ type: 'Domaći', title: 'Domaći 1', registration: 'ne-treba' })
 })
+
+test('R-09, R-11: poeni su u odnosu na 100; predmet bez obaveza nudi dodavanje umesto „ne može se doći do 51“', async () => {
+  const user = userEvent.setup()
+  render(<Study />)
+  await addSubject(user)
+  await user.click(screen.getByRole('tab', { name: 'Poeni' }))
+  expect(screen.getByText('/ 100')).toBeInTheDocument()
+  expect(screen.queryByText(/ne može se doći/)).toBeNull()
+  expect(screen.getByText(/Dodaj kolokvijume i ispit/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: '+ Dodaj obavezu' }))
+  // the form is open on the assessments tab
+  expect(await screen.findByRole('dialog', { name: /Novi kolokvijum/ })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Dodaj' }))
+  expect(useStore.getState().assessments).toHaveLength(1)
+})

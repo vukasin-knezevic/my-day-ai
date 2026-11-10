@@ -441,7 +441,7 @@ const messages = fromEnglish({
   'study.importNote': `Импорт расписания экзаменов из вставленного текста работает на странице 🤖 ИИ.`,
   'study.xp.registered': `Записан: {title}`,
   'study.points.empty': `Добавь предметы, чтобы увидеть баллы.`,
-  'study.points.graded': `/ {graded} оценено (всего {total})`,
+  'study.points.graded': 'Оценено на сейчас: {graded} из {total} введённых баллов.',
   'study.points.secured': `✅ Проходной балл обеспечен.`,
   'study.points.missing': `Не хватает {n} баллов до прохода ({pass}).`,
   'study.points.cannot': `⚠️ С оставшимися заданиями ({n} баллов) {pass} не достичь.`,
@@ -677,6 +677,9 @@ const messages = fromEnglish({
   'study.editSlotTitle': 'Изменение занятия',
   'study.editSlot': 'Изменить {kind} {day} {start}',
   'study.addAssessment': '+ Новое задание',
+  'study.points.noAssessments':
+    'Добавь коллоквиумы и экзамен, чтобы увидеть, сколько не хватает до зачёта.',
+  'study.points.add': '+ Добавить задание',
 })
 
 const locale: LocaleModule = {
