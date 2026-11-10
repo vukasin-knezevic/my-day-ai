@@ -11,9 +11,9 @@ import { requestPersistentStorage } from './lib/storage'
 import Shortcuts from './components/Shortcuts'
 import BackController from './components/BackController'
 import { useReminders } from './lib/useReminders'
-import { useT } from './i18n'
 import Today from './pages/Today'
 import Splash from './components/Splash'
+import { BootScreen } from './components/SunLogo'
 import { useNotificationActions } from './lib/routineNotify'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
@@ -29,7 +29,6 @@ const Overview = lazy(() => import('./pages/Overview'))
 const Achievements = lazy(() => import('./pages/Achievements'))
 
 export default function App() {
-  const { t } = useT()
   const hydrated = useStore((s) => s.hydrated)
   const hydrationError = useStore((s) => s.hydrationError)
   const onboarded = useStore((s) => s.settings.onboarded)
@@ -54,14 +53,14 @@ export default function App() {
   }, [theme])
 
   if (hydrationError) return <LoadError />
-  if (!hydrated) return <p className="p-6">{t('common.loading')}</p>
+  if (!hydrated) return <BootScreen />
   if (!onboarded) {
     // iPhone in Safari: installing comes first, because what is typed in Safari stays in Safari
     const env = currentEnv()
     if (isIos(env) && !env.standalone && !stayInSafari)
       return <IosInstallFirst onContinue={() => setStayInSafari(true)} />
     return (
-      <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
+      <Suspense fallback={<BootScreen />}>
         <Onboarding />
       </Suspense>
     )
@@ -72,7 +71,7 @@ export default function App() {
       <Shortcuts />
       <Splash />
       <BackController />
-      <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
+      <Suspense fallback={null}>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Today />} />

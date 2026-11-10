@@ -83,7 +83,35 @@
     <title>My Day AI</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the app starts: the same dark screen and sun as the phone's start screen, so nothing flashes. -->
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #020617;
+        "
+      >
+        <svg
+          width="112"
+          height="112"
+          viewBox="40 100 432 300"
+          fill="none"
+          stroke="#3b82f6"
+          stroke-width="26"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M140 330a116 116 0 0 1 232 0" />
+          <path d="M96 330h320" />
+          <path d="M256 130v38M126 190l27 27M386 190l-27 27M70 270l36 10M442 270l-36 10" />
+          <path d="M170 380h172" opacity=".55" />
+        </svg>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
