@@ -736,6 +736,7 @@ const messages: Record<MessageKey, string> = {
   'today.pickDay': 'Choose a day',
   'today.onlyThisDay': 'This day only',
   'today.emptyDay': 'Nothing planned for this day.',
+  'undo.deleted': 'Deleted',
 }
 
 const locale: LocaleModule = {

@@ -643,6 +643,7 @@ const messages = fromEnglish({
   'today.pickDay': 'Elegir día',
   'today.onlyThisDay': 'Solo este día',
   'today.emptyDay': 'No hay nada previsto para este día.',
+  'undo.deleted': 'Eliminado',
 })
 
 const locale: LocaleModule = {

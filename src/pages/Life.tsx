@@ -11,6 +11,7 @@ import { addDaysStr, formatHours, formatShort, monthOf, todayStr } from '../lib/
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
 import { currencyOf, expenseLabel } from '../lib/labels'
+import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 import {
@@ -290,7 +291,7 @@ function Money() {
                 <Button
                   variant="ghost"
                   aria-label={t('life.deleteExpense', { amount: e.amount })}
-                  onClick={() => remove('expenses', e.id)}
+                  onClick={() => deleteWithUndo(() => remove('expenses', e.id))}
                 >
                   ✕
                 </Button>
@@ -369,7 +370,7 @@ function Habits() {
                 variant="ghost"
                 className="ml-auto"
                 aria-label={t('life.deleteHabit', { name: h.name })}
-                onClick={() => remove('habits', h.id)}
+                onClick={() => deleteWithUndo(() => remove('habits', h.id))}
               >
                 ✕
               </Button>

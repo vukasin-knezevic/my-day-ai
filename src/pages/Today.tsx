@@ -32,6 +32,7 @@ import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
 import DayPicker from '../components/DayPicker'
 import { useSwipe } from '../lib/useSwipe'
+import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 import type { Activity } from '../types'
 
@@ -315,7 +316,7 @@ export default function Today() {
                 <ConfirmButton
                   ask={o.recurring}
                   label={t('today.delete', { title: o.title })}
-                  onConfirm={() => store.remove('activities', o.activityId!)}
+                  onConfirm={() => deleteWithUndo(() => store.remove('activities', o.activityId!))}
                 >
                   ✕
                 </ConfirmButton>

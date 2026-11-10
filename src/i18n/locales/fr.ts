@@ -645,6 +645,7 @@ const messages = fromEnglish({
   'today.pickDay': 'Choisir un jour',
   'today.onlyThisDay': 'Ce jour seulement',
   'today.emptyDay': 'Rien de prévu ce jour-là.',
+  'undo.deleted': 'Supprimé',
 })
 
 const locale: LocaleModule = {

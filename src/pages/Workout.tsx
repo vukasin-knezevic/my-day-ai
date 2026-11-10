@@ -25,6 +25,7 @@ import {
   workoutsInWeek,
 } from '../lib/workout'
 import { XP } from '../lib/xp'
+import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 
@@ -238,7 +239,7 @@ function Training() {
               disabled={!tplId}
               aria-label={t('wo.deleteTemplateAria')}
               onClick={() => {
-                remove('workoutTemplates', tplId)
+                deleteWithUndo(() => remove('workoutTemplates', tplId))
                 setTplId('')
               }}
             >
@@ -372,7 +373,7 @@ function Training() {
                 </span>
                 <Button
                   variant="ghost"
-                  onClick={() => remove('workouts', w.id)}
+                  onClick={() => deleteWithUndo(() => remove('workouts', w.id))}
                   aria-label={t('wo.deleteWorkout', { date: w.date })}
                 >
                   {t('common.delete')}
@@ -511,7 +512,7 @@ function Food() {
                 {t('wo.mealLine', { desc: m.description, g: m.protein })}
                 <Button
                   variant="ghost"
-                  onClick={() => remove('meals', m.id)}
+                  onClick={() => deleteWithUndo(() => remove('meals', m.id))}
                   aria-label={t('wo.deleteMeal', { desc: m.description })}
                 >
                   ✕

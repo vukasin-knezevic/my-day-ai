@@ -34,6 +34,7 @@ import {
 import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
+import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
@@ -144,7 +145,7 @@ function Schedule() {
           key={s.id}
           subject={s}
           onSlotAttendance={setAttendance}
-          onRemove={() => removeSubject(s.id)}
+          onRemove={() => deleteWithUndo(() => removeSubject(s.id))}
         />
       ))}
 
@@ -590,7 +591,7 @@ function Assessments() {
               </Field>
               <Button
                 variant="ghost"
-                onClick={() => remove('assessments', a.id)}
+                onClick={() => deleteWithUndo(() => remove('assessments', a.id))}
                 aria-label={t('study.deleteAssessment', { title: a.title })}
               >
                 {t('common.delete')}

@@ -728,6 +728,7 @@ const messages = {
   'today.pickDay': 'Izbor dana',
   'today.onlyThisDay': 'Samo ovaj dan',
   'today.emptyDay': 'Nema obaveza za ovaj dan.',
+  'undo.deleted': 'Obrisano',
 }
 
 export type MessageKey = keyof typeof messages
