@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { selectData, useStore } from '../store'
 import { Button, Card } from '../components/ui'
 import KeyScope from '../components/KeyScope'
 import { exportJson, importJson } from '../lib/dataIO'
-import { backupStamp, downloadBackup, lastBackupLabel } from '../lib/backup'
+import {
+  BACKUP_FILE,
+  backupStamp,
+  downloadBackup,
+  lastBackupLabel,
+  shareBackup,
+} from '../lib/backup'
+import { canShareFile, readFileText } from '../lib/files'
 import type { AppData } from '../types'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
@@ -21,6 +28,9 @@ export default function DataCard() {
   const backupReminder = useStore((s) => s.settings.backupReminder)
   const setSettings = useStore((s) => s.setSettings)
 
+  const fileInput = useRef<HTMLInputElement>(null)
+  const canShare = canShareFile(BACKUP_FILE, 'application/json')
+
   const current = () => selectData(useStore.getState())
   const backedUp = () => setSettings(backupStamp())
 
@@ -33,9 +43,23 @@ export default function DataCard() {
       setErr(t('data.copyFail'))
     }
   }
-  function check() {
+  async function share() {
+    // closing the share sheet is not a backup
+    if ((await shareBackup(current())) !== 'cancelled') backedUp()
+  }
+  /** The picked file goes through the same check and the same confirmation as pasted text. */
+  async function pickFile(file: File | undefined) {
+    if (!file) return
+    try {
+      check(await readFileText(file))
+    } catch {
+      setPending(null)
+      setErr(t('data.fileFail'))
+    }
+  }
+  function check(text: string) {
     setMsg('')
-    const r = importJson(paste)
+    const r = importJson(text)
     if (!r.ok) {
       setErr(r.message)
       setPending(null)
@@ -73,6 +97,11 @@ export default function DataCard() {
         >
           {t('data.download')}
         </Button>
+        {canShare && (
+          <Button variant="soft" onClick={() => void share()}>
+            {t('data.share')}
+          </Button>
+        )}
       </div>
       <p className="text-sm">{t('data.lastBackup', { when: lastBackupLabel(lastBackupAt) })}</p>
       <label className="flex items-center gap-2 text-sm">
@@ -84,6 +113,25 @@ export default function DataCard() {
         />
         {t('data.backupReminder')}
       </label>
+      <hr className="border-slate-200 dark:border-slate-800" />
+      <h3 className="text-sm font-semibold">{t('data.importTitle')}</h3>
+      <input
+        ref={fileInput}
+        type="file"
+        // iOS greys out .json files when only the MIME type is given
+        accept="application/json,.json,text/plain"
+        className="sr-only"
+        aria-label={t('data.chooseFile')}
+        tabIndex={-1}
+        onChange={(e) => {
+          void pickFile(e.target.files?.[0])
+          // the same file can be picked again after a failed check
+          e.target.value = ''
+        }}
+      />
+      <Button variant="soft" onClick={() => fileInput.current?.click()}>
+        📂 {t('data.chooseFile')}
+      </Button>
       <label className="block text-sm font-medium" htmlFor="import-json">
         {t('data.importLabel')}
       </label>
@@ -93,7 +141,7 @@ export default function DataCard() {
         value={paste}
         onChange={(e) => setPaste(e.target.value)}
       />
-      <Button variant="soft" onClick={check}>
+      <Button variant="soft" onClick={() => check(paste)}>
         {t('data.check')}
       </Button>
       {pending && (

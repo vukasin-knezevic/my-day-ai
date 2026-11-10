@@ -2,6 +2,16 @@
 
 Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Update 0.4
+
+Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, sat, koraci) nije deo ovog PR-a: čeka ručne korake iz `AUDIT_0.4.md`, deo 5.2.
+
+### Faza A: podaci su sigurni i prvi utisak je čist
+
+- **Urađeno:** „Novi update“ se ne prikazuje pri prvoj instalaciji (A-01). Neuspelo čitanje podataka daje ekran „Podaci nisu mogli da se učitaju · Pokušaj ponovo“ i ništa se ne upisuje dok čitanje ne uspe (A-02). Posle uvoda se traži trajno skladište; na iPhone-u u Safariju prvo ide kartica za instalaciju; u Podešavanjima stoji datum poslednje kopije i nedeljni podsetnik koji može da se isključi (A-03). Ispit bez roka za prijavu dobija pretpostavljeni rok 7 dana ranije, u upozorenjima, notifikacijama i kalendaru (A-04). Restart za update čeka da se upis završi (A-37, R-01), uz e2e. `progress` i `settings` se proveravaju pri uvozu i popravljaju pri učitavanju; ekran greške ima „Obriši podatke i kreni ispočetka“, aktivno tek kad je kopija sačuvana (A-15). Uvoz preko „Izaberi fajl“, izvoz i preko „Podeli fajl“, preuzimanje više ne prekida Safari (A-14).
+- **Nije urađeno:** ništa iz faze nije preskočeno.
+- **Proveriti na telefonu:** iPhone: kartica za instalaciju pre uvoda i da podaci ostaju posle 8+ dana; „Podeli fajl“ nudi „Sačuvaj u Fajlove“, a „Izaberi fajl“ otvara taj fajl. Android: nema „Novi update“ odmah posle instalacije.
+
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
 - **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).
