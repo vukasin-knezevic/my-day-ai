@@ -20,7 +20,7 @@ test('A-03: iPhone u Safariju prvo vidi instalaciju i upozorenje da se podaci ne
   expect(screen.getByText(/se ne prenose u instaliranu aplikaciju/)).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: /Dobrodoš/ })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Nastavi u Safariju' }))
-  expect(screen.getByRole('heading', { name: /Dobrodoš/ })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /Dobrodoš/ })).toBeInTheDocument()
 })
 
 test('A-03: posle uvoda aplikacija traži trajno skladište', async () => {
@@ -31,7 +31,7 @@ test('A-03: posle uvoda aplikacija traži trajno skladište', async () => {
   })
   useStore.setState({ ...emptyData(), hydrated: true })
   render(<App />)
-  expect(screen.getByRole('heading', { name: /Dobrodoš/ })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /Dobrodoš/ })).toBeInTheDocument()
   expect(persist).not.toHaveBeenCalled()
   useStore.getState().setSettings({ onboarded: true })
   await vi.waitFor(() => expect(persist).toHaveBeenCalledOnce())

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { AppData } from '../types'
-import { DATA_VERSION, normalizeData } from './defaults'
+import { normalizeData } from './defaults'
 import { t } from '../i18n'
 
 const id = z.string().min(1)
@@ -77,19 +77,7 @@ const OBJECT_SCHEMAS = {
   }),
 }
 
-/** JSON backup of everything. The API key is NOT included unless asked (so a backup can be shared safely). */
-export function exportJson(data: AppData, includeKey = false): string {
-  const out = {
-    app: 'my-day-ai',
-    version: DATA_VERSION,
-    exportedAt: new Date().toISOString(),
-    data: {
-      ...data,
-      settings: { ...data.settings, apiKey: includeKey ? data.settings.apiKey : '' },
-    },
-  }
-  return JSON.stringify(out, null, 2)
-}
+export { exportJson } from './exportJson'
 
 export type ImportResult = { ok: true; data: AppData } | { ok: false; message: string }
 

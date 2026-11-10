@@ -1,6 +1,8 @@
 import { afterEach } from 'vitest'
 import {
   LANGUAGES,
+  LANGUAGE_LIST,
+  loadLanguage,
   detectLanguage,
   getLanguage,
   resolveLanguage,
@@ -20,6 +22,24 @@ afterEach(() => setLanguage('sr-Latn'))
 
 const source = LANGUAGES.find((l) => l.code === 'sr-Latn')!
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
+
+describe('language list (A-23: languages load on demand)', () => {
+  it('names every language file, with the same name the file has', () => {
+    const files = Object.keys(import.meta.glob('./locales/*.ts')).map((f) =>
+      f.replace('./locales/', '').replace('.ts', ''),
+    )
+    expect(LANGUAGE_LIST.map((l) => l.code).sort()).toEqual(files.sort())
+    for (const l of LANGUAGE_LIST)
+      expect(LANGUAGES.find((x) => x.code === l.code)?.name, l.code).toBe(l.name)
+  })
+
+  it('an unknown language is refused and a known one can be loaded again', async () => {
+    expect(await loadLanguage('xx')).toBe(false)
+    expect(await loadLanguage('de')).toBe(true)
+    expect(resolveLanguage('de')).toBe('de')
+    expect(resolveLanguage('nope')).toBe(detectLanguage())
+  })
+})
 
 describe('translation files', () => {
   it('there are at least Serbian (Latin), English and Serbian (Cyrillic)', () => {

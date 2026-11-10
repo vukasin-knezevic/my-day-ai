@@ -51,6 +51,7 @@ import {
 } from '../lib/workoutFlow'
 import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
+import { useToday } from '../lib/useToday'
 import Rich from '../i18n/Rich'
 
 type Tab = 'trening' | 'plan' | 'ishrana'
@@ -238,7 +239,7 @@ function Training() {
     })),
   )
   const data = useStore(useShallow((s) => selectData(s)))
-  const today = todayStr()
+  const today = useToday()
   const [adding, setAdding] = useState(false)
   const [finishing, setFinishing] = useState<Occurrence | null>(null)
   const [msg, setMsg] = useState('')
@@ -878,7 +879,7 @@ function Food() {
       remove: s.remove,
     })),
   )
-  const today = todayStr()
+  const today = useToday()
   const [desc, setDesc] = useState('')
   const [descError, setDescError] = useState('')
   const [protein, setProtein] = useState(30)

@@ -2,7 +2,7 @@
 // and gently reminds once a week.
 import type { AppData, Settings } from '../types'
 import { daysUntil, formatLong, todayStr } from './dates'
-import { exportJson } from './dataIO'
+import { exportJson } from './exportJson'
 import { downloadText, shareOrDownload, type ShareResult } from './files'
 import { t } from '../i18n'
 

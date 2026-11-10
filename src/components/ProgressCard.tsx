@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
-import { Button, Card } from './ui'
+import { Button, Card, Field } from './ui'
+import NumberInput from './NumberInput'
 import { formatDateNumeric, formatTimeOfDay, todayStr } from '../lib/dates'
 import Sheet from './Sheet'
 import { useT } from '../i18n'
@@ -16,6 +17,8 @@ export default function ProgressCard() {
   const spendReward = useStore((s) => s.spendReward)
   const unspendReward = useStore((s) => s.unspendReward)
   const [history, setHistory] = useState(false)
+  const [other, setOther] = useState(false)
+  const [minutes, setMinutes] = useState(15)
   const [undo, setUndo] = useState<{ id: string; timer: ReturnType<typeof setTimeout> } | null>(
     null,
   )
@@ -32,7 +35,7 @@ export default function ProgressCard() {
           type="button"
           aria-haspopup="dialog"
           onClick={() => setHistory(true)}
-          className="rounded-lg px-2 py-1 text-sm text-blue-700 underline-offset-2 hover:underline dark:text-blue-300"
+          className="min-h-11 rounded-lg px-3 py-1 text-sm text-blue-700 underline-offset-2 hover:underline dark:text-blue-300"
         >
           {p.xp} XP
         </button>
@@ -97,8 +100,32 @@ export default function ProgressCard() {
               </Button>
             ))
           )}
+          {!undo && (
+            <Button variant="soft" disabled={balance < 1} onClick={() => setOther(true)}>
+              {t('progress.useOther')}
+            </Button>
+          )}
         </span>
       </div>
+      <Sheet open={other} onClose={() => setOther(false)} title={t('progress.useTitle')}>
+        <form
+          className="space-y-3 pb-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            const n = Math.min(Math.max(1, minutes), balance)
+            const id = spendReward(n)
+            setOther(false)
+            if (id) setUndo({ id, timer: setTimeout(() => setUndo(null), 6000) })
+          }}
+        >
+          <Field label={t('progress.useMinutes', { max: balance })}>
+            <NumberInput min={1} max={Math.max(1, balance)} value={minutes} onChange={setMinutes} />
+          </Field>
+          <Button type="submit" className="w-full" disabled={balance < 1}>
+            {t('progress.useConfirm')}
+          </Button>
+        </form>
+      </Sheet>
       <Sheet open={history} onClose={() => setHistory(false)} title={t('xp.history')}>
         {p.events.length === 0 ? (
           <p className="py-4 text-center text-sm text-slate-600 dark:text-slate-400">

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { AppData, DayRecord, Settings } from './types'
-import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
+import { emptyData, normalizeData, uid, DEFAULT_SETTINGS, DATA_VERSION } from './lib/defaults'
 import { allowWrites, idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { monthOf, setTimeFormat, todayStr } from './lib/dates'
@@ -18,7 +18,7 @@ import { SURPRISE_PER_DAY, SURPRISE_PREFIX, surpriseFor, surpriseId } from './li
 import { celebrate, cue, setEffectPrefs } from './lib/effects'
 import { rewardNameOf } from './lib/labels'
 import { addUsage } from './lib/ai/usage'
-import { resolveLanguage, setGender, setLanguage, t } from './i18n'
+import { loadLanguage, resolveLanguage, setGender, setLanguage, t } from './i18n'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -279,8 +279,20 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'my-day-ai',
-      version: 1,
-      storage: createJSONStorage(() => idbStorage),
+      // the same number as the data format (lib/defaults.ts). The real conversion of older data is
+      // `normalizeData` (see `merge`), so the step from one version to the next changes nothing by itself.
+      version: DATA_VERSION,
+      migrate: (persisted) => persisted as Store,
+      // the language of the saved data is loaded before the data is read into the app (old data may need
+      // its texts while it is being migrated)
+      storage: createJSONStorage(() => ({
+        ...idbStorage,
+        getItem: async (name) => {
+          const raw = await idbStorage.getItem(name)
+          await preloadSavedLanguage(raw)
+          return raw
+        },
+      })),
       partialize: (s) => selectData(s as Store) as unknown as Store,
       merge: (persisted, current) => ({
         ...current,
@@ -300,8 +312,21 @@ export const useStore = create<Store>()(
 )
 
 // Keep the UI language in sync with the saved setting ('' = automatic, from the browser).
+/** Loads the language written in a saved copy of the data (the text is the JSON that persist saved). */
+async function preloadSavedLanguage(raw: string | null | undefined) {
+  try {
+    const saved = (
+      JSON.parse(raw ?? 'null') as { state?: { settings?: { language?: unknown } } } | null
+    )?.state?.settings?.language
+    await loadLanguage(resolveLanguage(typeof saved === 'string' ? saved : ''))
+  } catch {
+    /* damaged data is dealt with later; English is there */
+  }
+}
+
 const syncLanguage = (s: Pick<AppData, 'settings'>) => {
-  setLanguage(resolveLanguage(s.settings.language))
+  const code = resolveLanguage(s.settings.language)
+  void loadLanguage(code).then(() => setLanguage(code))
   setGender(s.settings.gender === 'f' ? 'f' : 'm')
 }
 syncLanguage(useStore.getState())

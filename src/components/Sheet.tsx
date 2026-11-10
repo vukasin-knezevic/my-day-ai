@@ -6,6 +6,35 @@ const DURATION = 220 // ms, open / close / snap back
 const CLOSE_FRACTION = 0.3 // dragged further than this share of the height closes the panel
 const CLOSE_VELOCITY = 0.5 // px/ms downwards: a quick flick closes it too
 
+let inertCount = 0
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+
+/** Tab and Shift+Tab stay inside the panel (A-18). */
+export function trapTab(e: KeyboardEvent, panel: HTMLElement) {
+  const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+    (el) => !el.closest('[hidden],[aria-hidden="true"]'),
+  )
+  if (!items.length) {
+    e.preventDefault()
+    panel.focus()
+    return
+  }
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement
+  if (e.shiftKey && (active === first || active === panel)) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault()
+    first.focus()
+  } else if (!panel.contains(active)) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
 /**
  * The app's own bottom panel (bottom sheet): used instead of the system pop-ups for lists and
  * pickers. Slides up smoothly, follows the finger when dragged down (by the handle, the title or
@@ -59,15 +88,21 @@ export default function Sheet({
     if (!open) return
     const previous = document.activeElement as HTMLElement | null
     panel.current?.focus()
+    // the page behind cannot be reached by Tab or by a screen reader while the panel is open
+    const root = document.getElementById('root')
+    inertCount++
+    root?.setAttribute('inert', '')
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         onCloseRef.current()
       }
+      if (e.key === 'Tab' && panel.current) trapTab(e, panel.current)
     }
     document.addEventListener('keydown', onKey, true)
     return () => {
       document.removeEventListener('keydown', onKey, true)
+      if (--inertCount <= 0) root?.removeAttribute('inert')
       previous?.focus?.()
     }
   }, [open])

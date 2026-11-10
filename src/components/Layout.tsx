@@ -6,7 +6,8 @@ import { useBackHandler } from '../lib/back'
 import { useAppBack } from './BackController'
 import { useToast } from '../lib/toast'
 import UndoBar from './UndoBar'
-import Tutorial from './Tutorial'
+import { lazy, Suspense } from 'react'
+const Tutorial = lazy(() => import('./Tutorial'))
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
@@ -72,10 +73,14 @@ export default function Layout() {
           ))}
         </nav>
       </aside>
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8">
+      <main
+        className={`mx-auto w-full max-w-3xl flex-1 ${pathname === '/' ? 'lg:max-w-6xl' : ''} p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8`}
+      >
         <IosInstallHint />
         <UpdateBanner />
-        <Tutorial />
+        <Suspense fallback={null}>
+          <Tutorial />
+        </Suspense>
         <BackupNudge />
         {subScreen && (
           <button

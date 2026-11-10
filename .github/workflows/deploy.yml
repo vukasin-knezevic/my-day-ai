@@ -1,9 +1,12 @@
 name: Deploy to GitHub Pages
 
-# Runs on every push to main. Pages must be enabled once (Settings -> Pages -> Source: GitHub Actions).
-# The checks run here too, so a broken commit never replaces the live app.
+# Pages must be enabled once (Settings -> Pages -> Source: GitHub Actions).
+# The app is published only after the whole CI (format, lint, types, tests, build and the browser tests)
+# has passed for the very same commit, so a broken commit never replaces the live app (A-35).
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -18,15 +21,21 @@ concurrency:
 
 jobs:
   build:
+    # a manual run is always allowed; an automatic one only when CI succeeded
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the commit that CI checked, not whatever main is by now
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm test
       - run: npm run build
         env:

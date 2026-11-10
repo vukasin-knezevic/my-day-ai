@@ -75,6 +75,7 @@ test('izmena postojeće aktivnosti', async () => {
       <Today />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Staro ime' }))
   await user.click(screen.getByRole('button', { name: 'Izmeni Staro ime' }))
   const title = screen.getByLabelText('Naziv')
   await user.clear(title)
@@ -164,6 +165,7 @@ test('ponavljajuća aktivnost: „Samo danas“ uklanja dan, a niz ostaje', asyn
       <Today />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Jutarnje trčanje' }))
   await user.click(screen.getByRole('button', { name: 'Ukloni Jutarnje trčanje samo za ovaj dan' }))
   expect(screen.queryByText(/Jutarnje trčanje/)).toBeNull()
   const [a] = useStore.getState().activities

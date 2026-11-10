@@ -14,7 +14,6 @@ import {
   monthName,
   monthOf,
   timeToMin,
-  todayStr,
   weekdayName,
   weekdayOf,
 } from '../lib/dates'
@@ -38,6 +37,7 @@ import { deleteWithUndo } from '../lib/undo'
 import CalendarButton from '../components/CalendarButton'
 import Sheet from '../components/Sheet'
 import { useT } from '../i18n'
+import { useToday } from '../lib/useToday'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
 
@@ -83,7 +83,7 @@ function Schedule() {
       removeSubject: s.removeSubject,
     })),
   )
-  const today = todayStr()
+  const today = useToday()
   // "sometimes" is asked on Sunday evening for next week
   const sundayEvening = weekdayOf(today) === 7 && new Date().getHours() >= 17
   const weekly = sundayEvening ? slotsToAsk(subjects, today) : []
@@ -290,7 +290,7 @@ function SubjectCard({
               </Button>
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span role="group" aria-label={attAria(sl)} className="inline-flex gap-1">
+              <span role="group" aria-label={attAria(sl)} className="inline-flex gap-2">
                 {ATTENDANCES.map((a) => (
                   <button
                     key={a}
@@ -303,7 +303,7 @@ function SubjectCard({
                       day: weekdayName(sl.day),
                     })}
                     onClick={() => onSlotAttendance(subject, sl, a)}
-                    className={`min-h-9 rounded-lg px-3 text-xs font-medium transition ${
+                    className={`min-h-11 rounded-lg px-3 text-xs font-medium transition ${
                       sl.attendance === a
                         ? 'bg-blue-600 text-white'
                         : 'bg-white text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
@@ -499,7 +499,7 @@ function Assessments({
     setNewKind('')
   }
   const [titleError, setTitleError] = useState('')
-  const today = todayStr()
+  const today = useToday()
   const month = monthOf(today)
   const regs = monthRegistrations(assessments, month)
   const subj = (id: string) => subjects.find((s) => s.id === id)
@@ -603,7 +603,7 @@ function Assessments({
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="size-5"
+                    className="size-5 shrink-0"
                     checked={a.registration === 'prijavljen'}
                     onChange={(e) => {
                       update('assessments', a.id, {
@@ -639,7 +639,7 @@ function Assessments({
               <label className="mt-2 flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5"
+                  className="size-5 shrink-0"
                   checked={!!a.done}
                   onChange={(e) => update('assessments', a.id, { done: e.target.checked })}
                 />

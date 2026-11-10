@@ -66,12 +66,12 @@ export default function Overview() {
         <Stat
           label={t('ov.workouts')}
           value={`${o.workouts.done} / ${o.workouts.goal}`}
-          sub={t('ov.goalPeriod')}
+          sub={t('ov.workoutsSub', { planned: o.workouts.planned })}
         />
         <Stat
           label={t('ov.study')}
-          value={`${o.studyHours.actual} / ${o.studyHours.goal}`}
-          sub={t('ov.studySub')}
+          value={`${o.studyHours.done} / ${o.studyHours.goal}`}
+          sub={t('ov.studyDoneSub', { planned: o.studyHours.planned })}
         />
         <Stat
           label={t('ov.sleep')}

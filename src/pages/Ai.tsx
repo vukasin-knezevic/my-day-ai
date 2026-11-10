@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Button, Card, Field, Input, PageTitle } from '../components/ui'
 import { FieldContext, invalidCls } from '../components/fieldContext'
-import { todayStr } from '../lib/dates'
+import { formatDateNumeric, formatTimeOfDay, todayStr } from '../lib/dates'
 import { buildManualChat, buildPrompt, kindLabel } from '../lib/ai/prompt'
 import { useT } from '../i18n'
 import { parseAiResponse } from '../lib/ai/extract'
@@ -46,7 +46,7 @@ function Preview({ kind, data }: { kind: AiKind; data: AiResult }) {
       <ul className="list-disc pl-5 text-sm">
         {(data as ImportResult).assessments.map((a, i) => (
           <li key={i}>
-            {a.date} · {a.subject} · {a.title} ({a.type})
+            {formatDateNumeric(a.date)} · {a.subject} · {a.title} ({a.type})
           </li>
         ))}
       </ul>
@@ -78,7 +78,8 @@ function Preview({ kind, data }: { kind: AiKind; data: AiResult }) {
       <ul className="list-disc pl-5">
         {p.activities.map((a, i) => (
           <li key={i}>
-            {a.date} {a.start}–{a.end} · {a.title}
+            {formatDateNumeric(a.date)} {formatTimeOfDay(a.start)}–{formatTimeOfDay(a.end)} ·{' '}
+            {a.title}
           </li>
         ))}
       </ul>

@@ -1,10 +1,19 @@
 import type { Store } from '../../store'
 import type { Assessment } from '../../types'
 import { t } from '../../i18n'
-import { isExam } from '../exams'
+import { addKind, isExamType } from '../kinds'
 import type { AiKind, AiResult, ImportResult, PlanResult, WorkoutPlanResult } from './schemas'
 
-type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'>
+type Actions = Pick<Store, 'add' | 'patch' | 'subjects' | 'workoutPlan' | 'assessments'> &
+  Partial<Pick<Store, 'settings' | 'setSettings'>>
+
+/** "domaci" and "lab" (older answers) become kinds with proper names; any other name is kept as the user's kind. */
+function kindName(raw: string): string {
+  const key = raw.trim().toLowerCase()
+  if (key === 'domaci') return t('assess.domaci')
+  if (key === 'lab') return t('assess.lab')
+  return raw.trim()
+}
 
 /** Saves a validated AI result. Plans become dashed suggestions the user must accept. Returns a short message. */
 export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string {
@@ -24,6 +33,7 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
     const subjects = [...st.subjects]
     const known: Pick<Assessment, 'subjectId' | 'date' | 'title'>[] = [...st.assessments]
     const sameText = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
+    let kinds = st.settings?.customAssessmentKinds ?? []
     let n = 0
     for (const a of imp.assessments) {
       let sub = subjects.find((s) => sameText(s.name, a.subject))
@@ -38,14 +48,21 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
       )
       if (duplicate) continue
       known.push({ subjectId, date: a.date, title: a.title })
+      let type = isExamType(a.type) ? a.type : kindName(a.type)
+      // a kind the app does not know becomes one of the user's kinds, so it can be picked later
+      if (!isExamType(type) && st.settings) {
+        const k = addKind(kinds, type)
+        type = k.name || type
+        kinds = k.list
+      }
       const item: Omit<Assessment, 'id'> = {
         subjectId: sub.id,
-        type: a.type,
+        type,
         title: a.title,
         date: a.date,
         time: a.time,
         registrationDeadline: a.registrationDeadline,
-        registration: isExam(a) ? 'nije-prijavljen' : 'ne-treba',
+        registration: isExamType(type) ? 'nije-prijavljen' : 'ne-treba',
         maxPoints: 30,
         points: null,
         difficulty: 3,
@@ -53,6 +70,8 @@ export function applyAiResult(kind: AiKind, data: AiResult, st: Actions): string
       st.add('assessments', item)
       n++
     }
+    if (st.settings && st.setSettings && kinds !== st.settings.customAssessmentKinds)
+      st.setSettings({ customAssessmentKinds: kinds })
     return t('aiapply.import', { n })
   }
   if (kind === 'rezime') return t('aiapply.summary')

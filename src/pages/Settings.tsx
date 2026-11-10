@@ -9,7 +9,7 @@ import { requestNotifications, showNotification } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
-import { LANGUAGES, getLanguage, useT } from '../i18n'
+import { LANGUAGE_LIST, getLanguage, useT } from '../i18n'
 import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
 import { routineGoal, routineSteps } from '../lib/routine'
@@ -71,9 +71,9 @@ export default function Settings() {
               onChange={(e) => setSettings({ language: e.target.value })}
             >
               <option value="">
-                {t('set.langAuto')} · {LANGUAGES.find((l) => l.code === getLanguage())?.name}
+                {t('set.langAuto')} · {LANGUAGE_LIST.find((l) => l.code === getLanguage())?.name}
               </option>
-              {LANGUAGES.map((l) => (
+              {LANGUAGE_LIST.map((l) => (
                 <option key={l.code} value={l.code}>
                   {l.name}
                 </option>
@@ -211,10 +211,10 @@ export default function Settings() {
         </Card>
         <Card className="space-y-3" data-testid="routine-settings">
           <h2 className="font-semibold">{t('set.routine.title')}</h2>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="size-5"
+              className="size-5 shrink-0"
               checked={settings.routineOn}
               onChange={(e) => setSettings({ routineOn: e.target.checked })}
             />
@@ -291,7 +291,7 @@ export default function Settings() {
             <label key={k} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                className="size-5"
+                className="size-5 shrink-0"
                 checked={settings[k]}
                 onChange={(e) => setSettings({ [k]: e.target.checked })}
               />
@@ -314,10 +314,10 @@ export default function Settings() {
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.updates')}</h2>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="size-5"
+              className="size-5 shrink-0"
               checked={settings.autoUpdate}
               onChange={(e) => setSettings({ autoUpdate: e.target.checked })}
             />
@@ -329,10 +329,10 @@ export default function Settings() {
           <h2 className="font-semibold">{t('set.reminders')}</h2>
           {support === 'ok' ? (
             <>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5"
+                  className="size-5 shrink-0"
                   checked={settings.reminders}
                   onChange={async (e) => {
                     if (e.target.checked) {

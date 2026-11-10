@@ -105,3 +105,12 @@ export function habitStreak(h: Habit, today: string): number {
   }
   return n
 }
+
+/** How much "+" and "−" change a habit: litres in glasses, small goals by 1, big ones by 5 or 10 (A-29). */
+export function habitStep(goal: number, unit: string): number {
+  if (/^(l|lit\w*|ltr|liter\w*|litr\w*|литр\w*|л)\.?$/i.test(unit.trim())) return 0.5
+  if (!Number.isInteger(goal)) return 0.5
+  if (goal >= 100) return 10
+  if (goal >= 20) return 5
+  return 1
+}

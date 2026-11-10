@@ -31,8 +31,10 @@ test('ceo ponavljajući niz se briše tek na drugi klik, jednokratna aktivnost o
       <Today />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Kafa' }))
   await user.click(screen.getByRole('button', { name: 'Obriši Kafa' }))
   expect(useStore.getState().activities.map((a) => a.title)).toEqual(['Šetnja'])
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Šetnja' }))
   await user.click(screen.getByRole('button', { name: 'Obriši Šetnja' }))
   expect(useStore.getState().activities).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: /Sigurno\?/ }))

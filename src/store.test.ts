@@ -121,4 +121,30 @@ describe('store', () => {
     expect(useStore.getState().subjects).toHaveLength(0)
     expect(useStore.getState().settings.onboarded).toBe(false)
   })
+  it('A-33: data saved by an older version (persist version 1, 3) is still read and completed', async () => {
+    const { set: idbSet } = await import('idb-keyval')
+    const { allowWrites } = await import('./lib/storage')
+    const { DATA_VERSION } = await import('./lib/defaults')
+    expect(useStore.persist.getOptions().version).toBe(DATA_VERSION)
+    await useStore.persist.rehydrate() // let the first read finish, so it cannot overwrite what is set below
+    for (const version of [1, 3, DATA_VERSION]) {
+      allowWrites(false)
+      await idbSet(
+        'my-day-ai',
+        JSON.stringify({
+          state: { meals: [{ id: 'm1', date: '2026-11-06', description: 'Jaja', protein: 20 }] },
+          version,
+        }),
+      )
+      useStore.setState({ ...emptyData() })
+      await useStore.persist.rehydrate()
+      expect(
+        useStore.getState().meals.map((m) => m.id),
+        `version ${version}`,
+      ).toEqual(['m1'])
+      // fields that did not exist then have their defaults
+      expect(useStore.getState().days).toEqual({})
+      expect(useStore.getState().settings.routineOn).toBe(true)
+    }
+  })
 })

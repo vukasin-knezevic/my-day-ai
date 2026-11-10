@@ -8,6 +8,8 @@ const BG = '#020617' // the dark colour of the app background
 
 // iPhone start screens (portrait): [css width, css height, pixel ratio]. index.html lists the same sizes.
 export const SPLASH = [
+  [440, 956, 3], // 16 Pro Max
+  [402, 874, 3], // 16 Pro
   [430, 932, 3], // 15 Pro Max / 15 Plus / 14 Pro Max
   [393, 852, 3], // 15 / 15 Pro / 14 Pro
   [428, 926, 3], // 14 Plus / 13 Pro Max / 12 Pro Max
@@ -31,6 +33,35 @@ for (const [size, file] of [
     `<body style="margin:0">${svg.replace('<svg ', `<svg width="${size}" height="${size}" `)}</body>`,
   )
   await page.screenshot({ path: `public/${file}` })
+  await page.close()
+}
+
+// The maskable icon: Android may cut it to a circle or a squircle, so the logo stays inside the middle
+// 70% (the "safe zone") on a full dark square.
+{
+  const size = 512
+  const logo = Math.round(size * 0.7)
+  const page = await browser.newPage({ viewport: { width: size, height: size } })
+  await page.setContent(
+    `<body style="margin:0;background:${BG};display:grid;place-items:center;height:100vh">${svg.replace(
+      '<svg ',
+      `<svg width="${logo}" height="${logo}" `,
+    )}</body>`,
+  )
+  await page.screenshot({ path: 'public/icon-maskable-512.png' })
+  await page.close()
+}
+
+// The picture shown when the link is shared (1200 x 630)
+{
+  const page = await browser.newPage({ viewport: { width: 1200, height: 630 } })
+  await page.setContent(
+    `<body style="margin:0;background:${BG};color:#fff;font-family:system-ui,sans-serif;display:flex;align-items:center;gap:56px;height:100vh;padding:0 110px;box-sizing:border-box">${svg.replace(
+      '<svg ',
+      '<svg width="300" height="300" ',
+    )}<div><div style="font-size:84px;font-weight:800">My Day AI</div><div style="font-size:36px;color:#93c5fd;margin-top:16px;line-height:1.3">Study, training and your whole day<br/>in one place</div></div></body>`,
+  )
+  await page.screenshot({ path: 'public/og-image.png' })
   await page.close()
 }
 

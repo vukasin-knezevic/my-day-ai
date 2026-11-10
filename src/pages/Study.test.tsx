@@ -155,7 +155,7 @@ test('R-09, R-11: poeni su u odnosu na 100; predmet bez obaveza nudi dodavanje u
   expect(screen.getByText(/Dodaj kolokvijume i ispit/)).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '+ Dodaj obavezu' }))
   // the form is open on the assessments tab
-  expect(await screen.findByRole('dialog', { name: /Novi kolokvijum/ })).toBeInTheDocument()
+  expect(await screen.findByRole('dialog', { name: /Nova obaveza/ })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Dodaj' }))
   expect(useStore.getState().assessments).toHaveLength(1)
 })

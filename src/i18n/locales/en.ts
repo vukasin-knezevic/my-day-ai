@@ -117,7 +117,7 @@ const messages: Record<MessageKey, string> = {
   'level.4': 'Exam fighter',
   'level.5': 'Lecture-hall veteran',
   'level.6': 'Mentor',
-  'level.7': 'Engineer',
+  'level.7': 'Graduate',
   'xp.history': 'XP history',
   'xp.historyEmpty': 'No XP yet. Finish something and it will show up here.',
   'xp.gain': '+{xp} XP · {reason}',
@@ -263,7 +263,7 @@ const messages: Record<MessageKey, string> = {
   'set.autoUpdateNote':
     'On: a new version is downloaded in the background and switched on when you leave the app. Off: you decide when to restart. Either way you see a “New update” message.',
   'set.reminders': '🔔 Reminders',
-  'set.notif': 'Browser notifications (before classes, deadlines, registrations and bedtime)',
+  'set.notif': 'Notifications (before classes, deadlines, registrations and bedtime)',
   'set.notifDenied': 'The browser did not allow notifications (check the site settings).',
   'set.notifNote':
     'Honestly: without a server, notifications on a phone are reliable only while the app is open or was used recently. For reliable reminders use “Add to calendar” below; the calendar then reminds you by itself.',
@@ -316,8 +316,8 @@ const messages: Record<MessageKey, string> = {
   'ob.gender.m': 'Masculine (ready, done)',
   'ob.gender.f': 'Feminine (ready, done)',
   'ob.name.placeholder': 'e.g. Alex',
-  'ob.wake': 'I usually wake up at (between 8 and 10)',
-  'ob.bed': 'I usually go to bed at (between 00 and 02)',
+  'ob.wake': 'I usually wake up at',
+  'ob.bed': 'I usually go to bed at',
   'ob.sleepGoal': 'Sleep goal (hours)',
   'ob.workouts': 'Workouts per week',
   'ob.study': 'Hours of study per day',
@@ -352,7 +352,7 @@ const messages: Record<MessageKey, string> = {
   'today.quickPlaceholder': 'workout 18-19:30 · tomorrow study math 2h · coffee 200 · slept 1:30',
   'today.nothing': 'Nothing going on right now.',
   'today.duties': 'Tasks',
-  'today.empty': 'Nothing to do. Add something above. ☝️',
+  'today.empty': 'Nothing to do. Add something with the button or quick entry.',
   'today.badge.suggested': 'suggestion',
   'today.badge.done': 'done',
   'today.badge.skipped': 'skipped',
@@ -439,7 +439,7 @@ const messages: Record<MessageKey, string> = {
   'schema.rezime':
     '{\n  "summary": "short summary of the week (2-4 sentences)",\n  "tips": ["tip 1", "tip 2", "tip 3"]\n}',
   'schema.uvoz':
-    '{\n  "assessments": [ { "subject": "subject name", "type": "kolokvijum|ispit|domaci|lab", "title": "string", "date": "YYYY-MM-DD", "time": "HH:mm (optional)", "registrationDeadline": "YYYY-MM-DD (optional)" } ]\n}',
+    '{\n  "assessments": [ { "subject": "subject name", "type": "kolokvijum|ispit|(or the name of another kind, e.g. homework)", "title": "string", "date": "YYYY-MM-DD", "time": "HH:mm (optional)", "registrationDeadline": "YYYY-MM-DD (optional)" } ]\n}',
   'schema.trening':
     '{\n  "name": "plan name",\n  "days": [ { "day": 1, "title": "e.g. Push", "exercises": [ { "name": "Bench press", "sets": 4, "reps": "6-8" } ] } ]\n}',
   'zod.date': 'the date must be YYYY-MM-DD',
@@ -513,7 +513,7 @@ const messages: Record<MessageKey, string> = {
   'study.submitted': 'Submitted',
   'study.pointsLabel': 'Points earned (max {max})',
   'study.deleteAssessment': 'Delete {title}',
-  'study.newAssessment': 'New midterm / exam / homework / lab',
+  'study.newAssessment': 'New exam or task',
   'study.addSubjectFirst': 'First add a subject on the Timetable tab.',
   'study.f.subject': 'Subject',
   'study.f.type': 'Type',
@@ -948,6 +948,21 @@ const messages: Record<MessageKey, string> = {
   'ach.onTime.desc': 'Every exam and midterm this month is registered',
   'ach.study50': '50 hours of study',
   'ach.study50.desc': '50 hours of finished study blocks',
+  'today.more': 'More actions for {title}',
+  'today.editShort': 'Edit',
+  'today.deleteShort': 'Delete',
+  'ov.workoutsSub': 'done / goal · still planned: {planned}',
+  'ov.studyDoneSub': 'done / goal (h) · still planned: {planned} h',
+  'life.date': 'Date',
+  'life.showAll': 'Show all ({n})',
+  'life.showLess': 'Show less',
+  'life.editHabit': 'Edit habit {name}',
+  'life.editHabitTitle': 'Edit habit',
+  'life.habitSave': 'Save changes',
+  'progress.useOther': 'Other…',
+  'progress.useTitle': 'How many minutes do you use?',
+  'progress.useMinutes': 'Minutes (up to {max})',
+  'progress.useConfirm': 'Use',
 }
 
 const locale: LocaleModule = {

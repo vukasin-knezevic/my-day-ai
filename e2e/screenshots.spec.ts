@@ -40,6 +40,8 @@ for (const lang of LANGS) {
     for (let i = 0; i < 4; i++) await next.click()
     await next.click() // demo data stays checked
     await page.getByRole('button', { name: /^(Završi|Finish|Заврши)$/ }).click()
+    // the guided tour is offered after the setup: skip it for the pictures
+    await page.getByRole('button', { name: /^(Preskoči|Skip|Прескочи)$/ }).click()
     await page.locator('#quick-input').waitFor()
     for (const entry of ['gym 18-19:30', 'study 10-12']) {
       await page.locator('#quick-input').fill(entry)

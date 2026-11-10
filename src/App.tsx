@@ -8,21 +8,21 @@ import LoadError from './components/LoadError'
 import IosInstallFirst from './components/IosInstallFirst'
 import { currentEnv, isIos } from './lib/ios'
 import { requestPersistentStorage } from './lib/storage'
-import Onboarding from './pages/Onboarding'
-import Planner from './pages/Planner'
-import Ai from './pages/Ai'
 import Shortcuts from './components/Shortcuts'
 import BackController from './components/BackController'
 import { useReminders } from './lib/useReminders'
 import { useT } from './i18n'
-import Study from './pages/Study'
 import Today from './pages/Today'
 import Splash from './components/Splash'
 import { useNotificationActions } from './lib/routineNotify'
-import More from './pages/More'
-import Settings from './pages/Settings'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Planner = lazy(() => import('./pages/Planner'))
+const Ai = lazy(() => import('./pages/Ai'))
+const Study = lazy(() => import('./pages/Study'))
+const More = lazy(() => import('./pages/More'))
+const Settings = lazy(() => import('./pages/Settings'))
 const Workout = lazy(() => import('./pages/Workout'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
@@ -60,7 +60,11 @@ export default function App() {
     const env = currentEnv()
     if (isIos(env) && !env.standalone && !stayInSafari)
       return <IosInstallFirst onContinue={() => setStayInSafari(true)} />
-    return <Onboarding />
+    return (
+      <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
+        <Onboarding />
+      </Suspense>
+    )
   }
 
   return (

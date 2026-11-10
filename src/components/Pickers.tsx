@@ -235,7 +235,7 @@ export function DateField({
   const { invalid } = useFieldState()
   return (
     <div
-      className={`${inputCls} ${invalid ? invalidCls : ''} relative min-h-[2.75rem] tabular-nums ${className}`}
+      className={`${inputCls} ${invalid ? invalidCls : ''} relative min-h-[2.75rem] tabular-nums focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-blue-600 ${className}`}
     >
       <span aria-hidden>{value ? formatDateNumeric(value) : ' '}</span>
       <input

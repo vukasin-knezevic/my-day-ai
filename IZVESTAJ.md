@@ -1,10 +1,10 @@
 # IZVEŠTAJ — My Day AI
 
-Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
+Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07, verzija **0.4** 2026-11-10 (faze A–G; faza H nije urađena). Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
 ## Update 0.4
 
-Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, sat, koraci) nije deo ovog PR-a: čeka ručne korake iz `AUDIT_0.4.md`, deo 5.2.
+Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4` (faze A–G, verzija 0.4.0). **Faza H (Android, sat, koraci) nije urađena**: čeka ručne korake iz `AUDIT_0.4.md`, deo 5.2 (vidi odeljak „Faza H“ ispod).
 
 ### Faza A: podaci su sigurni i prvi utisak je čist
 
@@ -44,6 +44,35 @@ Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, 
 - **Urađeno drugačije:** XP koji „odleti“ do brojača nije napravljen: nagrada se vidi kao poruka na vrhu, uz animaciju štikliranja i konfete; „10 000 koraka“ čeka fazu H. Vibracija se ne proverava na iPhone-u (nema je). Ulazna animacija se preskače u automatizovanom pregledaču (`navigator.webdriver`) i u testovima, da ne smeta e2e proveri; njen izgled i trajanje treba pogledati na telefonu.
 - **Proveriti na telefonu:** Android: vibracija i zvuk (uključiti u Podešavanjima), konfete na novom nivou, ulazna animacija pri hladnom pokretanju; iPhone: ulazna animacija ne sme da trepće pre prvog ekrana, „Zatvori dan“ uveče sa tastaturom.
 
+### Faza G: kvalitet, izgled, tekstovi, README
+
+- **Urađeno:** _Pristupačnost i dodir:_ zamka fokusa u donjim panelima i `inert` na stranici iza njih, prečice su već isključene pod otvorenim panelom (A-18); vidljiv fokus na polju za datum (A-19); kvadratići za štikliranje se ne sabijaju (`shrink-0`, A-20); mete za dodir najmanje 44 px kod „Idem / Ne idem / Ponekad“, dugmeta sa XP-om i redova sa kvadratićem (A-21). _Izgled:_ red obaveze na ekranu Danas su dva uredna reda (vreme i naziv, pa glavno dugme) i „⋯“ koji otvara donji panel (izmeni, preskoči, samo danas, obriši) (A-22); od 1024 px Danas ima dve kolone (A-32); nagrada se troši u bilo kom broju minuta do stanja (A-28); navike: korak prati cilj i jedinicu, navika može da se izmeni, a ekran prati ponoć (`useToday`) (A-29); troškovi: bira se datum i može da se vidi sve (A-30). _Brzina (A-23):_ početno preuzimanje je pre bilo ~660 kB (201 kB gzip) u jednom fajlu; sada se učitavaju samo glavni kod (38 kB gzip), `react` i usmerivač (68 kB gzip) i jezik koji korisnik koristi (16–19 kB gzip), dakle oko **124 kB gzip** (cilj 120 kB nije dostignut za oko 4 kB). Ostali jezici, `zod`, Planer, AI, Podešavanja, Faks, uvod i tutorijal se učitavaju tek kad zatrebaju; spisak jezika je u `src/i18n/languageList.ts` (test proverava da se slaže sa fajlovima). _Tekstovi:_ uklonjeno „(između 8 i 10)“ i „(između 00 i 02)“, nivo „Inženjer“ → „Diplomac“, „Notifikacije pregledača“ → „Notifikacije“, „Novi kolokvijum / ispit / domaći / lab“ → „Nova obaveza“, „Dodaj nešto gore“, ženski oblici (Dobrodošla, nisi prijavljena, da bi sačuvala), AI uvoz više ne traži `domaci|lab` nego prihvata i ime druge vrste, koje postaje korisnička vrsta (A-26); AI pregled prikazuje datum i vreme u formatu aplikacije (A-27); Pregled razdvaja urađeno od planiranog i broji urađene treninge iz istog izvora kao XP (A-25). _Instalacija i link:_ manifest ima `id`, `scope`, prečice i kategorije, posebnu „maskable“ ikonicu u bezbednoj zoni, `meta description` i Open Graph sa slikom `og-image.png`, početne ekrane za iPhone 16 i 16 Pro Max (A-31). _Testovi i CI:_ `persist` ima isti broj verzije kao podaci (4) i test da stari zapisi (verzije 1 i 3) i dalje rade (A-33); `updates.ts` ima 90% pokrivenosti; kratak prolaz kroz sve ekrane u Firefox-u, na tabletu (820 px) i na 1920 px (A-34); objava na GitHub Pages ide tek kad CI za isti commit prođe (`workflow_run`, A-35). _Lični podaci:_ u `docs/razvoj/MY_DAY_AI_ZADATAK.md` i `PLAN.md` uopšteno (fakultet, vreme ustajanja i spavanja, trening, igrice, pametni sat); git istorija nije dirana; lokalne beleške u korenu su u `.gitignore` (A-38). README (srpski i engleski): „User testing“, verzija 0.4, nove funkcije i novi screenshot-ovi. `package.json` je 0.4.0, `release-bump` zna za sva mesta koja pominju verziju.
+- **Nije urađeno / drugačije:** početni paket je ~124 kB gzip umesto traženih 120 (react-dom i usmerivač zauzimaju 68 kB; dalje smanjenje traži zamenu biblioteke). Manifest nema `screenshots`: postojeće slike su cele stranice (390 × 1877 px), a manifest traži slike ekrana pravog odnosa strana. Pre je poslednji nivo bio „Inženjer“; ko je imao taj nivo vidi „Diplomac“ (isti nivo, drugo ime). Agent `i18n-checker` nije pokretan: ključeve, `{parametre}` i neprevedene engleske tekstove proveravaju testovi, ali tvrdo upisan tekst u komponentama nije pregledan ručno. Ime Andree Jovović u README-u stoji kako zadatak traži („uz njenu dozvolu“): proveri pre objave da je dozvola stvarno data. U `README.md` model kojim je 0.4 rađena ostavljen je kao `[upisuje autor]`.
+- **Proveriti na telefonu:** Android: da su meta „⋯“ i dugmad dovoljno velika; da ulazna animacija ne trepće. iPhone: instalirana aplikacija posle jezika koji nije telefonov (jezik se učitava pre prvog ekrana); `inert` panel i Tab nema na telefonu, ali čitač ekrana (VoiceOver) ne sme da čita stranicu iza otvorenog panela.
+
+### Faza H (Android, sat, koraci): nije urađena
+
+`adb` nije instaliran na ovom računaru (Android Studio i povezan telefon nisu dostupni), a zadatak kaže da se faza H preskoči kad ručni koraci iz `AUDIT_0.4.md`, deo 5.2, nisu gotovi. **Fali:** Capacitor projekat i `android/`, `src/lib/health/` i Health Connect, „Poveži sat“, san sa sata, koraci (prsten, podsetnici, izazov od 10 000 koraka), `@capacitor/local-notifications` (alarm, trajna notifikacija), uputstvo `ANDROID.md`. Šta treba od Vukašina: model telefona i verzija Androida, Android Studio, USB debugging, Health Connect i most za Huawei Health (deo 5.2 audita). PR 2 se pravi posle toga.
+
+## Provera na pravom uređaju (iz `AUDIT_0.4.md`, deo 4)
+
+**Andrea (iPhone):**
+
+- statusna traka ne pokriva sadržaj, uspravno i položeno (A-09);
+- „Sigurno?“ se vraća posle 4 s ili dodira sa strane (A-08);
+- „Dodaj u kalendar“ otvara „Dodaj sve“; ako ne, radi li „Podeli fajl“ (R-02);
+- podaci ostaju posle 8+ dana (A-03), kartica za instalaciju pre uvoda;
+- tutorijal: kartica ne zaklanja važna dugmad, probne stvari se brišu na kraju;
+- prevlačenje od leve ivice za „Nazad“ (A-13);
+- ulazna animacija pri otvaranju i „Zatvori dan“ uveče.
+
+**Vukašin (Android):**
+
+- „Novi update“ se ne pojavljuje pri prvoj instalaciji (A-01);
+- dodir na notifikaciju otvara aplikaciju, ikonica je logo (A-10), dugme „Urađeno ✓“ u jutarnjoj notifikaciji i da sledeći korak stiže;
+- dugme i gest „Nazad“ kroz svih 7 koraka, „Napusti“ zatvara aplikaciju (A-13);
+- vibracija i zvuk (uključiti u Podešavanjima), konfete na novom nivou.
+
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
 - **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).
@@ -82,14 +111,14 @@ Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, 
 
 ## Stanje provera (poslednje pokretanje)
 
-| Provera                | Rezultat                                                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run lint`         | prolazi, 0 grešaka                                                                                                                                     |
-| `npm run typecheck`    | prolazi (TypeScript strict)                                                                                                                            |
-| `npm test`             | **271 unit/komponentni test prolazi** (parser, planer, AI sloj, `NumberInput`, `KeyScope`, migracija, prevodi…)                                        |
-| Pokrivenost `src/lib/` | **~94% linija** (cilj 80%)                                                                                                                             |
-| Playwright e2e         | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
-| `npm run build`        | bez upozorenja                                                                                                                                         |
+| Provera                | Rezultat                                                                                                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`         | prolazi, 0 grešaka                                                                                                                                                                                  |
+| `npm run typecheck`    | prolazi (TypeScript strict)                                                                                                                                                                         |
+| `npm test`             | **2099 unit/komponentnih testova prolazi** (parser, planer, AI sloj, rutina, niz, izazov, tutorijal, migracija, prevodi…)                                                                           |
+| Pokrivenost `src/lib/` | **~95% linija** (cilj 90%)                                                                                                                                                                          |
+| Playwright e2e         | **36 testova prolazi** (Chromium, iPhone profil, Firefox, tablet, 1920 px), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
+| `npm run build`        | bez upozorenja                                                                                                                                                                                      |
 
 ## Šta je urađeno u verziji 0.1 (ranije 1.0, faze 0–12)
 

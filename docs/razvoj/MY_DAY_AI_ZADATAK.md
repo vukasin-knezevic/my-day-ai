@@ -7,12 +7,12 @@
 
 ## 0. Ko sam ja
 
-- Student **prve godine ETF-a u Beogradu**.
+- **Student prve godine** tehničkog fakulteta.
 - Znam **osnove Pythona**, web programiranje (HTML, CSS, JavaScript) **ne znam**. Zato sve objašnjavaj od nule i piši jednostavan, čitljiv kod.
 - **Nemam Node.js ni GitHub nalog** (vidi fazu 0).
-- Ustajem između 8 i 10, ležem između ponoći i 2h.
-- Treniram u teretani (ranije dugo košarka). Igram igre na PS5.
-- Nosim sat **Huawei Watch GT 6 Pro** sa Huawei Health aplikacijom na telefonu.
+- Ustajem ujutru, ležem kasno uveče (tačno vreme se podešava u aplikaciji).
+- Treniram i igram igrice (primer korisnika).
+- Nosim pametni sat sa aplikacijom za zdravlje na telefonu.
 - Ovo je **moj prvi projekat za portfolio**. Mora biti čist, sa testovima i dobrim README-om, i moram umeti da ga objasnim na razgovoru za praksu.
 
 ## 1. Pravila rada (VAŽNO)
@@ -26,7 +26,7 @@
 7. Ako za nešto nisi siguran (npr. kako radi neki API), napiši to u IZVESTAJ.md umesto da nagađaš.
 8. **API ključ nikad ne sme da završi u kodu ni u git-u.** Dodaj `.env*` u `.gitignore`.
 9. Mogu da stanem posle bilo koje faze i nastavim sutra. Zato svaka faza mora ostaviti aplikaciju koja **radi**.
-10. **Maksimalna automatizacija:** ja igram na PS5 i ne gledam stalno u ekran. Ne čekaj moju potvrdu za stvari koje možeš sam da rešiš. Ako nešto zapne, probaj drugi način pre nego što me pitaš. Kad stvarno moraš da me pitaš, napiši pitanje **krupno, na vrhu, jednom rečenicom**.
+10. **Maksimalna automatizacija:** ne gledam stalno u ekran. Ne čekaj moju potvrdu za stvari koje možeš sam da rešiš. Ako nešto zapne, probaj drugi način pre nego što me pitaš. Kad stvarno moraš da me pitaš, napiši pitanje **krupno, na vrhu, jednom rečenicom**.
 
 ## 1b. GitHub (već napravljeno)
 
@@ -93,7 +93,7 @@ Tipovi u `src/types.ts`, čista logika (bez React-a) u `src/lib/`.
 - **Expense:** datum, iznos (RSD), kategorija (hrana, prevoz, igre, faks, izlasci, ostalo), opis. **Budget:** mesečni limit po kategoriji.
 - **Habit:** naziv, emotikon, cilj (npr. 2 L vode, 20 min čitanja), dnevni unosi.
 - **GameSession:** datum, igra, trajanje.
-- **Progress:** XP, nivo, nizovi dana, zarađeno i potrošeno PS5 vreme.
+- **Progress:** XP, nivo, nizovi dana, zarađeno i potrošeno vreme za nagradu.
 - **Settings:** buđenje, spavanje, ciljevi, tema, AI ključ i model, podsetnici.
 
 Napravi **onboarding** od 5 koraka pri prvom otvaranju: ime, ritam dana, ciljevi, predmeti (može kasnije), AI ključ (može kasnije).
@@ -148,9 +148,9 @@ Ovaj planer radi uvek. AI (faza 8) ga samo nadograđuje.
 ## FAZA 6 — 😴 San, 💰 novac, ✅ navike
 
 - **San:** dugmad „Legao" i „Ustao" (dva klika), prosek 7 dana, grafikon, predlog vremena za spavanje prema sutrašnjoj prvoj obavezi.
-- **Huawei sat:** istraži realno šta je moguće i napiši u `docs/HUAWEI.md`:
-  - Da li Huawei Health može da izveze podatke o snu (npr. preko zahteva za kopiju podataka Huawei naloga ili sinhronizacije sa drugom aplikacijom) i u kom formatu.
-  - Da li Huawei Health Kit može da se koristi iz web aplikacije bez servera.
+- **Pametni sat:** istraži realno šta je moguće i napiši u `docs/SMARTWATCH.md`:
+  - Da li Huawei Health može da izveze podatke o snu (npr. preko zahteva za kopiju podataka naloga proizvođača ili sinhronizacije sa drugom aplikacijom) i u kom formatu.
+  - Da li zdravstveni API proizvođača sata može da se koristi iz web aplikacije bez servera.
   - Ako postoji fajl za izvoz, napravi **uvoz tog fajla** u aplikaciju. Ako ne postoji jednostavan način, ostavi ručni unos i jasno napiši zašto, sa planom za verziju 2. **Ne izmišljaj format fajla.**
 - **Novac:** unos troškova u dinarima, mesečni budžet po kategoriji, upozorenje na 80% budžeta, grafikon po kategorijama.
 - **Navike:** dodam svoje (voda, čitanje, šetnja…), štikliram dnevno, niz dana.
@@ -159,7 +159,7 @@ Ovaj planer radi uvek. AI (faza 8) ga samo nadograđuje.
 
 - **XP i nivoi:** urađena obaveza daje XP (učenje 10 XP na 30 min, trening 30, prijavljen kolokvijum 20, navika 5…). Nivoi sa imenima (npr. Brucoš → Student → … → Inženjer). Testiraj računanje.
 - **Nizovi dana** 🔥 za učenje, trening, san i navike.
-- **PS5 vreme kao nagrada:** svaki sat učenja zarađuje npr. 30 min igranja (podesivo). Prikaz „zarađeno / potrošeno". Nikad ne grdi zbog igranja.
+- **Vreme za zabavu kao nagrada:** svaki sat učenja zarađuje npr. 30 min igranja (podesivo). Prikaz „zarađeno / potrošeno". Nikad ne grdi zbog igranja.
 - Male proslave za rekorde i nizove.
 
 ## FAZA 8 — 🤖 AI deo (Claude API)
@@ -175,7 +175,7 @@ AI funkcije:
 1. **AI plan dana / nedelje:** šalje moje obaveze, rokove, ciljeve i san; vraća strukturisan JSON plan koji aplikacija proveri (validacija sa `zod`) pre prikaza kao predlog.
 2. **Chat asistent:** „Šta da radim sad?", „Kako da stignem sve do petka?". Vidi moje podatke za tekuću nedelju.
 3. **Rezime nedelje:** svake nedelje uveče kratak rezime i 3 saveta.
-4. **Pametan unos tekstom:** „sutra posle vežbi teretana pa učim OS 2 sata" → aktivnosti.
+4. **Pametan unos tekstom:** „sutra posle vežbi trening pa učim 2 sata" → aktivnosti.
 5. **Uvoz rasporeda kolokvijuma** iz nalepljenog teksta.
 6. **Plan treninga** po mom cilju i rasporedu.
 
@@ -239,4 +239,4 @@ Svakodnevno ću koristiti ovaj mod, a API samo povremeno i za demo. Zato mora bi
    - šta su React, TypeScript i komponenta, poređenjem sa Pythonom,
    - redosled fajlova za čitanje (počni od `types.ts`, `planner.ts`, `quickParse.ts`),
    - 10 pitanja sa razgovora za praksu o ovom projektu, sa kratkim odgovorima.
-4. 5 ideja za verziju 2 (sinhronizacija između uređaja, Google kalendar, Huawei integracija, server za push notifikacije…).
+4. 5 ideja za verziju 2 (sinhronizacija između uređaja, Google kalendar, integracija sa satom, server za push notifikacije…).

@@ -104,10 +104,10 @@ export default function DataCard() {
         )}
       </div>
       <p className="text-sm">{t('data.lastBackup', { when: lastBackupLabel(lastBackupAt) })}</p>
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex min-h-11 items-center gap-2 text-sm">
         <input
           type="checkbox"
-          className="size-5"
+          className="size-5 shrink-0"
           checked={backupReminder}
           onChange={(e) => setSettings({ backupReminder: e.target.checked })}
         />

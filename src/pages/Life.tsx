@@ -8,19 +8,15 @@ import NumberInput from '../components/NumberInput'
 import SleepEditor from '../components/SleepEditor'
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
 import { XP } from '../lib/xp'
-import {
-  addDaysStr,
-  formatHours,
-  formatShort,
-  formatTimeOfDay,
-  monthOf,
-  todayStr,
-} from '../lib/dates'
+import { DateField } from '../components/Pickers'
+import Sheet from '../components/Sheet'
+import { addDaysStr, formatHours, formatShort, formatTimeOfDay, monthOf } from '../lib/dates'
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
 import { currencyOf, expenseLabel } from '../lib/labels'
 import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
+import { useToday } from '../lib/useToday'
 import Rich from '../i18n/Rich'
 import {
   avgSleep,
@@ -32,6 +28,7 @@ import {
   sleepHours,
   spentByCategory,
   suggestBedtime,
+  habitStep,
 } from '../lib/life'
 
 type Tab = 'san' | 'novac' | 'navike'
@@ -59,7 +56,7 @@ function Sleep() {
   const { t } = useT()
   const data = useStore(useShallow(selectData))
   const store = useStore()
-  const today = todayStr()
+  const today = useToday()
   const now = new Date()
   const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
   // the night in progress; a "went to bed" from days ago (a forgotten "woke up") does not count
@@ -215,12 +212,14 @@ function Money() {
       patch: s.patch,
     })),
   )
-  const today = todayStr()
+  const today = useToday()
   const month = monthOf(today)
   const [amount, setAmount] = useState(0)
   const [amountError, setAmountError] = useState('')
   const [category, setCategory] = useState<ExpenseCategory>('hrana')
   const [desc, setDesc] = useState('')
+  const [date, setDate] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const status = budgetStatus(expenses, budget, month)
   const spent = spentByCategory(expenses, month)
   const total = Object.values(spent).reduce((a, b) => a + b, 0)
@@ -234,7 +233,7 @@ function Money() {
       return
     }
     setAmountError('')
-    add('expenses', { date: today, amount: n, category, description: desc.trim() })
+    add('expenses', { date: date || today, amount: n, category, description: desc.trim() })
     setAmount(0)
     setDesc('')
   }
@@ -284,6 +283,11 @@ function Money() {
             </Select>
           </Field>
           <div className="col-span-2">
+            <Field label={t('life.date')}>
+              <DateField value={date || today} onChange={(e) => setDate(e.target.value)} />
+            </Field>
+          </div>
+          <div className="col-span-2">
             <Field label={t('life.desc')} optional>
               <Input value={desc} onChange={(e) => setDesc(e.target.value)} />
             </Field>
@@ -329,8 +333,8 @@ function Money() {
         <h2 className="mb-2 font-semibold">{t('life.recent')}</h2>
         <ul className="space-y-1 text-sm">
           {[...expenses]
-            .reverse()
-            .slice(0, 15)
+            .sort((a, b) => b.date.localeCompare(a.date))
+            .slice(0, showAll ? undefined : 15)
             .map((e) => (
               <li key={e.id} className="flex items-center gap-2">
                 {t('life.expenseLine', {
@@ -349,6 +353,11 @@ function Money() {
               </li>
             ))}
         </ul>
+        {expenses.length > 15 && (
+          <Button variant="ghost" className="mt-2" onClick={() => setShowAll(!showAll)}>
+            {showAll ? t('life.showLess') : t('life.showAll', { n: expenses.length })}
+          </Button>
+        )}
       </Card>
     </div>
   )
@@ -366,7 +375,7 @@ function Habits() {
       revoke: s.revoke,
     })),
   )
-  const today = todayStr()
+  const today = useToday()
 
   /** Saves today's amount; reaching the goal gives XP once per day. */
   function setEntry(h: Habit, value: number) {
@@ -386,6 +395,7 @@ function Habits() {
   const [emoji, setEmoji] = useState('💧')
   const [goal, setGoal] = useState(1)
   const [unit, setUnit] = useState('')
+  const [editing, setEditing] = useState<Habit | null>(null)
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -420,6 +430,13 @@ function Habits() {
               <Button
                 variant="ghost"
                 className="ml-auto"
+                aria-label={t('life.editHabit', { name: h.name })}
+                onClick={() => setEditing(h)}
+              >
+                ✎
+              </Button>
+              <Button
+                variant="ghost"
                 aria-label={t('life.deleteHabit', { name: h.name })}
                 onClick={() => deleteWithUndo(() => remove('habits', h.id))}
               >
@@ -430,7 +447,7 @@ function Habits() {
               <label className="mt-2 flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5"
+                  className="size-5 shrink-0"
                   checked={v >= 1}
                   onChange={(e) => setEntry(h, e.target.checked ? 1 : 0)}
                 />
@@ -442,7 +459,7 @@ function Habits() {
                   variant="soft"
                   aria-label={t('life.less', { name: h.name })}
                   onClick={() =>
-                    setEntry(h, Math.max(0, +(v - (h.goal >= 10 ? 5 : 0.5)).toFixed(1)))
+                    setEntry(h, Math.max(0, +(v - habitStep(h.goal, h.unit)).toFixed(1)))
                   }
                 >
                   −
@@ -453,7 +470,7 @@ function Habits() {
                 <Button
                   variant="soft"
                   aria-label={t('life.more', { name: h.name })}
-                  onClick={() => setEntry(h, +(v + (h.goal >= 10 ? 5 : 0.5)).toFixed(1))}
+                  onClick={() => setEntry(h, +(v + habitStep(h.goal, h.unit)).toFixed(1))}
                 >
                   +
                 </Button>
@@ -462,6 +479,61 @@ function Habits() {
           </Card>
         )
       })}
+      <Sheet open={!!editing} onClose={() => setEditing(null)} title={t('life.editHabitTitle')}>
+        {editing && (
+          <form
+            className="grid grid-cols-4 gap-2 pb-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (!editing.name.trim()) return
+              update('habits', editing.id, {
+                name: editing.name.trim(),
+                emoji: editing.emoji,
+                goal: editing.goal,
+                unit: editing.unit,
+              })
+              setEditing(null)
+            }}
+          >
+            <div className="col-span-3">
+              <Field label={t('life.habitName')} required>
+                <Input
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Field label={t('life.habitEmoji')}>
+              <Input
+                value={editing.emoji}
+                onChange={(e) => setEditing({ ...editing, emoji: e.target.value })}
+              />
+            </Field>
+            <div className="col-span-2">
+              <Field label={t('life.habitGoal')}>
+                <NumberInput
+                  min={0.5}
+                  max={10000}
+                  step={0.5}
+                  value={editing.goal}
+                  onChange={(v) => setEditing({ ...editing, goal: v })}
+                />
+              </Field>
+            </div>
+            <div className="col-span-2">
+              <Field label={t('life.habitUnit')} optional>
+                <Input
+                  value={editing.unit}
+                  onChange={(e) => setEditing({ ...editing, unit: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Button type="submit" className="col-span-4">
+              {t('life.habitSave')}
+            </Button>
+          </form>
+        )}
+      </Sheet>
       <Card>
         <h2 className="mb-2 font-semibold">{t('life.newHabit')}</h2>
         <form onSubmit={submit} className="grid grid-cols-4 gap-2">

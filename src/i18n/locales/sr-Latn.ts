@@ -117,7 +117,7 @@ const messages = {
   'level.4': 'Ispitni borac',
   'level.5': 'Veteran amfiteatra',
   'level.6': 'Mentor',
-  'level.7': 'Inženjer',
+  'level.7': 'Diplomac',
   'xp.history': 'Istorija XP-a',
   'xp.historyEmpty': 'Još nema XP-a. Završi nešto i pojaviće se ovde.',
   'xp.gain': '+{xp} XP · {reason}',
@@ -262,7 +262,7 @@ const messages = {
   'set.autoUpdateNote':
     'Uključeno: nova verzija se preuzme u pozadini i uključi kad izađeš iz aplikacije. Isključeno: ti biraš kad ćeš da restartuješ. U oba slučaja vidiš poruku „Novi update".',
   'set.reminders': '🔔 Podsetnici',
-  'set.notif': 'Notifikacije pregledača (pre predavanja, rokova, prijava i spavanja)',
+  'set.notif': 'Notifikacije (pre predavanja, rokova, prijava i spavanja)',
   'set.notifDenied': 'Pregledač nije dozvolio notifikacije (proveri podešavanja sajta).',
   'set.notifNote':
     'Iskreno: bez servera notifikacije na telefonu rade pouzdano samo dok je aplikacija otvorena ili nedavno korišćena. Za pouzdane podsetnike koristi „Dodaj u kalendar“ ispod; kalendar te onda sam podseća.',
@@ -314,8 +314,8 @@ const messages = {
   'ob.gender.m': 'Muški (spreman, uradio)',
   'ob.gender.f': 'Ženski (spremna, uradila)',
   'ob.name.placeholder': 'npr. Marko',
-  'ob.wake': 'Obično ustajem u (između 8 i 10)',
-  'ob.bed': 'Obično legnem u (između 00 i 02)',
+  'ob.wake': 'Obično ustajem u',
+  'ob.bed': 'Obično legnem u',
   'ob.sleepGoal': 'Cilj sna (sati)',
   'ob.workouts': 'Treninga nedeljno',
   'ob.study': 'Sati učenja dnevno',
@@ -350,7 +350,7 @@ const messages = {
   'today.quickPlaceholder': 'trening 18-19:30 · sutra učenje mata 2h · kafa 200 · legao 1:30',
   'today.nothing': 'Trenutno nema aktivnosti.',
   'today.duties': 'Obaveze',
-  'today.empty': 'Nema obaveza. Dodaj nešto gore. ☝️',
+  'today.empty': 'Nema obaveza. Dodaj nešto dugmetom ili brzim unosom.',
   'today.badge.suggested': 'predlog',
   'today.badge.done': 'urađeno',
   'today.badge.skipped': 'preskočeno',
@@ -435,7 +435,7 @@ const messages = {
   'schema.rezime':
     '{\n  "summary": "kratak rezime nedelje (2-4 rečenice)",\n  "tips": ["savet 1", "savet 2", "savet 3"]\n}',
   'schema.uvoz':
-    '{\n  "assessments": [ { "subject": "naziv predmeta", "type": "kolokvijum|ispit|domaci|lab", "title": "string", "date": "YYYY-MM-DD", "time": "HH:mm (opciono)", "registrationDeadline": "YYYY-MM-DD (opciono)" } ]\n}',
+    '{\n  "assessments": [ { "subject": "naziv predmeta", "type": "kolokvijum|ispit|(ili naziv druge vrste, npr. domaci)", "title": "string", "date": "YYYY-MM-DD", "time": "HH:mm (opciono)", "registrationDeadline": "YYYY-MM-DD (opciono)" } ]\n}',
   'schema.trening':
     '{\n  "name": "naziv plana",\n  "days": [ { "day": 1, "title": "npr. Push", "exercises": [ { "name": "Bench press", "sets": 4, "reps": "6-8" } ] } ]\n}',
   'zod.date': 'datum mora biti YYYY-MM-DD',
@@ -509,7 +509,7 @@ const messages = {
   'study.submitted': 'Predato',
   'study.pointsLabel': 'Osvojeno poena (maks. {max})',
   'study.deleteAssessment': 'Obriši {title}',
-  'study.newAssessment': 'Novi kolokvijum / ispit / domaći / lab',
+  'study.newAssessment': 'Nova obaveza',
   'study.addSubjectFirst': 'Prvo dodaj predmet na tabu Raspored.',
   'study.f.subject': 'Predmet',
   'study.f.type': 'Vrsta',
@@ -940,12 +940,32 @@ const messages = {
   'ach.onTime.desc': 'Svi ispiti i kolokvijumi ovog meseca su prijavljeni',
   'ach.study50': '50 sati učenja',
   'ach.study50.desc': '50 sati završenih blokova učenja',
+  'today.more': 'Još radnji za {title}',
+  'today.editShort': 'Izmeni',
+  'today.deleteShort': 'Obriši',
+  'ov.workoutsSub': 'urađeno / cilj · još planirano: {planned}',
+  'ov.studyDoneSub': 'urađeno / cilj (h) · još planirano: {planned} h',
+  'life.date': 'Datum',
+  'life.showAll': 'Prikaži sve ({n})',
+  'life.showLess': 'Prikaži manje',
+  'life.editHabit': 'Izmeni naviku {name}',
+  'life.editHabitTitle': 'Izmena navike',
+  'life.habitSave': 'Sačuvaj izmene',
+  'progress.useOther': 'Drugo…',
+  'progress.useTitle': 'Koliko minuta iskoristiš?',
+  'progress.useMinutes': 'Minuti (najviše {max})',
+  'progress.useConfirm': 'Iskoristi',
 }
 
 export type MessageKey = keyof typeof messages
 
 /** Feminine forms (the default texts above are masculine). */
 const feminine: Partial<Record<MessageKey, string>> = {
+  'ob.title': '🌅 Dobrodošla u My Day AI',
+  'alert.regLate': '🚨 Rok za prijavu prošao, a nisi prijavljena: {title}',
+  'wo.needsExercise': 'Dodaj bar jednu vežbu da bi sačuvala trening.',
+  'wo.tplNeedsExercise': 'Dodaj bar jednu vežbu da bi sačuvala šablon.',
+  'level.7': 'Diplomkinja',
   'alert.sleep': '😴 Spavala si samo {d}. Danas polako.',
   'apply.bed': '😴 Legla u {time}. Laku noć!',
   'apply.wake': '🌅 Ustala u {time}. Dobro jutro!',
