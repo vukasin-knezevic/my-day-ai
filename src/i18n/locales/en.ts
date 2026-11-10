@@ -503,7 +503,7 @@ const messages: Record<MessageKey, string> = {
   'study.newSlotKindPlaceholder': 'e.g. Lab, Seminar',
   'study.hoursLabel': 'Hours of study (the planner assumes {d})',
   'study.hoursAuto': 'automatic',
-  'study.addSlot': '+ Class',
+  'study.addSlot': '+ Add a class',
   'study.monthRegs': '{month}: registrations',
   'study.noMonthExams': 'No midterms or exams this month.',
   'study.registered': 'registered',
@@ -763,6 +763,11 @@ const messages: Record<MessageKey, string> = {
   'cal.onceShort': 'One-time copy: tap again after adding new ones.',
   'cal.shareInstead': 'Not working? Share the file',
   'cal.todayTitle': '📅 Deadlines in your phone calendar',
+  'study.saveSlot': 'Add the class',
+  'study.newSlotTitle': 'New class',
+  'study.editSlotTitle': 'Edit class',
+  'study.editSlot': 'Edit {kind} {day} {start}',
+  'study.addAssessment': '+ New assessment',
 }
 
 const locale: LocaleModule = {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { useBackHandler } from '../lib/back'
+import { useBackHandler, useBackPrompt } from '../lib/back'
 
 const DURATION = 220 // ms, open / close / snap back
 const CLOSE_FRACTION = 0.3 // dragged further than this share of the height closes the panel
@@ -17,11 +17,14 @@ export default function Sheet({
   onClose,
   title,
   children,
+  dirty = false,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
+  /** Something was typed inside: "Back" asks before it is thrown away. */
+  dirty?: boolean
 }) {
   const [closing, setClosing] = useState(false)
   const [shown, setShown] = useState(open)
@@ -32,7 +35,9 @@ export default function Sheet({
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
   // "Back" closes the panel instead of leaving the screen
-  useBackHandler('overlay', open, onClose)
+  useBackHandler('overlay', open, () =>
+    dirty ? useBackPrompt.getState().ask({ kind: 'discard', discard: onClose }) : onClose(),
+  )
 
   // keep it mounted for the exit animation
   useEffect(() => {

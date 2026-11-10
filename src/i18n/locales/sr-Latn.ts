@@ -499,7 +499,7 @@ const messages = {
   'study.newSlotKindPlaceholder': 'npr. Lab, Seminar',
   'study.hoursLabel': 'Sati učenja (planer računa {d})',
   'study.hoursAuto': 'automatski',
-  'study.addSlot': '+ Termin',
+  'study.addSlot': '+ Dodaj termin',
   'study.monthRegs': '{month}: prijave',
   'study.noMonthExams': 'Nema kolokvijuma ni ispita ovog meseca.',
   'study.registered': 'prijavljen',
@@ -755,6 +755,11 @@ const messages = {
   'cal.onceShort': 'Jednokratno: posle novih obaveza dodirni ponovo.',
   'cal.shareInstead': 'Ne radi? Podeli fajl',
   'cal.todayTitle': '📅 Rokovi u kalendaru telefona',
+  'study.saveSlot': 'Dodaj termin',
+  'study.newSlotTitle': 'Nov termin',
+  'study.editSlotTitle': 'Izmena termina',
+  'study.editSlot': 'Izmeni termin {kind} {day} {start}',
+  'study.addAssessment': '+ Nova obaveza',
 }
 
 export type MessageKey = keyof typeof messages

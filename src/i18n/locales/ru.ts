@@ -417,7 +417,7 @@ const messages = fromEnglish({
   'study.newSlotKindPlaceholder': `например, Лабораторная, Семинар`,
   'study.hoursLabel': `Часы учёбы (планировщик считает {d})`,
   'study.hoursAuto': `автоматически`,
-  'study.addSlot': `+ Занятие`,
+  'study.addSlot': '+ Добавить занятие',
   'study.monthRegs': `{month}: записи`,
   'study.noMonthExams': `В этом месяце нет коллоквиумов и экзаменов.`,
   'study.registered': `записан`,
@@ -672,6 +672,11 @@ const messages = fromEnglish({
   'cal.onceShort': 'Разовая копия: после новых записей нажми ещё раз.',
   'cal.shareInstead': 'Не работает? Поделиться файлом',
   'cal.todayTitle': '📅 Сроки в календаре телефона',
+  'study.saveSlot': 'Добавить занятие',
+  'study.newSlotTitle': 'Новое занятие',
+  'study.editSlotTitle': 'Изменение занятия',
+  'study.editSlot': 'Изменить {kind} {day} {start}',
+  'study.addAssessment': '+ Новое задание',
 })
 
 const locale: LocaleModule = {

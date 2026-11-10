@@ -36,6 +36,7 @@ import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
 import { deleteWithUndo } from '../lib/undo'
 import CalendarButton from '../components/CalendarButton'
+import Sheet from '../components/Sheet'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
@@ -192,39 +193,12 @@ function SubjectCard({
 }) {
   const { t } = useT()
   const update = useStore((s) => s.update)
-  const settings = useStore((s) => s.settings)
-  const setSettings = useStore((s) => s.setSettings)
-  const [kind, setKind] = useState('predavanje')
-  const [newSlotKind, setNewSlotKind] = useState('')
-  const kinds = slotKinds(settings, subject.slots)
-  function addSlotKind() {
-    const r = addKind(settings.customSlotKinds, newSlotKind)
-    if (!r.name) return
-    setSettings({ customSlotKinds: r.list })
-    setKind(r.name)
-    setNewSlotKind('')
-  }
-  const [day, setDay] = useState<Weekday>(1)
-  const [start, setStart] = useState('10:00')
-  const [end, setEnd] = useState('12:00')
-  const [slotMsg, setSlotMsg] = useState('')
-  const [slotError, setSlotError] = useState('')
+  // the form for a class lives in a bottom panel: 'new', or the class being edited
+  const [slotForm, setSlotForm] = useState<'new' | ClassSlot | null>(null)
   const [removedSlot, setRemovedSlot] = useState<ClassSlot | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(undoTimer.current), [])
 
-  function addSlot(e: React.FormEvent) {
-    e.preventDefault()
-    if (timeToMin(end) <= timeToMin(start)) return setSlotError(t('act.errEnd'))
-    setSlotError('')
-    const slot: ClassSlot = { id: uid(), kind, day, start, end, attendance: 'idem' }
-    if (hasSlot(subject.slots, slot)) {
-      setSlotMsg(t('study.slotExists'))
-      return
-    }
-    setSlotMsg('')
-    update('subjects', subject.id, { slots: [...subject.slots, slot] })
-  }
   function removeSlot(slot: ClassSlot) {
     update('subjects', subject.id, { slots: subject.slots.filter((x) => x.id !== slot.id) })
     clearTimeout(undoTimer.current)
@@ -266,56 +240,74 @@ function SubjectCard({
           {t('common.delete')}
         </ConfirmButton>
       </div>
-      <ul className="mb-3 space-y-1 text-sm">
+      <ul className="mb-3 space-y-2 text-sm">
         {slots.length === 0 && <li className="text-slate-500">{t('study.noSlots')}</li>}
         {slots.map((sl) => (
-          <li key={sl.id} className="flex flex-wrap items-center gap-2">
-            <span>
-              {t('study.slotLine', {
-                day: weekdayName(sl.day),
-                start: formatTimeOfDay(sl.start),
-                end: formatTimeOfDay(sl.end),
-                kind: slotKindLabel(sl.kind),
-              })}
-            </span>
-            <span role="group" aria-label={attAria(sl)} className="inline-flex gap-1">
-              {ATTENDANCES.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  aria-pressed={sl.attendance === a}
-                  aria-label={t('study.ask.aria', {
-                    att: attendanceLabel(a),
-                    subject: subject.name,
-                    kind: slotKindLabel(sl.kind),
-                    day: weekdayName(sl.day),
-                  })}
-                  onClick={() => onSlotAttendance(subject, sl, a)}
-                  className={`min-h-8 rounded-lg px-2 text-xs font-medium transition ${
-                    sl.attendance === a
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
-                  }`}
-                >
-                  {attendanceLabel(a)}
-                </button>
-              ))}
-            </span>
-            {sl.attendance === 'ne-idem' && (
-              <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
-            )}
-            <Button
-              variant="ghost"
-              className="ml-auto"
-              aria-label={t('study.deleteSlot', {
-                kind: slotKindLabel(sl.kind),
-                day: weekdayName(sl.day),
-                start: sl.start,
-              })}
-              onClick={() => removeSlot(sl)}
-            >
-              ✕
-            </Button>
+          <li
+            key={sl.id}
+            className="rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800/50"
+          >
+            <div className="flex items-center gap-1">
+              <span className="min-w-0 flex-1 font-medium">
+                <span aria-hidden>✓ </span>
+                {t('study.slotLine', {
+                  day: weekdayName(sl.day),
+                  start: formatTimeOfDay(sl.start),
+                  end: formatTimeOfDay(sl.end),
+                  kind: slotKindLabel(sl.kind),
+                })}
+              </span>
+              <Button
+                variant="ghost"
+                aria-label={t('study.editSlot', {
+                  kind: slotKindLabel(sl.kind),
+                  day: weekdayName(sl.day),
+                  start: sl.start,
+                })}
+                onClick={() => setSlotForm(sl)}
+              >
+                ✎
+              </Button>
+              <Button
+                variant="ghost"
+                aria-label={t('study.deleteSlot', {
+                  kind: slotKindLabel(sl.kind),
+                  day: weekdayName(sl.day),
+                  start: sl.start,
+                })}
+                onClick={() => removeSlot(sl)}
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <span role="group" aria-label={attAria(sl)} className="inline-flex gap-1">
+                {ATTENDANCES.map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    aria-pressed={sl.attendance === a}
+                    aria-label={t('study.ask.aria', {
+                      att: attendanceLabel(a),
+                      subject: subject.name,
+                      kind: slotKindLabel(sl.kind),
+                      day: weekdayName(sl.day),
+                    })}
+                    onClick={() => onSlotAttendance(subject, sl, a)}
+                    className={`min-h-9 rounded-lg px-3 text-xs font-medium transition ${
+                      sl.attendance === a
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    {attendanceLabel(a)}
+                  </button>
+                ))}
+              </span>
+              {sl.attendance === 'ne-idem' && (
+                <Badge className="bg-emerald-100 text-emerald-800">{t('study.freeBadge')}</Badge>
+              )}
+            </div>
           </li>
         ))}
       </ul>
@@ -327,76 +319,140 @@ function SubjectCard({
           </Button>
         </p>
       )}
-      {slotMsg && (
-        <p role="alert" className="mb-2 text-sm text-red-700 dark:text-red-400">
-          {slotMsg}
-        </p>
+      <Button variant="soft" onClick={() => setSlotForm('new')}>
+        {t('study.addSlot')}
+      </Button>
+      {slotForm && (
+        <SlotSheet
+          key={slotForm === 'new' ? 'new' : slotForm.id}
+          subject={subject}
+          initial={slotForm === 'new' ? undefined : slotForm}
+          onClose={() => setSlotForm(null)}
+        />
       )}
-      <div className="mb-2 flex items-end gap-2">
-        <div className="flex-1">
-          <Field label={t('study.newSlotKind')} optional>
+    </Card>
+  )
+}
+
+/** Bottom panel: a new class of a subject, or changes to an existing one. */
+function SlotSheet({
+  subject,
+  initial,
+  onClose,
+}: {
+  subject: Subject
+  initial?: ClassSlot
+  onClose: () => void
+}) {
+  const { t } = useT()
+  const update = useStore((s) => s.update)
+  const settings = useStore((s) => s.settings)
+  const setSettings = useStore((s) => s.setSettings)
+  const [kind, setKind] = useState(initial?.kind ?? 'predavanje')
+  const [newSlotKind, setNewSlotKind] = useState('')
+  const [day, setDay] = useState<Weekday>(initial?.day ?? 1)
+  const [start, setStart] = useState(initial?.start ?? '10:00')
+  const [end, setEnd] = useState(initial?.end ?? '12:00')
+  const [error, setError] = useState('')
+  const kinds = slotKinds(settings, subject.slots)
+  const first = useRef(JSON.stringify([kind, day, start, end]))
+  const dirty = JSON.stringify([kind, day, start, end]) !== first.current || newSlotKind !== ''
+
+  function addSlotKind() {
+    const r = addKind(settings.customSlotKinds, newSlotKind)
+    if (!r.name) return
+    setSettings({ customSlotKinds: r.list })
+    setKind(r.name)
+    setNewSlotKind('')
+  }
+  function save(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (timeToMin(end) <= timeToMin(start)) return setError(t('act.errEnd'))
+    const slot: ClassSlot = {
+      id: initial?.id ?? uid(),
+      kind,
+      day,
+      start,
+      end,
+      attendance: initial?.attendance ?? 'idem',
+    }
+    const others = subject.slots.filter((x) => x.id !== slot.id)
+    if (hasSlot(others, slot)) return setError(t('study.slotExists'))
+    update('subjects', subject.id, { slots: [...others, slot] })
+    onClose()
+  }
+
+  return (
+    <Sheet
+      open
+      dirty={dirty}
+      onClose={onClose}
+      title={`${initial ? t('study.editSlotTitle') : t('study.newSlotTitle')} · ${subject.name}`}
+    >
+      <form onSubmit={save} className="space-y-3 pb-2">
+        <Field label={t('study.kindAria')}>
+          <Select value={kind} onChange={(e) => setKind(e.target.value)}>
+            {kinds.map((k) => (
+              <option key={k} value={k}>
+                {slotKindLabel(k)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Field label={t('study.newSlotKind')} optional>
+              <Input
+                value={newSlotKind}
+                placeholder={t('study.newSlotKindPlaceholder')}
+                onChange={(e) => setNewSlotKind(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addSlotKind()
+                  }
+                }}
+              />
+            </Field>
+          </div>
+          <Button variant="soft" onClick={addSlotKind}>
+            {t('study.addKind')}
+          </Button>
+        </div>
+        <Field label={t('study.dayAria')}>
+          <Select value={day} onChange={(e) => setDay(Number(e.target.value) as Weekday)}>
+            {([1, 2, 3, 4, 5, 6, 7] as Weekday[]).map((d) => (
+              <option key={d} value={d}>
+                {weekdayName(d)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label={t('act.start')}>
+            <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+          </Field>
+          <Field label={t('act.end')} error={error}>
             <Input
-              value={newSlotKind}
-              placeholder={t('study.newSlotKindPlaceholder')}
-              onChange={(e) => setNewSlotKind(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addSlotKind()
-                }
+              type="time"
+              value={end}
+              onChange={(e) => {
+                setEnd(e.target.value)
+                setError('')
               }}
             />
           </Field>
         </div>
-        <Button variant="soft" onClick={addSlotKind}>
-          {t('study.addKind')}
-        </Button>
-      </div>
-      <form onSubmit={addSlot} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-        <Select
-          aria-label={t('study.kindAria')}
-          value={kind}
-          onChange={(e) => setKind(e.target.value)}
-        >
-          {kinds.map((k) => (
-            <option key={k} value={k}>
-              {slotKindLabel(k)}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label={t('study.dayAria')}
-          value={day}
-          onChange={(e) => setDay(Number(e.target.value) as Weekday)}
-        >
-          {([1, 2, 3, 4, 5, 6, 7] as Weekday[]).map((d) => (
-            <option key={d} value={d}>
-              {weekdayName(d)}
-            </option>
-          ))}
-        </Select>
-        <Input
-          aria-label={t('act.start')}
-          type="time"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-        />
-        <Input
-          aria-label={t('act.end')}
-          type="time"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-        />
-        <Button type="submit" variant="soft">
-          {t('study.addSlot')}
-        </Button>
+        <div className="flex gap-2">
+          <Button type="submit" className="flex-1">
+            {initial ? t('common.save') : t('study.saveSlot')}
+          </Button>
+          <Button variant="soft" onClick={onClose}>
+            {t('common.giveUp')}
+          </Button>
+        </div>
       </form>
-      {slotError && (
-        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
-          {slotError}
-        </p>
-      )}
-    </Card>
+    </Sheet>
   )
 }
 
@@ -465,7 +521,14 @@ function Assessments() {
       points: null,
       difficulty: f.difficulty as Assessment['difficulty'],
     })
-    setF({ ...f, title: '' })
+    closeForm()
+  }
+  const [adding, setAdding] = useState(false)
+  function closeForm() {
+    setAdding(false)
+    setF((x) => ({ ...x, title: '', time: '', regDeadline: '' }))
+    setNewKind('')
+    setTitleError('')
   }
 
   return (
@@ -608,12 +671,24 @@ function Assessments() {
       })}
 
       <Card>
-        <h2 className="mb-2 font-semibold">{t('study.newAssessment')}</h2>
         {subjects.length === 0 ? (
           <p className="text-sm text-slate-500">{t('study.addSubjectFirst')}</p>
         ) : (
-          <KeyScope onEscape={() => setF({ ...f, title: '' })}>
-            <form onSubmit={submit} className="grid grid-cols-2 gap-3">
+          <Button className="w-full" onClick={() => setAdding(true)}>
+            {t('study.addAssessment')}
+          </Button>
+        )}
+        <p className="mt-3 text-xs text-slate-500">{t('study.importNote')}</p>
+      </Card>
+      {subjects.length > 0 && (
+        <Sheet
+          open={adding}
+          dirty={f.title !== '' || f.time !== '' || f.regDeadline !== '' || newKind !== ''}
+          onClose={closeForm}
+          title={t('study.newAssessment')}
+        >
+          <KeyScope onEscape={closeForm}>
+            <form onSubmit={submit} className="grid grid-cols-2 gap-3 pb-2">
               <Field label={t('study.f.subject')}>
                 <Select
                   value={f.subjectId || subjects[0].id}
@@ -719,9 +794,8 @@ function Assessments() {
               </Button>
             </form>
           </KeyScope>
-        )}
-        <p className="mt-3 text-xs text-slate-500">{t('study.importNote')}</p>
-      </Card>
+        </Sheet>
+      )}
     </div>
   )
 }

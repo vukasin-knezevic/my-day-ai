@@ -24,7 +24,8 @@ test('3. idem / ne idem za termin predmeta', async ({ page }) => {
   await page.goto('/#/faks')
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
-  await page.getByRole('button', { name: '+ Termin' }).click()
+  await page.getByRole('button', { name: '+ Dodaj termin' }).click()
+  await page.getByRole('button', { name: 'Dodaj termin', exact: true }).click()
   // the choice sits next to the class (new classes start as "Idem")
   await expect(page.getByRole('button', { name: /^Idem: Fizika/ })).toHaveAttribute(
     'aria-pressed',
@@ -128,13 +129,11 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   await onboard(page)
   await page.goto('/#/podesavanja')
   // A-14: the backup comes back from a file, the way it does on a phone
-  await page
-    .getByLabel('Izaberi fajl')
-    .setInputFiles({
-      name: 'my-day-ai-backup.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(json),
-    })
+  await page.getByLabel('Izaberi fajl').setInputFiles({
+    name: 'my-day-ai-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(json),
+  })
   await page.getByRole('button', { name: 'Da, uvezi' }).click()
   await expect(page.getByText('Podaci su uvezeni')).toBeVisible()
   await page.goto('/#/faks')

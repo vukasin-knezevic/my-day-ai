@@ -416,7 +416,7 @@ const messages = fromEnglish({
   'study.newSlotKindPlaceholder': `z. B. Labor, Seminar`,
   'study.hoursLabel': `Lernstunden (der Planer rechnet mit {d})`,
   'study.hoursAuto': `automatisch`,
-  'study.addSlot': `+ Veranstaltung`,
+  'study.addSlot': '+ Termin hinzufügen',
   'study.monthRegs': `{month}: Anmeldungen`,
   'study.noMonthExams': `Keine Zwischenprüfungen oder Prüfungen in diesem Monat.`,
   'study.registered': `angemeldet`,
@@ -672,6 +672,11 @@ const messages = fromEnglish({
   'cal.onceShort': 'Einmalige Kopie: nach neuen Einträgen erneut tippen.',
   'cal.shareInstead': 'Klappt nicht? Datei teilen',
   'cal.todayTitle': '📅 Fristen im Handy-Kalender',
+  'study.saveSlot': 'Termin hinzufügen',
+  'study.newSlotTitle': 'Neuer Termin',
+  'study.editSlotTitle': 'Termin bearbeiten',
+  'study.editSlot': '{kind} {day} {start} bearbeiten',
+  'study.addAssessment': '+ Neue Leistung',
 })
 
 const locale: LocaleModule = {
