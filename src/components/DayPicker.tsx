@@ -3,7 +3,7 @@ import {
   formatLong,
   fromDateStr,
   weekDates,
-  weekdayName,
+  weekdayShort,
   weekdayOf,
 } from '../lib/dates'
 import { useT } from '../i18n'
@@ -90,7 +90,7 @@ export default function DayPicker({
                     : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
               }`}
             >
-              <span aria-hidden="true">{weekdayName(weekdayOf(d)).slice(0, 3)}</span>
+              <span aria-hidden="true">{weekdayShort(weekdayOf(d))}</span>
               <span aria-hidden="true" className="text-sm tabular-nums">
                 {fromDateStr(d).getDate()}
               </span>

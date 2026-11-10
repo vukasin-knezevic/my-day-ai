@@ -658,7 +658,7 @@ const messages = fromEnglish({
   'life.wakeTimeField': 'Aufgestanden um',
   'life.sleepInvalid': 'Das Aufwachen muss nach dem Zubettgehen liegen, höchstens 24 h später.',
   'today.afterMidnight': 'nach Mitternacht',
-  'act.endNextDay': 'Bis (am nächsten Tag)',
+  'act.endNextDay': 'Ende (am nächsten Tag)',
   'act.errSame': 'Das Ende darf nicht gleich dem Beginn sein.',
   'picker.clearTime': 'Uhrzeit löschen',
 })

@@ -741,7 +741,7 @@ const messages = {
   'life.wakeTimeField': 'Ustao u',
   'life.sleepInvalid': 'Buđenje mora da bude posle leganja, najviše 24 h kasnije.',
   'today.afterMidnight': 'posle ponoći',
-  'act.endNextDay': 'Do (sutradan)',
+  'act.endNextDay': 'Kraj (sutradan)',
   'act.errSame': 'Kraj ne može biti isti kao početak.',
   'picker.clearTime': 'Obriši vreme',
 }

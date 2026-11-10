@@ -178,6 +178,7 @@ export function TimeField({
           />
           {is12 && (
             <Wheel
+              // AM / PM are international marks of the 12-hour clock, the same in every language
               label="AM / PM"
               items={[
                 { value: 0, label: 'AM' },

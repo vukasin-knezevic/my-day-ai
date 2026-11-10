@@ -657,7 +657,7 @@ const messages = fromEnglish({
   'life.sleepInvalid':
     'La hora de despertar debe ser posterior a la de acostarse, como máximo 24 h después.',
   'today.afterMidnight': 'después de medianoche',
-  'act.endNextDay': 'Hasta (día siguiente)',
+  'act.endNextDay': 'Fin (día siguiente)',
   'act.errSame': 'El final no puede ser igual al inicio.',
   'picker.clearTime': 'Borrar la hora',
 })

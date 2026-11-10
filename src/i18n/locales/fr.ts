@@ -639,9 +639,9 @@ const messages = fromEnglish({
   'today.prevDay': 'Jour précédent',
   'today.nextDay': 'Jour suivant',
   'today.dayYesterday': 'Hier',
-  'today.dayToday': 'Aujourd’hui',
+  'today.dayToday': "Aujourd'hui",
   'today.dayTomorrow': 'Demain',
-  'today.backToToday': 'Retour à aujourd’hui',
+  'today.backToToday': "Retour à aujourd'hui",
   'today.pickDay': 'Choisir un jour',
   'today.onlyThisDay': 'Ce jour seulement',
   'today.emptyDay': 'Rien de prévu ce jour-là.',
@@ -660,7 +660,7 @@ const messages = fromEnglish({
   'today.afterMidnight': 'après minuit',
   'act.endNextDay': 'Fin (le lendemain)',
   'act.errSame': 'La fin ne peut pas être identique au début.',
-  'picker.clearTime': 'Effacer l’heure',
+  'picker.clearTime': "Effacer l'heure",
 })
 
 const locale: LocaleModule = {
