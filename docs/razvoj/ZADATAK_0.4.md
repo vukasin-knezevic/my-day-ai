@@ -115,6 +115,8 @@ Cilj: da korisnik poželi da otvori aplikaciju svaki dan, a da mu je posle toga 
     - nove funkcije (tutorijal, jutarnja rutina, dnevni izazov, zatvori dan, Android i sat ako je faza H gotova), novi screenshot-ovi.
 41. `package.json` na `0.4.0`, `IZVESTAJ.md` dopunjen, skill `release-bump`.
 
+41a. **Portfolio automatizacija.** `docs/razvoj/automatizacija/run-task.ps1`: očišćena, opšta verzija lične skripte kojom je 0.4 pokretan (parametri `RepoPath`, `TaskFile`, `Model`, `Effort`, `LogFile`; bez ličnih putanja; `git pull`, pa `claude -p` sa `--dangerously-skip-permissions`, log u `run.log` pored skripte). Uz nju `README.md` na srpskom: kako je 0.4 pokrenut preko Task Scheduler-a, primer zakazivanja i šta je naučeno (limit prekida rad, a log pokazuje vreme reseta). Lična kopija i logovi ostaju u `.local-automation/`, koji je u `.gitignore`. Link iz `docs/razvoj/README.md`.
+
 ## Faza H — Android (Capacitor), sat i koraci (PR 2)
 
 Preduslov: ručni koraci 1–5 iz `AUDIT_0.4.md`, deo 5.2 (model telefona, Android Studio, USB debugging, Health Connect, most za Huawei Health). Ako `adb devices` ne vidi telefon, stani i napiši krupno šta fali.

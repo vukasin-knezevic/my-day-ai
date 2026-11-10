@@ -13,3 +13,6 @@ dev-dist
 *.tsbuildinfo
 graphify-out/
 scripts/.batch.json
+
+.local-automation/
+docs/razvoj/automatizacija/*.log
