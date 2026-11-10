@@ -752,6 +752,12 @@ const messages: Record<MessageKey, string> = {
   'act.endNextDay': 'End (next day)',
   'act.errSame': 'The end cannot be the same as the start.',
   'picker.clearTime': 'Clear the time',
+  'back.exitAsk': 'Leave the app?',
+  'back.stay': 'Stay',
+  'back.leave': 'Leave',
+  'back.discardAsk': 'Discard changes?',
+  'back.discard': 'Discard',
+  'back.arrow': 'Back',
 }
 
 const locale: LocaleModule = {

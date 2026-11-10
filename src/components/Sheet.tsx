@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useBackHandler } from '../lib/back'
 
 const DURATION = 220 // ms, open / close / snap back
 const CLOSE_FRACTION = 0.3 // dragged further than this share of the height closes the panel
@@ -30,6 +31,8 @@ export default function Sheet({
   const scroller = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  // "Back" closes the panel instead of leaving the screen
+  useBackHandler('overlay', open, onClose)
 
   // keep it mounted for the exit animation
   useEffect(() => {

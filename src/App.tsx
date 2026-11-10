@@ -12,6 +12,7 @@ import Onboarding from './pages/Onboarding'
 import Planner from './pages/Planner'
 import Ai from './pages/Ai'
 import Shortcuts from './components/Shortcuts'
+import BackController from './components/BackController'
 import { useReminders } from './lib/useReminders'
 import { useT } from './i18n'
 import Study from './pages/Study'
@@ -61,6 +62,7 @@ export default function App() {
   return (
     <HashRouter>
       <Shortcuts />
+      <BackController />
       <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
         <Routes>
           <Route element={<Layout />}>

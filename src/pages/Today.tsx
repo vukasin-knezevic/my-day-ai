@@ -34,6 +34,7 @@ import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
 import DayPicker from '../components/DayPicker'
 import { useSwipe } from '../lib/useSwipe'
+import { useBackHandler } from '../lib/back'
 import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 import type { Activity } from '../types'
@@ -127,6 +128,8 @@ export default function Today() {
   const day = picked ?? today
   const isToday = day === today
   const pickDay = (d: string) => setPicked(d === today ? null : d)
+  // "Back" on another day returns to today
+  useBackHandler('tab', !isToday, () => setPicked(null))
   const swipe = useSwipe((dir) => pickDay(addDaysStr(day, dir === 'left' ? 1 : -1)))
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const bounds = useMemo(

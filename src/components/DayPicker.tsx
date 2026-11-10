@@ -48,6 +48,7 @@ export default function DayPicker({
         </button>
         <div className="min-w-0 flex-1 text-center">
           <h1 className="truncate text-xl font-bold" aria-live="polite">
+            <span aria-hidden>🌅 </span>
             {formatLong(day)}
           </h1>
           {day === today ? (

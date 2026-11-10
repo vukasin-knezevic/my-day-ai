@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store'
 import { Button, Card, Field, Input, Select } from './ui'
 import KeyScope from './KeyScope'
@@ -6,6 +6,7 @@ import { CATEGORY_META, type Activity, type Category, type Recurrence } from '..
 import { useT } from '../i18n'
 import { categoryLabel, recurrenceLabel } from '../lib/labels'
 import { timeToMin } from '../lib/dates'
+import { useBackHandler, useBackPrompt } from '../lib/back'
 
 const RECURRENCES: Recurrence[] = ['none', 'daily', 'weekdays', 'weekly']
 
@@ -32,6 +33,13 @@ export default function ActivityForm({
     note: initial?.note ?? '',
   })
   const [errors, setErrors] = useState<{ title?: string; date?: string; end?: string }>({})
+  const first = useRef(JSON.stringify(f))
+
+  // "Back" closes the form; with something typed in, it asks first
+  const dirty = JSON.stringify(f) !== first.current
+  useBackHandler('overlay', true, () =>
+    dirty ? useBackPrompt.getState().ask({ kind: 'discard', discard: onClose }) : onClose(),
+  )
 
   function save() {
     const found = {
@@ -57,7 +65,13 @@ export default function ActivityForm({
   }
 
   return (
-    <KeyScope onEnter={save} onEscape={onClose} role="dialog" aria-label={t('act.dialog')}>
+    <KeyScope
+      onEnter={save}
+      onEscape={onClose}
+      manualBack
+      role="dialog"
+      aria-label={t('act.dialog')}
+    >
       <Card className="mb-4 border-blue-300 dark:border-blue-800">
         <h2 className="mb-3 font-semibold">{initial ? t('act.edit') : t('act.new')}</h2>
         <div className="grid grid-cols-2 gap-3">

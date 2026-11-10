@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from './ui'
+import { hasBack, useBackHandler } from '../lib/back'
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
@@ -34,7 +35,8 @@ export default function Shortcuts() {
     function onKey(e: KeyboardEvent) {
       if (e.ctrlKey || e.metaKey || e.altKey) return
       if (e.key === 'Escape') return setOpen(false)
-      if (isTyping(e.target)) return
+      // no shortcuts under an open panel or dialog
+      if (isTyping(e.target) || hasBack('overlay')) return
       switch (e.key) {
         case 'n':
         case 'N':
@@ -59,6 +61,8 @@ export default function Shortcuts() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [nav])
+
+  useBackHandler('overlay', open, () => setOpen(false))
 
   if (!open) return null
   return (

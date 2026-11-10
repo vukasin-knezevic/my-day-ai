@@ -14,6 +14,7 @@ import { DateField, TimeField } from './Pickers'
 import { inputCls } from './styles'
 import { FieldContext, invalidCls, useFieldState } from './fieldContext'
 import { useT } from '../i18n'
+import { useBackHandler } from '../lib/back'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -60,6 +61,9 @@ export function Tabs<T extends string>({
   activeClass: string
   onChange: (tab: T) => void
 }) {
+  // "Back" on a later tab returns to the first one of the section
+  const first = tabs[0]?.[0]
+  useBackHandler('tab', first !== undefined && active !== first, () => onChange(first))
   return (
     <div role="tablist" className="mb-4 flex gap-2">
       {tabs.map(([key, label]) => (

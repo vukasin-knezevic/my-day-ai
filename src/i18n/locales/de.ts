@@ -661,6 +661,12 @@ const messages = fromEnglish({
   'act.endNextDay': 'Ende (am nächsten Tag)',
   'act.errSame': 'Das Ende darf nicht gleich dem Beginn sein.',
   'picker.clearTime': 'Uhrzeit löschen',
+  'back.exitAsk': 'App verlassen?',
+  'back.stay': 'Bleiben',
+  'back.leave': 'Verlassen',
+  'back.discardAsk': 'Änderungen verwerfen?',
+  'back.discard': 'Verwerfen',
+  'back.arrow': 'Zurück',
 })
 
 const locale: LocaleModule = {

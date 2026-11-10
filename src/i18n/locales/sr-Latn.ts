@@ -744,6 +744,12 @@ const messages = {
   'act.endNextDay': 'Kraj (sutradan)',
   'act.errSame': 'Kraj ne može biti isti kao početak.',
   'picker.clearTime': 'Obriši vreme',
+  'back.exitAsk': 'Napusti aplikaciju?',
+  'back.stay': 'Ostani',
+  'back.leave': 'Napusti',
+  'back.discardAsk': 'Odbaci izmene?',
+  'back.discard': 'Odbaci',
+  'back.arrow': 'Nazad',
 }
 
 export type MessageKey = keyof typeof messages

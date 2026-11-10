@@ -1,7 +1,9 @@
 import IosInstallHint from './IosInstallHint'
 import UpdateBanner from './UpdateBanner'
 import BackupNudge from './BackupNudge'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useBackHandler } from '../lib/back'
+import { useAppBack } from './BackController'
 import { useToast } from '../lib/toast'
 import UndoBar from './UndoBar'
 import { useT } from '../i18n'
@@ -48,6 +50,12 @@ function Toasts() {
 export default function Layout() {
   const { t } = useT()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const back = useAppBack()
+  // Planner, Overview, AI and Settings are opened from "More" on a phone: Back returns to that list
+  const subScreen = EXTRA.some((e) => e.to === pathname)
+  const phone = () => typeof matchMedia !== 'function' || !matchMedia('(min-width: 768px)').matches
+  useBackHandler('detail', subScreen, () => navigate(phone() ? '/vise' : '/', { replace: true }))
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
@@ -66,6 +74,18 @@ export default function Layout() {
         <IosInstallHint />
         <UpdateBanner />
         <BackupNudge />
+        {subScreen && (
+          <button
+            type="button"
+            onClick={() => back()}
+            className="-ml-2 mb-1 flex min-h-11 items-center gap-1 rounded-xl px-2 text-sm font-medium text-blue-700 md:hidden dark:text-blue-300"
+          >
+            <span aria-hidden className="text-lg">
+              ←
+            </span>
+            {t('back.arrow')}
+          </button>
+        )}
         <div key={pathname} className="anim-page">
           <Outlet />
         </div>

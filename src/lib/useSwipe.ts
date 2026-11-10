@@ -1,4 +1,5 @@
 import { useRef, type TouchEvent } from 'react'
+import { EDGE_PX } from './back'
 
 const MIN_DISTANCE = 60
 
@@ -20,7 +21,9 @@ export function useSwipe(onSwipe: (dir: 'left' | 'right') => void) {
     onTouchStart: (e: TouchEvent) => {
       const t = e.touches[0]
       const own = e.target instanceof Element && e.target.closest(OWN_GESTURE)
-      start.current = own || e.touches.length !== 1 ? null : { x: t.clientX, y: t.clientY }
+      // a swipe from the very edge of the screen is "Back" (see lib/back.ts), not a change of day
+      const edge = t.clientX <= EDGE_PX
+      start.current = own || edge || e.touches.length !== 1 ? null : { x: t.clientX, y: t.clientY }
     },
     onTouchEnd: (e: TouchEvent) => {
       const s = start.current

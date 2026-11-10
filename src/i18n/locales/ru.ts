@@ -661,6 +661,12 @@ const messages = fromEnglish({
   'act.endNextDay': 'Конец (на следующий день)',
   'act.errSame': 'Конец не может совпадать с началом.',
   'picker.clearTime': 'Убрать время',
+  'back.exitAsk': 'Выйти из приложения?',
+  'back.stay': 'Остаться',
+  'back.leave': 'Выйти',
+  'back.discardAsk': 'Отменить изменения?',
+  'back.discard': 'Отменить',
+  'back.arrow': 'Назад',
 })
 
 const locale: LocaleModule = {
