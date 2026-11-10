@@ -282,6 +282,12 @@ export interface Settings {
   rewardName: string
   rewardEmoji: string
   onboarded: boolean
+  /** When a backup was last copied / downloaded / shared (ISO time). '' = never. */
+  lastBackupAt: string
+  /** Gentle reminder once a week to save a backup */
+  backupReminder: boolean
+  /** The day ('yyyy-MM-dd') the weekly reminder counts from (set at first use and by "Later") */
+  backupNudgeAt: string
 }
 
 export interface AiUsage {

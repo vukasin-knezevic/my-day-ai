@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { selectData, useStore } from '../store'
 import { exportJson } from '../lib/dataIO'
-import { downloadText } from '../lib/ics'
+import { downloadText } from '../lib/files'
 import { t } from '../i18n'
 import { Button, Card } from './ui'
 

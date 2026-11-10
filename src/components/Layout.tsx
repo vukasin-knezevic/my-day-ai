@@ -1,5 +1,6 @@
 import IosInstallHint from './IosInstallHint'
 import UpdateBanner from './UpdateBanner'
+import BackupNudge from './BackupNudge'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
@@ -62,6 +63,7 @@ export default function Layout() {
       <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8">
         <IosInstallHint />
         <UpdateBanner />
+        <BackupNudge />
         <div key={pathname} className="anim-page">
           <Outlet />
         </div>

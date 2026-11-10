@@ -13,6 +13,20 @@ export function allowWrites(on = true) {
 }
 
 /** Resolves when the write that is on its way (if any) has reached the database. */
+/**
+ * Asks the browser not to delete the data by itself when the device runs low on space.
+ * Browsers answer without a prompt (installed apps and often-used sites get a yes).
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.storage?.persist) return false
+    if (await navigator.storage.persisted?.()) return true
+    return await navigator.storage.persist()
+  } catch {
+    return false
+  }
+}
+
 export function flushStorage(): Promise<void> {
   return pending
 }

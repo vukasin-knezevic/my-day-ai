@@ -28,6 +28,9 @@ export const DEFAULT_SETTINGS: Settings = {
   rewardName: '',
   rewardEmoji: '🎮',
   onboarded: false,
+  lastBackupAt: '',
+  backupReminder: true,
+  backupNudgeAt: '',
 }
 
 export function emptyData(): AppData {
@@ -50,8 +53,11 @@ export function emptyData(): AppData {
   }
 }
 
-/** Version of the saved data format. 2 = the reward replaced the fixed "PS5 time". */
-export const DATA_VERSION = 2
+/**
+ * Version of the saved data format. 2 = the reward replaced the fixed "PS5 time", 3 = homework and
+ * lab became kinds the user names, 4 = update 0.4 (new fields only; all of them have defaults).
+ */
+export const DATA_VERSION = 4
 
 /**
  * Migration of older saved data / backups to the current format (pure, safe to run twice).

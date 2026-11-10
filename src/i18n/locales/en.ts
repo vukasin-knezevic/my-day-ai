@@ -200,7 +200,6 @@ const messages: Record<MessageKey, string> = {
   'data.note': 'The export does not contain the API key. Everything is stored only on this device.',
   'data.copy': 'Copy JSON',
   'data.download': 'Download file',
-  'data.importLabel': 'Import: paste JSON',
   'data.check': 'Check import',
   'data.importDialog': 'Confirm import',
   'data.importWarn':
@@ -698,6 +697,27 @@ const messages: Record<MessageKey, string> = {
   'load.failBody':
     'Nothing was deleted and nothing is saved until the data loads. Close other tabs with the app and try again.',
   'load.retry': 'Try again',
+  'data.share': 'Share file',
+  'data.chooseFile': 'Choose file',
+  'data.importTitle': 'Import a backup',
+  'data.importLabel': 'or paste the JSON',
+  'data.fileFail': 'The file could not be read.',
+  'data.lastBackup': 'Last backup: {when}',
+  'data.never': 'never',
+  'data.backupReminder': 'Remind me once a week to save a backup',
+  'backup.nudge': '💾 Time for a backup (last: {when}). Your data lives only on this device.',
+  'backup.save': 'Save a backup',
+  'backup.later': 'Later',
+  'backup.saved': '✅ Backup saved.',
+  'ios.first.title': 'First add the app to your Home Screen',
+  'ios.first.body':
+    'In Safari tap Share ⬆️, then “Add to Home Screen”. Then open My Day AI from the Home Screen.',
+  'ios.first.warn':
+    'Important: data entered in Safari does not move to the installed app, and Safari deletes it after 7 days without use.',
+  'ios.first.continue': 'Continue in Safari',
+  'err.wipe': 'Delete the data and start over',
+  'err.wipeHint':
+    'If the error keeps coming back: download a copy first, then deleting becomes available.',
 }
 
 const locale: LocaleModule = {

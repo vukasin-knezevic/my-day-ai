@@ -1,5 +1,5 @@
 import { del, get, set } from 'idb-keyval'
-import { allowWrites, flushStorage, idbStorage } from './storage'
+import { allowWrites, flushStorage, idbStorage, requestPersistentStorage } from './storage'
 
 vi.mock('idb-keyval', () => ({ get: vi.fn(), set: vi.fn(), del: vi.fn() }))
 
@@ -52,5 +52,25 @@ describe('idbStorage', () => {
     finish()
     await flushStorage()
     expect(flushed).toBe(true)
+  })
+})
+
+describe('requestPersistentStorage (A-03)', () => {
+  const stub = (storage: unknown) =>
+    Object.defineProperty(navigator, 'storage', { configurable: true, value: storage })
+  it('asks once; a storage that is already persistent is not asked again', async () => {
+    const persist = vi.fn().mockResolvedValue(true)
+    stub({ persist, persisted: () => Promise.resolve(false) })
+    expect(await requestPersistentStorage()).toBe(true)
+    expect(persist).toHaveBeenCalledOnce()
+    stub({ persist, persisted: () => Promise.resolve(true) })
+    expect(await requestPersistentStorage()).toBe(true)
+    expect(persist).toHaveBeenCalledOnce()
+  })
+  it('browsers without it, or an error, answer "no" without throwing', async () => {
+    stub(undefined)
+    expect(await requestPersistentStorage()).toBe(false)
+    stub({ persist: () => Promise.reject(new Error('x')) })
+    expect(await requestPersistentStorage()).toBe(false)
   })
 })

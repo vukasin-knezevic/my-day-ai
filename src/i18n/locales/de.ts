@@ -199,7 +199,6 @@ const messages = fromEnglish({
   'data.note': `Der Export enthält den API-Schlüssel nicht. Alles wird nur auf diesem Gerät gespeichert.`,
   'data.copy': `JSON kopieren`,
   'data.download': `Datei herunterladen`,
-  'data.importLabel': `Import: JSON einfügen`,
   'data.check': `Import prüfen`,
   'data.importDialog': `Import bestätigen`,
   'data.importWarn': `Der Import **ersetzt alle aktuellen Daten** ({subjects} Fächer, {activities} Aktivitäten, {workouts} Trainingseinheiten). Fortfahren?`,
@@ -605,6 +604,28 @@ const messages = fromEnglish({
   'load.failBody':
     'Nichts wurde gelöscht, und es wird nichts gespeichert, bis die Daten geladen sind. Schließ andere Tabs mit der App und versuch es erneut.',
   'load.retry': 'Erneut versuchen',
+  'data.share': 'Datei teilen',
+  'data.chooseFile': 'Datei auswählen',
+  'data.importTitle': 'Sicherung importieren',
+  'data.importLabel': 'oder JSON einfügen',
+  'data.fileFail': 'Die Datei konnte nicht gelesen werden.',
+  'data.lastBackup': 'Letzte Sicherung: {when}',
+  'data.never': 'nie',
+  'data.backupReminder': 'Einmal pro Woche an die Sicherung erinnern',
+  'backup.nudge':
+    '💾 Zeit für eine Sicherung (letzte: {when}). Deine Daten liegen nur auf diesem Gerät.',
+  'backup.save': 'Sicherung speichern',
+  'backup.later': 'Später',
+  'backup.saved': '✅ Sicherung gespeichert.',
+  'ios.first.title': 'Füge die App zuerst zum Home-Bildschirm hinzu',
+  'ios.first.body':
+    'Tippe in Safari auf Teilen ⬆️, dann „Zum Home-Bildschirm“. Öffne My Day AI danach vom Home-Bildschirm.',
+  'ios.first.warn':
+    'Wichtig: In Safari eingegebene Daten werden nicht in die installierte App übernommen, und Safari löscht sie nach 7 Tagen ohne Nutzung.',
+  'ios.first.continue': 'In Safari fortfahren',
+  'err.wipe': 'Daten löschen und neu beginnen',
+  'err.wipeHint':
+    'Wenn der Fehler wiederkommt: Lade zuerst eine Kopie herunter, dann wird das Löschen verfügbar.',
 })
 
 const locale: LocaleModule = {

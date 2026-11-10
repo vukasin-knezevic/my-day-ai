@@ -199,7 +199,6 @@ const messages = fromEnglish({
   'data.note': `L'export ne contient pas la clé API. Tout est stocké uniquement sur cet appareil.`,
   'data.copy': `Copier le JSON`,
   'data.download': `Télécharger le fichier`,
-  'data.importLabel': `Importer : coller le JSON`,
   'data.check': `Vérifier l'import`,
   'data.importDialog': `Confirmer l'import`,
   'data.importWarn': `L'import **remplacera toutes les données actuelles** ({subjects} matières, {activities} activités, {workouts} séances). Continuer ?`,
@@ -605,6 +604,28 @@ const messages = fromEnglish({
   'load.failBody':
     'Rien n’a été supprimé et rien n’est enregistré tant que les données ne sont pas chargées. Ferme les autres onglets de l’app et réessaie.',
   'load.retry': 'Réessayer',
+  'data.share': 'Partager le fichier',
+  'data.chooseFile': 'Choisir un fichier',
+  'data.importTitle': 'Importer une sauvegarde',
+  'data.importLabel': 'ou colle le JSON',
+  'data.fileFail': 'Impossible de lire le fichier.',
+  'data.lastBackup': 'Dernière sauvegarde : {when}',
+  'data.never': 'jamais',
+  'data.backupReminder': 'Me rappeler une fois par semaine de faire une sauvegarde',
+  'backup.nudge':
+    '💾 C’est le moment d’une sauvegarde (dernière : {when}). Tes données sont uniquement sur cet appareil.',
+  'backup.save': 'Sauvegarder',
+  'backup.later': 'Plus tard',
+  'backup.saved': '✅ Sauvegarde enregistrée.',
+  'ios.first.title': 'Ajoute d’abord l’app à l’écran d’accueil',
+  'ios.first.body':
+    'Dans Safari, touche Partager ⬆️ puis « Sur l’écran d’accueil ». Ouvre ensuite My Day AI depuis l’écran d’accueil.',
+  'ios.first.warn':
+    'Important : les données saisies dans Safari ne sont pas transférées vers l’app installée, et Safari les supprime après 7 jours sans utilisation.',
+  'ios.first.continue': 'Continuer dans Safari',
+  'err.wipe': 'Supprimer les données et recommencer',
+  'err.wipeHint':
+    'Si l’erreur revient : télécharge d’abord une copie, la suppression devient alors disponible.',
 })
 
 const locale: LocaleModule = {

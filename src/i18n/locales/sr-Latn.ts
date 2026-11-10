@@ -200,7 +200,6 @@ const messages = {
   'data.note': 'Izvoz ne sadrži API ključ. Sve je sačuvano samo na ovom uređaju.',
   'data.copy': 'Kopiraj JSON',
   'data.download': 'Preuzmi fajl',
-  'data.importLabel': 'Uvoz: nalepi JSON',
   'data.check': 'Proveri uvoz',
   'data.importDialog': 'Potvrda uvoza',
   'data.importWarn':
@@ -690,6 +689,27 @@ const messages = {
   'load.failBody':
     'Ništa nije obrisano i ništa se ne upisuje dok se podaci ne učitaju. Zatvori druge kartice sa aplikacijom i pokušaj ponovo.',
   'load.retry': 'Pokušaj ponovo',
+  'data.share': 'Podeli fajl',
+  'data.chooseFile': 'Izaberi fajl',
+  'data.importTitle': 'Uvoz rezervne kopije',
+  'data.importLabel': 'ili nalepi JSON',
+  'data.fileFail': 'Fajl nije mogao da se pročita.',
+  'data.lastBackup': 'Poslednja rezervna kopija: {when}',
+  'data.never': 'nikad',
+  'data.backupReminder': 'Podseti me jednom nedeljno da sačuvam kopiju',
+  'backup.nudge':
+    '💾 Vreme je za rezervnu kopiju (poslednja: {when}). Podaci su samo na ovom uređaju.',
+  'backup.save': 'Sačuvaj kopiju',
+  'backup.later': 'Kasnije',
+  'backup.saved': '✅ Kopija je sačuvana.',
+  'ios.first.title': 'Prvo dodaj aplikaciju na početni ekran',
+  'ios.first.body':
+    'U Safariju dodirni Deli ⬆️, pa „Dodaj na početni ekran“. Zatim otvori My Day AI sa početnog ekrana.',
+  'ios.first.warn':
+    'Važno: podaci uneti u Safariju se ne prenose u instaliranu aplikaciju, a Safari ih briše posle 7 dana bez korišćenja.',
+  'ios.first.continue': 'Nastavi u Safariju',
+  'err.wipe': 'Obriši podatke i kreni ispočetka',
+  'err.wipeHint': 'Ako se greška ponavlja: prvo preuzmi kopiju, pa brisanje postaje dostupno.',
 }
 
 export type MessageKey = keyof typeof messages

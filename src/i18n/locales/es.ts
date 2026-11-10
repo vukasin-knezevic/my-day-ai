@@ -199,7 +199,6 @@ const messages = fromEnglish({
   'data.note': `La exportación no contiene la clave API. Todo se guarda solo en este dispositivo.`,
   'data.copy': `Copiar JSON`,
   'data.download': `Descargar archivo`,
-  'data.importLabel': `Importar: pegar JSON`,
   'data.check': `Comprobar importación`,
   'data.importDialog': `Confirmar importación`,
   'data.importWarn': `La importación **reemplazará todos los datos actuales** ({subjects} asignaturas, {activities} actividades, {workouts} entrenamientos). ¿Continuar?`,
@@ -605,6 +604,27 @@ const messages = fromEnglish({
   'load.failBody':
     'No se ha borrado nada y no se guarda nada hasta que se carguen los datos. Cierra otras pestañas con la app y vuelve a intentarlo.',
   'load.retry': 'Reintentar',
+  'data.share': 'Compartir archivo',
+  'data.chooseFile': 'Elegir archivo',
+  'data.importTitle': 'Importar una copia',
+  'data.importLabel': 'o pega el JSON',
+  'data.fileFail': 'No se pudo leer el archivo.',
+  'data.lastBackup': 'Última copia: {when}',
+  'data.never': 'nunca',
+  'data.backupReminder': 'Recuérdame una vez por semana guardar una copia',
+  'backup.nudge':
+    '💾 Es hora de una copia (última: {when}). Tus datos están solo en este dispositivo.',
+  'backup.save': 'Guardar copia',
+  'backup.later': 'Más tarde',
+  'backup.saved': '✅ Copia guardada.',
+  'ios.first.title': 'Primero añade la app a la pantalla de inicio',
+  'ios.first.body':
+    'En Safari toca Compartir ⬆️ y luego «Añadir a pantalla de inicio». Después abre My Day AI desde la pantalla de inicio.',
+  'ios.first.warn':
+    'Importante: los datos introducidos en Safari no pasan a la app instalada, y Safari los borra tras 7 días sin uso.',
+  'ios.first.continue': 'Continuar en Safari',
+  'err.wipe': 'Borrar los datos y empezar de nuevo',
+  'err.wipeHint': 'Si el error se repite: primero descarga una copia; después podrás borrar.',
 })
 
 const locale: LocaleModule = {

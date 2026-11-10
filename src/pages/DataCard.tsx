@@ -3,7 +3,7 @@ import { selectData, useStore } from '../store'
 import { Button, Card } from '../components/ui'
 import KeyScope from '../components/KeyScope'
 import { exportJson, importJson } from '../lib/dataIO'
-import { downloadText } from '../lib/ics'
+import { backupStamp, downloadBackup, lastBackupLabel } from '../lib/backup'
 import type { AppData } from '../types'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
@@ -17,11 +17,17 @@ export default function DataCard() {
   const [pending, setPending] = useState<AppData | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
+  const lastBackupAt = useStore((s) => s.settings.lastBackupAt)
+  const backupReminder = useStore((s) => s.settings.backupReminder)
+  const setSettings = useStore((s) => s.setSettings)
+
   const current = () => selectData(useStore.getState())
+  const backedUp = () => setSettings(backupStamp())
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(exportJson(current()))
+      backedUp()
       setMsg(t('data.copied'))
     } catch {
       setErr(t('data.copyFail'))
@@ -60,13 +66,24 @@ export default function DataCard() {
         </Button>
         <Button
           variant="soft"
-          onClick={() =>
-            downloadText('my-day-ai-backup.json', exportJson(current()), 'application/json')
-          }
+          onClick={() => {
+            downloadBackup(current())
+            backedUp()
+          }}
         >
           {t('data.download')}
         </Button>
       </div>
+      <p className="text-sm">{t('data.lastBackup', { when: lastBackupLabel(lastBackupAt) })}</p>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="size-5"
+          checked={backupReminder}
+          onChange={(e) => setSettings({ backupReminder: e.target.checked })}
+        />
+        {t('data.backupReminder')}
+      </label>
       <label className="block text-sm font-medium" htmlFor="import-json">
         {t('data.importLabel')}
       </label>

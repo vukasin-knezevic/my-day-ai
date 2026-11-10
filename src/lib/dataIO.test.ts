@@ -57,6 +57,25 @@ describe('export / import', () => {
     })
     expect(importJson('{"settings": 5}')).toMatchObject({ ok: false })
   })
+  it('0.4: an export made by 0.3 (version 2, without the new fields) still loads, with defaults', () => {
+    const d = full()
+    const old = JSON.parse(exportJson(d)) as {
+      version: number
+      data: { settings: Record<string, unknown> }
+    }
+    old.version = 2
+    for (const k of ['lastBackupAt', 'backupReminder', 'backupNudgeAt']) delete old.data.settings[k]
+    const r = importJson(JSON.stringify(old))
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.data.subjects).toEqual(d.subjects)
+    expect(r.data.settings).toMatchObject({
+      lastBackupAt: '',
+      backupReminder: true,
+      backupNudgeAt: '',
+    })
+    expect(JSON.parse(exportJson(r.data))).toMatchObject({ version: 4 })
+  })
 })
 
 describe('migration of older data (PS5 -> reward)', () => {

@@ -4,6 +4,7 @@ import { addDaysStr, minToTime, timeToMin, todayStr } from './dates'
 import { isExam } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
+import { shareOrDownload, type ShareResult } from './files'
 
 const esc = (s: string) =>
   s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
@@ -159,33 +160,6 @@ const addMinutes = (time: string, m: number) => minToTime(Math.min(1439, timeToM
  * Hands the calendar file to the phone: the share sheet offers the Calendar app straight away.
  * Without Web Share for files (a laptop) it is an ordinary download. Returns what happened.
  */
-export async function shareCalendar(
-  text: string,
-  filename = 'my-day-ai.ics',
-): Promise<'shared' | 'downloaded' | 'cancelled'> {
-  const file = new File([text], filename, { type: 'text/calendar' })
-  if (
-    typeof navigator !== 'undefined' &&
-    navigator.share &&
-    navigator.canShare?.({ files: [file] })
-  ) {
-    try {
-      await navigator.share({ files: [file], title: 'My Day AI' })
-      return 'shared'
-    } catch (e) {
-      // the user closed the share sheet: that is an answer, not an error
-      if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled'
-    }
-  }
-  downloadText(filename, text)
-  return 'downloaded'
-}
-
-export function downloadText(filename: string, text: string, mime = 'text/calendar') {
-  const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
+export function shareCalendar(text: string, filename = 'my-day-ai.ics'): Promise<ShareResult> {
+  return shareOrDownload(filename, text, 'text/calendar')
 }

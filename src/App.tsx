@@ -1,10 +1,13 @@
 import { initUpdates } from './lib/updates'
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useStore } from './store'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
 import LoadError from './components/LoadError'
+import IosInstallFirst from './components/IosInstallFirst'
+import { currentEnv, isIos } from './lib/ios'
+import { requestPersistentStorage } from './lib/storage'
 import Onboarding from './pages/Onboarding'
 import Planner from './pages/Planner'
 import Ai from './pages/Ai'
@@ -27,6 +30,12 @@ export default function App() {
   const hydrationError = useStore((s) => s.hydrationError)
   const onboarded = useStore((s) => s.settings.onboarded)
   const theme = useStore((s) => s.settings.theme)
+  const [stayInSafari, setStayInSafari] = useState(false)
+
+  // once the app is in use, ask the browser to keep the data even when the device runs low on space
+  useEffect(() => {
+    if (hydrated && onboarded) void requestPersistentStorage()
+  }, [hydrated, onboarded])
 
   useReminders()
   useEffect(() => {
@@ -41,7 +50,13 @@ export default function App() {
 
   if (hydrationError) return <LoadError />
   if (!hydrated) return <p className="p-6">{t('common.loading')}</p>
-  if (!onboarded) return <Onboarding />
+  if (!onboarded) {
+    // iPhone in Safari: installing comes first, because what is typed in Safari stays in Safari
+    const env = currentEnv()
+    if (isIos(env) && !env.standalone && !stayInSafari)
+      return <IosInstallFirst onContinue={() => setStayInSafari(true)} />
+    return <Onboarding />
+  }
 
   return (
     <HashRouter>
