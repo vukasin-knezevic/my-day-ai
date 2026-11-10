@@ -17,6 +17,16 @@ export async function onboard(page: Page, opts: { demo?: boolean } = {}) {
   await page.getByRole('button', { name: 'Dalje' }).click()
   await page.getByRole('button', { name: 'Završi' }).click()
   await page.getByRole('heading', { level: 1 }).first().waitFor()
+  // the guided tour is offered after the setup; the tests carry on without it
+  await skipTour(page)
+}
+
+/** Answers "Skip" to the offer of the guided tour. */
+export async function skipTour(page: Page) {
+  const ask = page.getByRole('dialog', { name: /provedemo kroz aplikaciju/ })
+  await ask.waitFor()
+  await ask.getByRole('button', { name: 'Preskoči' }).click()
+  await ask.waitFor({ state: 'detached' })
 }
 
 export const isoDate = (offsetDays = 0) => {

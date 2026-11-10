@@ -4,12 +4,16 @@ import type { AppData } from '../types'
 import { addDaysStr, daysUntil, formatTimeOfDay, timeToMin, todayStr } from './dates'
 import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
+import { addressName } from './address'
+import { routineGoal, routineSteps, tickedOn } from './routine'
 import { t } from '../i18n'
 
 export interface Reminder {
   id: string
   title: string
   body: string
+  /** Buttons inside the notification (Android) */
+  actions?: { action: string; title: string }[]
 }
 
 export const LEAD = { event: 15, bed: 30 }
@@ -53,6 +57,23 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
           title: t('rem.due.title'),
           body: `${a.title} ${d === 0 ? t('when.today') : t('when.tomorrow')}`,
         })
+    }
+  }
+
+  // the morning routine, at the wake-up goal (with a "Done" button where the system shows buttons)
+  const set = data.settings
+  if (set.routineOn && set.onboarded) {
+    const goal = timeToMin(routineGoal(set))
+    const left = routineSteps(set).length - tickedOn(data, today).length
+    if (nowMin >= goal && nowMin <= goal + 30 && left > 0) {
+      const name = addressName(set)
+      const main = data.days[today]?.mainThing
+      out.push({
+        id: `routine-${today}`,
+        title: name ? t('rem.routine.title', { name }) : t('rem.routine.titleNoName'),
+        body: `${t('rem.routine.body', { n: left })}${main ? ` · ${t('rem.routine.main', { text: main })}` : ''}`,
+        actions: [{ action: 'done', title: t('rem.routine.done') }],
+      })
     }
   }
 

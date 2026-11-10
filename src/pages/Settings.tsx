@@ -12,6 +12,8 @@ import NumberInput from '../components/NumberInput'
 import { LANGUAGES, getLanguage, useT } from '../i18n'
 import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
+import { routineGoal, routineSteps } from '../lib/routine'
+import { useTour } from '../lib/tour'
 
 export default function Settings() {
   const { t, lang } = useT()
@@ -28,6 +30,8 @@ export default function Settings() {
       setSettings({ addressName: vocative(s.name) })
   }, [setSettings])
   const [notifMsg, setNotifMsg] = useState('')
+  const steps = routineSteps(settings)
+  const setSteps = (list: SettingsT['routineSteps']) => setSettings({ routineSteps: list })
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
@@ -204,6 +208,109 @@ export default function Settings() {
               </Field>
             </div>
           </div>
+        </Card>
+        <Card className="space-y-3" data-testid="routine-settings">
+          <h2 className="font-semibold">{t('set.routine.title')}</h2>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-5"
+              checked={settings.routineOn}
+              onChange={(e) => setSettings({ routineOn: e.target.checked })}
+            />
+            {t('set.routine.on')}
+          </label>
+          {settings.routineOn && (
+            <>
+              <Field label={t('set.routine.goal')}>
+                <Input
+                  type="time"
+                  value={routineGoal(settings)}
+                  onChange={(e) => setSettings({ routineGoal: e.target.value })}
+                />
+              </Field>
+              <ul className="space-y-2">
+                {steps.map((st, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <Input
+                      aria-label={t('set.routine.emoji')}
+                      className="!w-14 text-center"
+                      maxLength={4}
+                      value={st.emoji}
+                      onChange={(e) =>
+                        setSteps(
+                          steps.map((x, j) => (j === i ? { ...x, emoji: e.target.value } : x)),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label={t('set.routine.step', { n: i + 1 })}
+                      value={st.text}
+                      onChange={(e) =>
+                        setSteps(
+                          steps.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)),
+                        )
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      disabled={steps.length <= 3}
+                      aria-label={t('set.routine.remove', { n: i + 1 })}
+                      onClick={() => setSteps(steps.filter((_, j) => j !== i))}
+                    >
+                      ✕
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="soft"
+                  disabled={steps.length >= 5}
+                  onClick={() => setSteps([...steps, { emoji: '✨', text: '' }])}
+                >
+                  {t('set.routine.add')}
+                </Button>
+                <Button variant="ghost" onClick={() => setSteps([])}>
+                  {t('set.routine.reset')}
+                </Button>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.routine.note')}</p>
+            </>
+          )}
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.effects.title')}</h2>
+          {(
+            [
+              ['sound', 'set.effects.sound'],
+              ['vibration', 'set.effects.vibration'],
+              ['animations', 'set.effects.animations'],
+            ] as const
+          ).map(([k, label]) => (
+            <label key={k} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-5"
+                checked={settings[k]}
+                onChange={(e) => setSettings({ [k]: e.target.checked })}
+              />
+              {t(label)}
+            </label>
+          ))}
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.effects.note')}</p>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.tour.title')}</h2>
+          <Button
+            variant="soft"
+            onClick={() => {
+              useTour.getState().stop()
+              setSettings({ tutorialDone: false })
+            }}
+          >
+            {t('set.tour.button')}
+          </Button>
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.updates')}</h2>

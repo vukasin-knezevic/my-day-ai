@@ -31,6 +31,8 @@ describe('normalizeData repairs damaged saved data (A-15)', () => {
       name: 'Mila',
       customSlotKinds: ['Mentorski'],
       onboarded: true,
+      // finished the setup before the tour existed: never sent through it
+      tutorialDone: true,
     })
   })
 

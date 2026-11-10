@@ -4,6 +4,7 @@ import {
   isValidElement,
   useState,
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactElement,
   type ReactNode,
@@ -16,9 +17,14 @@ import { FieldContext, invalidCls, useFieldState } from './fieldContext'
 import { useT } from '../i18n'
 import { useBackHandler } from '../lib/back'
 
-export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function Card({
+  children,
+  className = '',
+  ...rest
+}: { children: ReactNode; className?: string } & HTMLAttributes<HTMLElement>) {
   return (
     <section
+      {...rest}
       className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${className}`}
     >
       {children}

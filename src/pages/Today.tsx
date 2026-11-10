@@ -35,6 +35,10 @@ import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
 import DayPicker from '../components/DayPicker'
 import CalendarButton from '../components/CalendarButton'
+import MorningRoutine from '../components/MorningRoutine'
+import DailyChallenge from '../components/DailyChallenge'
+import WeekRing from '../components/WeekRing'
+import CloseDay from '../components/CloseDay'
 import { useSwipe } from '../lib/useSwipe'
 import { useBackHandler } from '../lib/back'
 import { deleteWithUndo } from '../lib/undo'
@@ -198,8 +202,26 @@ export default function Today() {
 
   return (
     <div {...swipe}>
-      <DayPicker day={day} today={today} onChange={pickDay} />
+      <div data-tour="today">
+        <DayPicker day={day} today={today} onChange={pickDay} />
+      </div>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
+
+      {isToday && data.days[today]?.mainThing && (
+        <Card className="mb-4 border-blue-300 dark:border-blue-800" data-testid="main-thing">
+          <p className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            ⭐ {t('close.mainToday')}
+          </p>
+          <p className="user-text mt-1 font-medium">{data.days[today]?.mainThing}</p>
+        </Card>
+      )}
+
+      {isToday && (
+        <div data-tour="routine">
+          <MorningRoutine now={now} today={today} />
+        </div>
+      )}
+      {isToday && <DailyChallenge today={today} />}
 
       {isToday && now.getDay() === 0 && now.getHours() >= 18 && (
         <Card className="mb-4">
@@ -275,100 +297,110 @@ export default function Today() {
         />
       )}
 
-      <Card className="mb-4">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold">{t('today.duties')}</h2>
-          <Button variant="soft" onClick={() => setEditing('new')}>
-            {t('today.newActivity')}
-          </Button>
-        </div>
-        {occ.length === 0 && (
-          <p className="text-sm text-slate-500">{t(isToday ? 'today.empty' : 'today.emptyDay')}</p>
-        )}
-        <ul className="space-y-2">
-          {occ.map((o) => (
-            <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="w-24 shrink-0 tabular-nums">
-                {formatTimeOfDay(o.start)}–{formatTimeOfDay(o.end)}
-              </span>
-              <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
-                <span className="user-text">
-                  {CATEGORY_META[o.category].emoji} {o.title}
+      <div data-tour="add tick">
+        <Card className="mb-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-semibold">{t('today.duties')}</h2>
+            <Button variant="soft" onClick={() => setEditing('new')}>
+              {t('today.newActivity')}
+            </Button>
+          </div>
+          {occ.length === 0 && (
+            <p className="text-sm text-slate-500">
+              {t(isToday ? 'today.empty' : 'today.emptyDay')}
+            </p>
+          )}
+          <ul className="space-y-2">
+            {occ.map((o) => (
+              <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="w-24 shrink-0 tabular-nums">
+                  {formatTimeOfDay(o.start)}–{formatTimeOfDay(o.end)}
                 </span>
-              </span>
-              {daySpan(o, bounds).start >= 1440 && (
-                <Badge className="bg-indigo-100 text-indigo-800">{t('today.afterMidnight')}</Badge>
-              )}
-              {o.suggested && (
-                <Badge className="bg-amber-100 text-amber-800">{t('today.badge.suggested')}</Badge>
-              )}
-              {o.status === 'done' && (
-                <Badge className="bg-green-100 text-green-800">{t('today.badge.done')}</Badge>
-              )}
-              {o.status === 'skipped' && (
-                <Badge className="bg-slate-200 text-slate-700">{t('today.badge.skipped')}</Badge>
-              )}
-              {o.type === 'activity' && o.suggested && (
-                <Button variant="soft" onClick={() => accept(o)}>
-                  {t('today.accept')}
-                </Button>
-              )}
-              {o.type === 'activity' && !o.suggested && o.status === 'planned' && (
-                <span className="ml-auto flex gap-1">
-                  <Button variant="soft" onClick={() => mark(o, 'done')}>
-                    {t('today.markDone')}
-                  </Button>
-                  <Button variant="ghost" onClick={() => mark(o, 'skipped')}>
-                    {t('today.skip')}
-                  </Button>
+                <span className={o.status !== 'planned' ? 'line-through opacity-60' : ''}>
+                  <span className="user-text">
+                    {CATEGORY_META[o.category].emoji} {o.title}
+                  </span>
                 </span>
-              )}
-              {o.type === 'activity' && o.activityId && o.status !== 'planned' && (
-                <Button
-                  variant="ghost"
-                  aria-label={t('today.undo', { title: o.title })}
-                  onClick={() => mark(o, 'planned')}
-                >
-                  {t('today.undoShort')}
-                </Button>
-              )}
-              {o.type === 'activity' && o.activityId && (
-                <Button
-                  variant="ghost"
-                  aria-label={t('today.edit', { title: o.title })}
-                  onClick={() => {
-                    const a = data.activities.find((x) => x.id === o.activityId)
-                    if (a) setEditing(a)
-                  }}
-                >
-                  ✎
-                </Button>
-              )}
-              {o.type === 'activity' && o.activityId && (
-                <ConfirmButton
-                  ask={o.recurring}
-                  label={t('today.delete', { title: o.title })}
-                  onConfirm={() => deleteWithUndo(() => store.remove('activities', o.activityId!))}
-                >
-                  ✕
-                </ConfirmButton>
-              )}
-              {o.type === 'activity' && o.activityId && o.recurring && (
-                <Button
-                  variant="ghost"
-                  aria-label={t('today.deleteOne', { title: o.title })}
-                  onClick={() => {
-                    const a = data.activities.find((x) => x.id === o.activityId)
-                    if (a) store.update('activities', a.id, withoutOccurrence(a, o.date))
-                  }}
-                >
-                  {t(isToday ? 'today.onlyToday' : 'today.onlyThisDay')}
-                </Button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </Card>
+                {daySpan(o, bounds).start >= 1440 && (
+                  <Badge className="bg-indigo-100 text-indigo-800">
+                    {t('today.afterMidnight')}
+                  </Badge>
+                )}
+                {o.suggested && (
+                  <Badge className="bg-amber-100 text-amber-800">
+                    {t('today.badge.suggested')}
+                  </Badge>
+                )}
+                {o.status === 'done' && (
+                  <Badge className="bg-green-100 text-green-800">{t('today.badge.done')}</Badge>
+                )}
+                {o.status === 'skipped' && (
+                  <Badge className="bg-slate-200 text-slate-700">{t('today.badge.skipped')}</Badge>
+                )}
+                {o.type === 'activity' && o.suggested && (
+                  <Button variant="soft" onClick={() => accept(o)}>
+                    {t('today.accept')}
+                  </Button>
+                )}
+                {o.type === 'activity' && !o.suggested && o.status === 'planned' && (
+                  <span className="ml-auto flex gap-1">
+                    <Button variant="soft" onClick={() => mark(o, 'done')}>
+                      {t('today.markDone')}
+                    </Button>
+                    <Button variant="ghost" onClick={() => mark(o, 'skipped')}>
+                      {t('today.skip')}
+                    </Button>
+                  </span>
+                )}
+                {o.type === 'activity' && o.activityId && o.status !== 'planned' && (
+                  <Button
+                    variant="ghost"
+                    aria-label={t('today.undo', { title: o.title })}
+                    onClick={() => mark(o, 'planned')}
+                  >
+                    {t('today.undoShort')}
+                  </Button>
+                )}
+                {o.type === 'activity' && o.activityId && (
+                  <Button
+                    variant="ghost"
+                    aria-label={t('today.edit', { title: o.title })}
+                    onClick={() => {
+                      const a = data.activities.find((x) => x.id === o.activityId)
+                      if (a) setEditing(a)
+                    }}
+                  >
+                    ✎
+                  </Button>
+                )}
+                {o.type === 'activity' && o.activityId && (
+                  <ConfirmButton
+                    ask={o.recurring}
+                    label={t('today.delete', { title: o.title })}
+                    onConfirm={() =>
+                      deleteWithUndo(() => store.remove('activities', o.activityId!))
+                    }
+                  >
+                    ✕
+                  </ConfirmButton>
+                )}
+                {o.type === 'activity' && o.activityId && o.recurring && (
+                  <Button
+                    variant="ghost"
+                    aria-label={t('today.deleteOne', { title: o.title })}
+                    onClick={() => {
+                      const a = data.activities.find((x) => x.id === o.activityId)
+                      if (a) store.update('activities', a.id, withoutOccurrence(a, o.date))
+                    }}
+                  >
+                    {t(isToday ? 'today.onlyToday' : 'today.onlyThisDay')}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
 
       <Card className="mb-4">
         <form onSubmit={submit} role="search" className="space-y-2">
@@ -414,7 +446,14 @@ export default function Today() {
         </Card>
       )}
 
+      {isToday && (
+        <div className="mt-4">
+          <CloseDay now={now} today={today} />
+        </div>
+      )}
+
       <div className="mt-4">
+        {isToday && <WeekRing today={today} />}
         <ProgressCard />
       </div>
     </div>

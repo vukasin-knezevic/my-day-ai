@@ -52,6 +52,7 @@ export default function Onboarding() {
         <Card className="space-y-4">
           {step === 0 && (
             <>
+              <p className="text-sm font-medium">{t('ob.purpose')}</p>
               <p className="text-sm">{t('ob.lang.intro')}</p>
               <Field label={t('set.language')}>
                 <Select

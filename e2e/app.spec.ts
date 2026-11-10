@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { choose, isoDate, onboard } from './helpers'
+import { choose, isoDate, onboard, skipTour } from './helpers'
 
 test('1. onboarding vodi do ekrana Danas', async ({ page }) => {
   await onboard(page)
@@ -56,9 +56,14 @@ test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => 
 test('6. trening sa rekordom', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/trening')
+  // a workout is scheduled (day and time), then marked done; the second one is heavier
   const log = async (kg: string) => {
+    await page.getByRole('button', { name: '+ Dodaj trening' }).click()
+    await page.getByRole('button', { name: '+ Dodaj vežbu' }).click()
     await page.getByLabel('Vežba 1').fill('Bench press')
     await page.getByLabel('Kilaža 1').fill(kg)
+    await page.getByRole('button', { name: 'Zakaži trening' }).click()
+    await page.getByRole('button', { name: 'Urađeno', exact: true }).first().click()
     await page.getByRole('button', { name: 'Sačuvaj trening' }).click()
   }
   await log('60')
@@ -212,7 +217,40 @@ test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ pag
   await expect(page.getByText(/Korak 6 od 7/)).toBeVisible()
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
+  await skipTour(page)
   await expect(page.getByLabel('Brzi unos')).toBeVisible()
+})
+
+test('23. obilazak: vodi kroz ekrane, probne stvari se brišu, rutina i izazov dana su na ekranu Danas', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  await page.keyboard.press('Enter')
+  await page.getByLabel('Kako da te zovem?').fill('Tura')
+  for (let i = 0; i < 6; i++) await page.keyboard.press('Enter')
+  const ask = page.getByRole('dialog', { name: /provedemo kroz aplikaciju/ })
+  await ask.getByRole('button', { name: 'Kreni' }).click()
+  const tour = page.getByRole('dialog', { name: 'Obilazak aplikacije' })
+  await expect(tour.getByText('Korak 1 od 9')).toBeVisible()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dodaj probnu obavezu' }).click()
+  await expect(page.getByText('Probna obaveza (briše se na kraju)').first()).toBeVisible()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Označi umesto mene' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dodaj probni predmet' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click() // workout
+  await expect(page).toHaveURL(/trening/)
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Gotovo' }).click()
+  await expect(tour).toHaveCount(0)
+  await page.goto('/#/')
+  await expect(page.getByText('Probna obaveza (briše se na kraju)')).toHaveCount(0)
+  await expect(page.getByTestId('challenge')).toBeVisible()
 })
 
 test('18. polje za broj: brisanje pa kucanje nema nulu ispred', async ({ page }) => {
@@ -277,6 +315,10 @@ test.describe('jezici', () => {
     await page.getByLabel('What should I call you?').fill('Alex')
     for (let i = 0; i < 5; i++) await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Finish' }).click()
+    await page
+      .getByRole('dialog', { name: /let us walk you through/ })
+      .getByRole('button', { name: 'Skip' })
+      .click()
     await expect(page.getByLabel('Quick entry')).toBeVisible()
     await page.getByLabel('Quick entry').fill('coffee 200')
     await page.getByRole('button', { name: 'Add', exact: true }).click()

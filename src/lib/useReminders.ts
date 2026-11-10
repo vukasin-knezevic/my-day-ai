@@ -105,7 +105,7 @@ export function useReminders() {
       if (!due.length) return
       for (const r of due) {
         sent.set(r.id, today)
-        void showNotification(r.title, r.body, { tag: r.id })
+        void showNotification(r.title, r.body, { tag: r.id, actions: r.actions })
       }
       saveSent(sent)
     }

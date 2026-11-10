@@ -6,6 +6,7 @@ import { useBackHandler } from '../lib/back'
 import { useAppBack } from './BackController'
 import { useToast } from '../lib/toast'
 import UndoBar from './UndoBar'
+import Tutorial from './Tutorial'
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
@@ -19,6 +20,7 @@ const MAIN: { to: string; label: BaseKey; icon: string }[] = [
 const EXTRA: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/planer', label: 'nav.planner', icon: '🧠' },
   { to: '/pregled', label: 'nav.overview', icon: '📊' },
+  { to: '/dostignuca', label: 'nav.achievements', icon: '🏆' },
   { to: '/ai', label: 'nav.ai', icon: '🤖' },
   { to: '/podesavanja', label: 'nav.settings', icon: '⚙️' },
 ]
@@ -73,6 +75,7 @@ export default function Layout() {
       <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8">
         <IosInstallHint />
         <UpdateBanner />
+        <Tutorial />
         <BackupNudge />
         {subScreen && (
           <button
@@ -86,7 +89,7 @@ export default function Layout() {
             {t('back.arrow')}
           </button>
         )}
-        <div key={pathname} className="anim-page">
+        <div key={pathname} className="anim-page" data-tour-page>
           <Outlet />
         </div>
       </main>

@@ -17,6 +17,8 @@ import { useReminders } from './lib/useReminders'
 import { useT } from './i18n'
 import Study from './pages/Study'
 import Today from './pages/Today'
+import Splash from './components/Splash'
+import { useNotificationActions } from './lib/routineNotify'
 import More from './pages/More'
 import Settings from './pages/Settings'
 
@@ -24,6 +26,7 @@ import Settings from './pages/Settings'
 const Workout = lazy(() => import('./pages/Workout'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
+const Achievements = lazy(() => import('./pages/Achievements'))
 
 export default function App() {
   const { t } = useT()
@@ -39,6 +42,7 @@ export default function App() {
   }, [hydrated, onboarded])
 
   useReminders()
+  useNotificationActions()
   useEffect(() => {
     if (import.meta.env.PROD) initUpdates(() => useStore.getState().settings.autoUpdate)
   }, [])
@@ -62,6 +66,7 @@ export default function App() {
   return (
     <HashRouter>
       <Shortcuts />
+      <Splash />
       <BackController />
       <Suspense fallback={<p className="p-6">{t('common.loading')}</p>}>
         <Routes>
@@ -72,6 +77,7 @@ export default function App() {
             <Route path="trening" element={<Workout />} />
             <Route path="zivot" element={<Life />} />
             <Route path="pregled" element={<Overview />} />
+            <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
             <Route path="vise" element={<More />} />
             <Route path="podesavanja" element={<Settings />} />

@@ -29,6 +29,14 @@ export const DEFAULT_SETTINGS: Settings = {
   rewardEmoji: '🎮',
   onboarded: false,
   lastBackupAt: '',
+  tutorialDone: false,
+  routineOn: true,
+  routineGoal: '',
+  routineSteps: [],
+  sound: false,
+  vibration: true,
+  animations: true,
+  streakSavesSeen: -1,
   backupReminder: true,
   backupNudgeAt: '',
 }
@@ -50,6 +58,7 @@ export function emptyData(): AppData {
     progress: { xp: 0, events: [], rewardEarnedMin: 0, rewardSpentMin: 0, awarded: [] },
     settings: { ...DEFAULT_SETTINGS },
     aiUsage: { month: '', inputTokens: 0, outputTokens: 0, calls: 0 },
+    days: {},
   }
 }
 
@@ -149,6 +158,12 @@ function repairSettings(raw: unknown): Settings {
   for (const k of ['wakeTime', 'bedTime'] as const) if (!TIME.test(s[k])) s[k] = DEFAULT_SETTINGS[k]
   for (const k of ['customAssessmentKinds', 'customSlotKinds'] as const)
     s[k] = s[k].filter(isString)
+  s.routineSteps = s.routineSteps.filter(
+    (x) => isRecord(x) && isString(x.emoji) && isString(x.text),
+  )
+  if (s.routineGoal && !TIME.test(s.routineGoal)) s.routineGoal = ''
+  // someone who finished the setup before the tour existed is not sent through it
+  if (isRecord(raw) && raw.onboarded === true && !('tutorialDone' in raw)) s.tutorialDone = true
   return s
 }
 
@@ -184,6 +199,7 @@ export function normalizeData(input: Partial<AppData> | null | undefined): AppDa
     progress: repairProgress(r.progress),
     settings: r.settings as Settings,
     aiUsage: repair(base.aiUsage, r.aiUsage),
+    days: isRecord(r.days) ? (r.days as AppData['days']) : {},
     budget: isRecord(r.budget) ? (r.budget as AppData['budget']) : {},
     workoutPlan: isRecord(r.workoutPlan) ? (r.workoutPlan as AppData['workoutPlan']) : null,
   }
