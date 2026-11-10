@@ -73,7 +73,7 @@ export default function ProgressCard() {
             })}
           />
         </span>
-        <span className="ml-auto flex gap-1">
+        <span className="ml-auto flex flex-wrap justify-end gap-1">
           {undo ? (
             <Button
               variant="soft"
