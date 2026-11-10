@@ -1,5 +1,6 @@
 import {
   Children,
+  forwardRef,
   isValidElement,
   useState,
   type ButtonHTMLAttributes,
@@ -27,7 +28,10 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'ghost' | 'danger' | 'soft'
 }
-export function Button({ variant = 'primary', className = '', ...p }: BtnProps) {
+export const Button = forwardRef<HTMLButtonElement, BtnProps>(function Button(
+  { variant = 'primary', className = '', ...p },
+  ref,
+) {
   const styles = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700',
     soft: 'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
@@ -36,12 +40,13 @@ export function Button({ variant = 'primary', className = '', ...p }: BtnProps) 
   }[variant]
   return (
     <button
+      ref={ref}
       type="button"
       {...p}
       className={`min-h-10 rounded-xl px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${styles} ${className}`}
     />
   )
-}
+})
 
 /** Tab bar of a page; `activeClass` carries the color of that part of the app. */
 export function Tabs<T extends string>({
