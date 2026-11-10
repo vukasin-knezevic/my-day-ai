@@ -719,6 +719,15 @@ const messages = {
     'Bez roka računamo 7 dana pre termina i podsećamo te da proveriš na sajtu fakulteta.',
   'dataio.badField': 'Polje „{key}“ nije ispravno, pa uvoz nije bezbedan.',
   'err.copySaved': 'Kopija je sačuvana. Sada možeš da obrišeš podatke.',
+  'today.prevDay': 'Prethodni dan',
+  'today.nextDay': 'Sledeći dan',
+  'today.dayYesterday': 'Juče',
+  'today.dayToday': 'Danas',
+  'today.dayTomorrow': 'Sutra',
+  'today.backToToday': 'Nazad na danas',
+  'today.pickDay': 'Izbor dana',
+  'today.onlyThisDay': 'Samo ovaj dan',
+  'today.emptyDay': 'Nema obaveza za ovaj dan.',
 }
 
 export type MessageKey = keyof typeof messages

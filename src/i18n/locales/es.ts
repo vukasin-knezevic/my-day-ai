@@ -634,6 +634,15 @@ const messages = fromEnglish({
     'Sin plazo contamos 7 días antes de la fecha y te recordamos consultar la web de la facultad.',
   'dataio.badField': 'El campo «{key}» no es válido, así que la importación no es segura.',
   'err.copySaved': 'La copia está guardada. Ya puedes borrar los datos.',
+  'today.prevDay': 'Día anterior',
+  'today.nextDay': 'Día siguiente',
+  'today.dayYesterday': 'Ayer',
+  'today.dayToday': 'Hoy',
+  'today.dayTomorrow': 'Mañana',
+  'today.backToToday': 'Volver a hoy',
+  'today.pickDay': 'Elegir día',
+  'today.onlyThisDay': 'Solo este día',
+  'today.emptyDay': 'No hay nada previsto para este día.',
 })
 
 const locale: LocaleModule = {

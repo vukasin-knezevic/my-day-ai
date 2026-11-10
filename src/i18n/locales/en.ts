@@ -727,6 +727,15 @@ const messages: Record<MessageKey, string> = {
     'Without a deadline we assume 7 days before the date and remind you to check the faculty website.',
   'dataio.badField': 'The field “{key}” is not valid, so the import is not safe.',
   'err.copySaved': 'The copy is saved. You can delete the data now.',
+  'today.prevDay': 'Previous day',
+  'today.nextDay': 'Next day',
+  'today.dayYesterday': 'Yesterday',
+  'today.dayToday': 'Today',
+  'today.dayTomorrow': 'Tomorrow',
+  'today.backToToday': 'Back to today',
+  'today.pickDay': 'Choose a day',
+  'today.onlyThisDay': 'This day only',
+  'today.emptyDay': 'Nothing planned for this day.',
 }
 
 const locale: LocaleModule = {

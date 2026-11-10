@@ -636,6 +636,15 @@ const messages = fromEnglish({
     'Sans date limite, on compte 7 jours avant la date et on te rappelle de vérifier sur le site de la faculté.',
   'dataio.badField': 'Le champ « {key} » n’est pas valide, l’import n’est donc pas sûr.',
   'err.copySaved': 'La copie est enregistrée. Tu peux maintenant supprimer les données.',
+  'today.prevDay': 'Jour précédent',
+  'today.nextDay': 'Jour suivant',
+  'today.dayYesterday': 'Hier',
+  'today.dayToday': 'Aujourd’hui',
+  'today.dayTomorrow': 'Demain',
+  'today.backToToday': 'Retour à aujourd’hui',
+  'today.pickDay': 'Choisir un jour',
+  'today.onlyThisDay': 'Ce jour seulement',
+  'today.emptyDay': 'Rien de prévu ce jour-là.',
 })
 
 const locale: LocaleModule = {

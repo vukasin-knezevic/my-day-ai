@@ -636,6 +636,15 @@ const messages = fromEnglish({
     'Без срока считаем за 7 дней до даты и напоминаем проверить на сайте факультета.',
   'dataio.badField': 'Поле «{key}» некорректно, поэтому импорт небезопасен.',
   'err.copySaved': 'Копия сохранена. Теперь можно удалить данные.',
+  'today.prevDay': 'Предыдущий день',
+  'today.nextDay': 'Следующий день',
+  'today.dayYesterday': 'Вчера',
+  'today.dayToday': 'Сегодня',
+  'today.dayTomorrow': 'Завтра',
+  'today.backToToday': 'Вернуться к сегодня',
+  'today.pickDay': 'Выбор дня',
+  'today.onlyThisDay': 'Только этот день',
+  'today.emptyDay': 'На этот день ничего не запланировано.',
 })
 
 const locale: LocaleModule = {

@@ -636,6 +636,15 @@ const messages = fromEnglish({
     'Ohne Frist rechnen wir mit 7 Tagen vor dem Termin und erinnern dich, auf der Website der Fakultät nachzusehen.',
   'dataio.badField': 'Das Feld „{key}“ ist ungültig, daher ist der Import nicht sicher.',
   'err.copySaved': 'Die Kopie ist gespeichert. Du kannst die Daten jetzt löschen.',
+  'today.prevDay': 'Vorheriger Tag',
+  'today.nextDay': 'Nächster Tag',
+  'today.dayYesterday': 'Gestern',
+  'today.dayToday': 'Heute',
+  'today.dayTomorrow': 'Morgen',
+  'today.backToToday': 'Zurück zu heute',
+  'today.pickDay': 'Tag wählen',
+  'today.onlyThisDay': 'Nur dieser Tag',
+  'today.emptyDay': 'Für diesen Tag ist nichts geplant.',
 })
 
 const locale: LocaleModule = {

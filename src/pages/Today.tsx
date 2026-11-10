@@ -8,9 +8,10 @@ import { CATEGORY_META } from '../types'
 import {
   formatDuration,
   formatTimeOfDay,
-  formatLong,
   minToTime,
   timeToMin,
+  addDaysStr,
+  fromDateStr,
   todayStr,
 } from '../lib/dates'
 import {
@@ -29,6 +30,8 @@ import { useToast } from '../lib/toast'
 import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
+import DayPicker from '../components/DayPicker'
+import { useSwipe } from '../lib/useSwipe'
 import { useT } from '../i18n'
 import type { Activity } from '../types'
 
@@ -111,8 +114,14 @@ export default function Today() {
   }, [])
 
   const today = todayStr(now)
+  // the day on screen: null follows the calendar (an app left open overnight moves to the new day)
+  const [picked, setPicked] = useState<string | null>(null)
+  const day = picked ?? today
+  const isToday = day === today
+  const pickDay = (d: string) => setPicked(d === today ? null : d)
+  const swipe = useSwipe((dir) => pickDay(addDaysStr(day, dir === 'left' ? 1 : -1)))
   const nowMin = now.getHours() * 60 + now.getMinutes()
-  const occ = useMemo(() => occurrencesOn(data, today), [data, today])
+  const occ = useMemo(() => occurrencesOn(data, day), [data, day])
   const alerts = useMemo(() => buildAlerts(data, today), [data, today])
   const { current, next, minutesToNext } = currentAndNext(occ, nowMin)
 
@@ -123,20 +132,26 @@ export default function Today() {
       return
     }
     setQuickError('')
-    setMsg(applyParsed(parseQuick(text, new Date()), store))
+    // typed while looking at another day: "učenje 2h" lands on that day, at the current time of day
+    const base = new Date()
+    if (!isToday) {
+      const d = fromDateStr(day)
+      base.setFullYear(d.getFullYear(), d.getMonth(), d.getDate())
+    }
+    setMsg(applyParsed(parseQuick(text, base), store))
     setText('')
   }
 
   function mark(o: Occurrence, status: 'done' | 'skipped' | 'planned') {
     const a = data.activities.find((x) => x.id === o.activityId)
     if (!a) return
-    store.update('activities', a.id, withStatus(a, today, status))
+    store.update('activities', a.id, withStatus(a, day, status))
     // anything but "done" takes back what "done" paid out
     if (status !== 'done') {
-      store.revoke(`act-${a.id}-${today}`)
+      store.revoke(`act-${a.id}-${day}`)
       return
     }
-    const ev = rewardForDone(a, today, data.settings.rewardMinPerStudyHour)
+    const ev = rewardForDone(a, day, data.settings.rewardMinPerStudyHour)
     if (ev) store.award(ev)
     const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
     if (streaks.length) useToast.getState().push([...useToast.getState().messages, ...streaks])
@@ -152,13 +167,11 @@ export default function Today() {
     : summary
 
   return (
-    <>
-      <header className="mb-4">
-        <h1 className="text-2xl font-bold">🌅 {formatLong(today)}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
-      </header>
+    <div {...swipe}>
+      <DayPicker day={day} today={today} onChange={pickDay} />
+      <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
 
-      {now.getDay() === 0 && now.getHours() >= 18 && (
+      {isToday && now.getDay() === 0 && now.getHours() >= 18 && (
         <Card className="mb-4">
           <p className="text-sm">
             {t('today.sunday')}{' '}
@@ -172,40 +185,42 @@ export default function Today() {
         </Card>
       )}
 
-      <section aria-label={t('today.nowNext')} className="mb-4 space-y-2">
-        <Card className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <p className="text-xs font-semibold tracking-wide text-blue-800 uppercase dark:text-blue-200">
-            {t('today.nowLabel')}
-          </p>
-          {current ? (
-            <>
-              <p className="user-text mt-1 text-xl font-bold">
-                {CATEGORY_META[current.category].emoji} {current.title}
-              </p>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                {t('today.until', { end: formatTimeOfDay(current.end) })}
-              </p>
-            </>
-          ) : (
-            <p className="mt-1 text-slate-700 dark:text-slate-300">{t('today.nothing')}</p>
-          )}
-        </Card>
-        {next && (
-          <div className="rounded-2xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-800">
-            <span className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              {t('today.nextLabel')}
-            </span>
-            <p className="user-text">
-              {CATEGORY_META[next.category].emoji} {next.title} · {formatTimeOfDay(next.start)}{' '}
-              <span className="text-slate-600 dark:text-slate-400">
-                ({t('today.in', { d: formatDuration(minutesToNext!) })})
-              </span>
+      {isToday && (
+        <section aria-label={t('today.nowNext')} className="mb-4 space-y-2">
+          <Card className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+            <p className="text-xs font-semibold tracking-wide text-blue-800 uppercase dark:text-blue-200">
+              {t('today.nowLabel')}
             </p>
-          </div>
-        )}
-      </section>
+            {current ? (
+              <>
+                <p className="user-text mt-1 text-xl font-bold">
+                  {CATEGORY_META[current.category].emoji} {current.title}
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  {t('today.until', { end: formatTimeOfDay(current.end) })}
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-slate-700 dark:text-slate-300">{t('today.nothing')}</p>
+            )}
+          </Card>
+          {next && (
+            <div className="rounded-2xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-800">
+              <span className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                {t('today.nextLabel')}
+              </span>
+              <p className="user-text">
+                {CATEGORY_META[next.category].emoji} {next.title} · {formatTimeOfDay(next.start)}{' '}
+                <span className="text-slate-600 dark:text-slate-400">
+                  ({t('today.in', { d: formatDuration(minutesToNext!) })})
+                </span>
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
-      {alerts.length > 0 && (
+      {isToday && alerts.length > 0 && (
         <Card className="mb-4 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950">
           <h2 className="mb-2 font-semibold text-red-800 dark:text-red-200">{t('today.alerts')}</h2>
           <ul className="space-y-1 text-sm">
@@ -225,7 +240,7 @@ export default function Today() {
         <ActivityForm
           key={editing === 'new' ? 'new' : editing.id}
           initial={editing === 'new' ? undefined : editing}
-          defaultDate={today}
+          defaultDate={day}
           onClose={() => setEditing(null)}
         />
       )}
@@ -237,7 +252,9 @@ export default function Today() {
             {t('today.newActivity')}
           </Button>
         </div>
-        {occ.length === 0 && <p className="text-sm text-slate-500">{t('today.empty')}</p>}
+        {occ.length === 0 && (
+          <p className="text-sm text-slate-500">{t(isToday ? 'today.empty' : 'today.emptyDay')}</p>
+        )}
         <ul className="space-y-2">
           {occ.map((o) => (
             <li key={o.key} className="flex flex-wrap items-center gap-2 text-sm">
@@ -312,7 +329,7 @@ export default function Today() {
                     if (a) store.update('activities', a.id, withoutOccurrence(a, o.date))
                   }}
                 >
-                  {t('today.onlyToday')}
+                  {t(isToday ? 'today.onlyToday' : 'today.onlyThisDay')}
                 </Button>
               )}
             </li>
@@ -353,13 +370,13 @@ export default function Today() {
           occ={occ}
           wake={data.settings.wakeTime}
           bed={data.settings.bedTime}
-          nowMin={nowMin}
+          nowMin={isToday ? nowMin : -1}
         />
       </Card>
 
       <div className="mt-4">
         <ProgressCard />
       </div>
-    </>
+    </div>
   )
 }
