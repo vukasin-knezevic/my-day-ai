@@ -4,6 +4,18 @@ import { choose, onboard } from './helpers'
 // Runs in WebKit with an iPhone profile (see playwright.config.ts): main screens, the app's own
 // panels and the iPhone-only cards. What this cannot show is listed in IZVESTAJ.md.
 
+test('0. A-03: u Safariju se pre uvoda vidi instalacija i upozorenje da se podaci ne prenose', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(
+    page.getByRole('heading', { name: 'Prvo dodaj aplikaciju na početni ekran' }),
+  ).toBeVisible()
+  await expect(page.getByText(/se ne prenose u instaliranu aplikaciju/)).toBeVisible()
+  await page.getByRole('button', { name: 'Nastavi u Safariju' }).click()
+  await expect(page.getByRole('heading', { name: /Dobrodošao/ })).toBeVisible()
+})
+
 test('1. onboarding i ekran Danas na iPhone profilu; kartica za instalaciju se zatvara za stalno', async ({
   page,
 }) => {

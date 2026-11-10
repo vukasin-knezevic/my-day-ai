@@ -3,7 +3,12 @@ import type { Page } from '@playwright/test'
 /** Walks through the 7-step onboarding. `demo` = load example data. */
 export async function onboard(page: Page, opts: { demo?: boolean } = {}) {
   await page.goto('/')
-  await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  // iPhone in Safari sees "install first" before the setup; the tests carry on in the browser
+  const welcome = page.getByRole('heading', { name: /Dobrodošao/ })
+  const inSafari = page.getByRole('button', { name: 'Nastavi u Safariju' })
+  await welcome.or(inSafari).waitFor()
+  if (await inSafari.isVisible()) await inSafari.click()
+  await welcome.waitFor()
   await page.getByRole('button', { name: 'Dalje' }).click() // language step
   await page.getByLabel('Kako da te zovem?').fill('Test')
   for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Dalje' }).click()
