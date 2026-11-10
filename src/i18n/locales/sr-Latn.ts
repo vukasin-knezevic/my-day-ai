@@ -717,6 +717,8 @@ const messages = {
   'study.noDeadline': '(rok nije unet — proveri na sajtu fakulteta)',
   'study.f.regDeadlineHint':
     'Bez roka računamo 7 dana pre termina i podsećamo te da proveriš na sajtu fakulteta.',
+  'dataio.badField': 'Polje „{key}“ nije ispravno, pa uvoz nije bezbedan.',
+  'err.copySaved': 'Kopija je sačuvana. Sada možeš da obrišeš podatke.',
 }
 
 export type MessageKey = keyof typeof messages

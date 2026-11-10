@@ -634,6 +634,8 @@ const messages = fromEnglish({
   'study.noDeadline': '(keine Frist eingetragen — sieh auf der Website der Fakultät nach)',
   'study.f.regDeadlineHint':
     'Ohne Frist rechnen wir mit 7 Tagen vor dem Termin und erinnern dich, auf der Website der Fakultät nachzusehen.',
+  'dataio.badField': 'Das Feld „{key}“ ist ungültig, daher ist der Import nicht sicher.',
+  'err.copySaved': 'Die Kopie ist gespeichert. Du kannst die Daten jetzt löschen.',
 })
 
 const locale: LocaleModule = {

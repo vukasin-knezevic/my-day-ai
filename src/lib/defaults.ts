@@ -115,17 +115,77 @@ function migrateKinds(r: Partial<AppData>): Partial<AppData> {
   }
 }
 
-/** Fills in missing fields of (older / imported) data with defaults. */
+const kindOf = (v: unknown) => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v)
+const isRecord = (v: unknown): v is Record<string, unknown> => kindOf(v) === 'object'
+
+/**
+ * Saved fields laid over the defaults. A field of the wrong type (a damaged save, a hand-edited
+ * backup) falls back to its default, so a screen never reads "abc" where it expects a number.
+ */
+function repair<T extends object>(base: T, raw: unknown): T {
+  if (!isRecord(raw)) return base
+  const out = { ...base, ...raw } as Record<string, unknown>
+  for (const [k, def] of Object.entries(base)) {
+    const v = out[k]
+    if (kindOf(v) !== kindOf(def) || (typeof v === 'number' && !Number.isFinite(v))) out[k] = def
+  }
+  return out as T
+}
+const isString = (v: unknown): v is string => typeof v === 'string'
+
+/** Fields with a fixed set of values: anything else falls back to the default. */
+const SETTING_CHOICES: Partial<Record<keyof Settings, readonly string[]>> = {
+  gender: ['m', 'f'],
+  theme: ['system', 'light', 'dark'],
+  timeFormat: ['24h', '12h'],
+  aiMode: ['api', 'manual'],
+}
+const TIME = /^\d{2}:\d{2}$/
+
+function repairSettings(raw: unknown): Settings {
+  const s = repair(DEFAULT_SETTINGS, raw) as Settings & Record<string, unknown>
+  for (const [k, allowed] of Object.entries(SETTING_CHOICES))
+    if (!allowed.includes(s[k] as string)) s[k] = DEFAULT_SETTINGS[k as keyof Settings]
+  for (const k of ['wakeTime', 'bedTime'] as const) if (!TIME.test(s[k])) s[k] = DEFAULT_SETTINGS[k]
+  for (const k of ['customAssessmentKinds', 'customSlotKinds'] as const)
+    s[k] = s[k].filter(isString)
+  return s
+}
+
+function repairProgress(raw: unknown): AppData['progress'] {
+  const p = repair(emptyData().progress, raw)
+  const events = p.events.filter(
+    (e) => isRecord(e) && isString(e.id) && isString(e.date) && Number.isFinite(e.xp),
+  )
+  const awarded = p.awarded.filter(isString)
+  return clampReward({ ...p, events, awarded })
+}
+
+/** Every list of items is a list of objects with an id; anything else in it is dropped. */
+function repairLists(r: Partial<AppData>): Partial<AppData> {
+  const out = { ...r } as Record<string, unknown>
+  for (const [k, def] of Object.entries(emptyData())) {
+    if (!Array.isArray(def) || !(k in out)) continue
+    const list = out[k]
+    out[k] = Array.isArray(list) ? list.filter((x) => isRecord(x) && isString(x.id)) : []
+  }
+  return out as Partial<AppData>
+}
+
+/** Fills in missing fields of (older / imported) data with defaults and repairs damaged ones. */
 export function normalizeData(input: Partial<AppData> | null | undefined): AppData {
   const base = emptyData()
-  const r = migrateKinds(migrateData(input))
+  const m = repairLists(migrateData(input))
+  // the settings are repaired first: the next step reads the language and the kinds from them
+  const r = migrateKinds({ ...m, settings: repairSettings(m.settings) })
   return {
     ...base,
     ...r,
-    progress: clampReward({ ...base.progress, ...(r.progress ?? {}) }),
-    settings: { ...base.settings, ...(r.settings ?? {}) },
-    aiUsage: { ...base.aiUsage, ...(r.aiUsage ?? {}) },
-    budget: r.budget ?? {},
+    progress: repairProgress(r.progress),
+    settings: r.settings as Settings,
+    aiUsage: repair(base.aiUsage, r.aiUsage),
+    budget: isRecord(r.budget) ? (r.budget as AppData['budget']) : {},
+    workoutPlan: isRecord(r.workoutPlan) ? (r.workoutPlan as AppData['workoutPlan']) : null,
   }
 }
 

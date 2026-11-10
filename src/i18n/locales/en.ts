@@ -725,6 +725,8 @@ const messages: Record<MessageKey, string> = {
   'study.noDeadline': '(no deadline entered — check the faculty website)',
   'study.f.regDeadlineHint':
     'Without a deadline we assume 7 days before the date and remind you to check the faculty website.',
+  'dataio.badField': 'The field “{key}” is not valid, so the import is not safe.',
+  'err.copySaved': 'The copy is saved. You can delete the data now.',
 }
 
 const locale: LocaleModule = {

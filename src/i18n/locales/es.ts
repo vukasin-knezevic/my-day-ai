@@ -632,6 +632,8 @@ const messages = fromEnglish({
   'study.noDeadline': '(sin plazo anotado — consulta la web de la facultad)',
   'study.f.regDeadlineHint':
     'Sin plazo contamos 7 días antes de la fecha y te recordamos consultar la web de la facultad.',
+  'dataio.badField': 'El campo «{key}» no es válido, así que la importación no es segura.',
+  'err.copySaved': 'La copia está guardada. Ya puedes borrar los datos.',
 })
 
 const locale: LocaleModule = {

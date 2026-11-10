@@ -634,6 +634,8 @@ const messages = fromEnglish({
   'study.noDeadline': '(aucune date limite saisie — vérifie sur le site de la faculté)',
   'study.f.regDeadlineHint':
     'Sans date limite, on compte 7 jours avant la date et on te rappelle de vérifier sur le site de la faculté.',
+  'dataio.badField': 'Le champ « {key} » n’est pas valide, l’import n’est donc pas sûr.',
+  'err.copySaved': 'La copie est enregistrée. Tu peux maintenant supprimer les données.',
 })
 
 const locale: LocaleModule = {

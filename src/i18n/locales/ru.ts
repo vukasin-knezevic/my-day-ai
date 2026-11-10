@@ -634,6 +634,8 @@ const messages = fromEnglish({
   'study.noDeadline': '(срок не указан — проверь на сайте факультета)',
   'study.f.regDeadlineHint':
     'Без срока считаем за 7 дней до даты и напоминаем проверить на сайте факультета.',
+  'dataio.badField': 'Поле «{key}» некорректно, поэтому импорт небезопасен.',
+  'err.copySaved': 'Копия сохранена. Теперь можно удалить данные.',
 })
 
 const locale: LocaleModule = {
