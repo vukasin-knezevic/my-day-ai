@@ -51,6 +51,9 @@ interface Ev {
   description?: string
 }
 
+/** Relative to midnight at the start of the day: 09:00 that day, 09:00 the day before. */
+export const ALL_DAY_TRIGGERS = ['PT9H', '-PT15H']
+
 function vevent(e: Ev, dtstamp: string): string[] {
   const l = [
     'BEGIN:VEVENT',
@@ -71,14 +74,19 @@ function vevent(e: Ev, dtstamp: string): string[] {
     )
   }
   if (e.description) l.push(`DESCRIPTION:${esc(e.description)}`)
-  if (e.alarmMin !== undefined)
-    l.push(
-      'BEGIN:VALARM',
-      'ACTION:DISPLAY',
-      `DESCRIPTION:${esc(e.summary)}`,
-      `TRIGGER:-PT${e.alarmMin}M`,
-      'END:VALARM',
-    )
+  if (e.alarmMin !== undefined) {
+    // An all-day event starts at midnight, so "x minutes before" would ring in the middle of the
+    // night. It reminds at 09:00 that day and at 09:00 the day before instead.
+    const triggers = e.start ? [`-PT${e.alarmMin}M`] : ALL_DAY_TRIGGERS
+    for (const trigger of triggers)
+      l.push(
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:${esc(e.summary)}`,
+        `TRIGGER:${trigger}`,
+        'END:VALARM',
+      )
+  }
   l.push('END:VEVENT')
   return l
 }
@@ -158,6 +166,17 @@ const addMinutes = (time: string, m: number) => minToTime(Math.min(1439, timeToM
  * Hands the calendar file to the phone: the share sheet offers the Calendar app straight away.
  * Without Web Share for files (a laptop) it is an ordinary download. Returns what happened.
  */
+/**
+ * iPhone: opens the calendar file itself, so Safari shows its own "Add All" screen. (The share sheet
+ * there does not offer the Calendar app for a file.)
+ */
+export function openCalendarFile(text: string): ShareResult {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }))
+  window.location.assign(url)
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  return 'shared'
+}
+
 export function shareCalendar(text: string, filename = 'my-day-ai.ics'): Promise<ShareResult> {
   return shareOrDownload(filename, text, 'text/calendar')
 }

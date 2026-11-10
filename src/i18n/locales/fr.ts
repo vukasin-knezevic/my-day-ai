@@ -667,6 +667,11 @@ const messages = fromEnglish({
   'back.discardAsk': 'Abandonner les modifications ?',
   'back.discard': 'Abandonner',
   'back.arrow': 'Retour',
+  'cal.once':
+    "Le calendrier reçoit une copie de ce qui est saisi maintenant (examens, dates limites d'inscription, activités sur 60 jours). Après un ajout, touche à nouveau.",
+  'cal.onceShort': 'Copie unique : touche à nouveau après un ajout.',
+  'cal.shareInstead': 'Ça ne marche pas ? Partager le fichier',
+  'cal.todayTitle': '📅 Échéances dans le calendrier du téléphone',
 })
 
 const locale: LocaleModule = {

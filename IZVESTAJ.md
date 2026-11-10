@@ -18,6 +18,13 @@ Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, 
 - **Urađeno drugačije:** upozorenja („Pazi“) se ne prikazuju za druge dane, jer se odnose na sadašnji trenutak. Aktivnost uneta posle ponoći za „danas“ računa se kao tekuća dok ne prođe vreme spavanja, a na liniji dana stoji na kraju tog dana.
 - **Proveriti na telefonu:** Android: dodir na notifikaciju otvara aplikaciju, ikonica u statusnoj traci je logo, a ne zvonce. iPhone: „Sigurno?“ se vraća na dodir sa strane; prevlačenje levo/desno na ekranu Danas ne smeta skrolovanju.
 
+### Faza C: iPhone, „Nazad“ i kalendar
+
+- **Urađeno:** Nepomična traka u boji pozadine, visine statusne trake, stoji iznad sadržaja, pa tekst više ne prolazi ispod sata i baterije (A-09, R-03). Pametno „Nazad“ (A-13, R-05): jedna funkcija `handleBack()` u `src/lib/back.ts` sa testom za svaki od 7 koraka; Android dugme i gest idu preko jednog rezervnog koraka u istoriji (`popstate`), a na iPhone-u isto radi prevlačenje od leve ivice i strelica ← na ekranima otvorenim iz „Više“. Forma za aktivnost pita „Odbaci izmene?“ ako je nešto ukucano; na ekranu Danas „Nazad“ sa drugog dana vraća na danas. „Dodaj u kalendar“ je sada i na ekranu Faks (uz obaveze) i na ekranu Danas, sa rečenicom da je kopija jednokratna (R-02). Celodnevni događaji podsećaju u 09:00 tog dana i 09:00 dan ranije, ne u ponoć (A-24).
+- **Urađeno drugačije:** na iPhone-u glavno dugme otvara kalendarski fajl direktno (da Safari ponudi „Dodaj sve“), a pored njega ostaje „Ne radi? Podeli fajl“, jer direktno otvaranje ne može da se proveri bez pravog telefona. Pitanje „Odbaci izmene?“ za sada ima forma za aktivnost; panele za termin i obavezu dobija u fazi D.
+- **Nije urađeno:** objašnjenje dugmeta za kalendar u tutorijalu dolazi sa tutorijalom (faza E).
+- **Proveriti na telefonu:** iPhone: traka ispod sata uspravno i položeno; „Dodaj u kalendar“ otvara ekran „Dodaj sve“ (ako ne, radi li „Podeli fajl“); prevlačenje od leve ivice. Android: dugme i gest Nazad kroz svih 7 koraka; „Napusti“ zaista zatvara instaliranu aplikaciju.
+
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
 - **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).

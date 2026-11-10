@@ -666,6 +666,11 @@ const messages = fromEnglish({
   'back.discardAsk': '¿Descartar los cambios?',
   'back.discard': 'Descartar',
   'back.arrow': 'Atrás',
+  'cal.once':
+    'El calendario recibe una copia de lo que hay ahora (exámenes, plazos de inscripción, actividades de 60 días). Cuando añadas algo nuevo, toca de nuevo.',
+  'cal.onceShort': 'Copia única: toca de nuevo al añadir algo.',
+  'cal.shareInstead': '¿No funciona? Compartir archivo',
+  'cal.todayTitle': '📅 Plazos en el calendario del móvil',
 })
 
 const locale: LocaleModule = {

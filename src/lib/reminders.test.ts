@@ -146,6 +146,15 @@ describe('buildIcs', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:20261107')
     expect(ics).toContain('Rok za prijavu')
   })
+  it('A-24: all-day events remind at 09:00 that day and 09:00 the day before, never at midnight', () => {
+    const allDay = ics.split('BEGIN:VEVENT').filter((e) => e.includes('DTSTART;VALUE=DATE'))
+    expect(allDay.length).toBeGreaterThan(0)
+    for (const e of allDay) {
+      expect(e).toContain('TRIGGER:PT9H')
+      expect(e).toContain('TRIGGER:-PT15H')
+      expect(e).not.toMatch(/TRIGGER:-PT(0|1440)M/)
+    }
+  })
   it('skips suggestions and escapes special characters', () => {
     const x = buildIcs(
       data({

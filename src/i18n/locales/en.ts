@@ -758,6 +758,11 @@ const messages: Record<MessageKey, string> = {
   'back.discardAsk': 'Discard changes?',
   'back.discard': 'Discard',
   'back.arrow': 'Back',
+  'cal.once':
+    'The calendar gets a copy of what is entered now (assessments, registration deadlines, activities for 60 days). After adding new ones, tap again.',
+  'cal.onceShort': 'One-time copy: tap again after adding new ones.',
+  'cal.shareInstead': 'Not working? Share the file',
+  'cal.todayTitle': '📅 Deadlines in your phone calendar',
 }
 
 const locale: LocaleModule = {

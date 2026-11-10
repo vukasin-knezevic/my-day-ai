@@ -667,6 +667,11 @@ const messages = fromEnglish({
   'back.discardAsk': 'Änderungen verwerfen?',
   'back.discard': 'Verwerfen',
   'back.arrow': 'Zurück',
+  'cal.once':
+    'Der Kalender bekommt eine Kopie des jetzigen Stands (Prüfungen, Anmeldefristen, Aktivitäten für 60 Tage). Nach neuen Einträgen erneut tippen.',
+  'cal.onceShort': 'Einmalige Kopie: nach neuen Einträgen erneut tippen.',
+  'cal.shareInstead': 'Klappt nicht? Datei teilen',
+  'cal.todayTitle': '📅 Fristen im Handy-Kalender',
 })
 
 const locale: LocaleModule = {

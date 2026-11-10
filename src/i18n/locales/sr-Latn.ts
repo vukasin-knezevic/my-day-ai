@@ -750,6 +750,11 @@ const messages = {
   'back.discardAsk': 'Odbaci izmene?',
   'back.discard': 'Odbaci',
   'back.arrow': 'Nazad',
+  'cal.once':
+    'Kalendar dobija kopiju onoga što je sada uneto (obaveze, rokovi za prijavu, aktivnosti za 60 dana). Kad dodaš nove obaveze, dodirni ponovo.',
+  'cal.onceShort': 'Jednokratno: posle novih obaveza dodirni ponovo.',
+  'cal.shareInstead': 'Ne radi? Podeli fajl',
+  'cal.todayTitle': '📅 Rokovi u kalendaru telefona',
 }
 
 export type MessageKey = keyof typeof messages

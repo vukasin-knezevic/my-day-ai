@@ -33,6 +33,7 @@ import ProgressCard from '../components/ProgressCard'
 import ActivityForm from '../components/ActivityForm'
 import ConfirmButton from '../components/ConfirmButton'
 import DayPicker from '../components/DayPicker'
+import CalendarButton from '../components/CalendarButton'
 import { useSwipe } from '../lib/useSwipe'
 import { useBackHandler } from '../lib/back'
 import { deleteWithUndo } from '../lib/undo'
@@ -396,6 +397,13 @@ export default function Today() {
           nowMin={isToday ? nowMin : -1}
         />
       </Card>
+
+      {isToday && data.assessments.some((a) => a.date >= today) && (
+        <Card className="mt-4">
+          <h2 className="mb-2 font-semibold">{t('cal.todayTitle')}</h2>
+          <CalendarButton compact />
+        </Card>
+      )}
 
       <div className="mt-4">
         <ProgressCard />

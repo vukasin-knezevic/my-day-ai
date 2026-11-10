@@ -35,6 +35,7 @@ import { hasSlot } from '../lib/schedule'
 import { subjectPoints } from '../lib/grades'
 import { XP } from '../lib/xp'
 import { deleteWithUndo } from '../lib/undo'
+import CalendarButton from '../components/CalendarButton'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
 import { assessmentLabel, attendanceLabel, slotKindLabel } from '../lib/labels'
@@ -469,6 +470,11 @@ function Assessments() {
 
   return (
     <div className="space-y-4">
+      {assessments.length > 0 && (
+        <Card>
+          <CalendarButton compact />
+        </Card>
+      )}
       <Card>
         <h2 className="mb-2 font-semibold">
           {t('study.monthRegs', { month: monthName(Number(month.slice(5))) })}
