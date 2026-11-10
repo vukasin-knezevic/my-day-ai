@@ -2,7 +2,7 @@
 // or recently used; for reliable phone reminders use the .ics export (see lib/ics.ts).
 import type { AppData } from '../types'
 import { addDaysStr, daysUntil, timeToMin, todayStr } from './dates'
-import { isExam } from './exams'
+import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
 
@@ -33,13 +33,16 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
   }
 
   for (const a of data.assessments) {
-    if (a.registration === 'nije-prijavljen' && a.registrationDeadline) {
-      const d = daysUntil(a.registrationDeadline, today)
+    const due = registrationDue(a)
+    if (due) {
+      const d = daysUntil(due.date, today)
       if (d >= 0 && d <= 1 && nowMin >= 9 * 60)
         out.push({
           id: `reg-${a.id}-${today}`,
           title: t('rem.reg.title'),
-          body: t(d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', { title: a.title }),
+          body: t(due.assumed ? 'rem.reg.check' : d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', {
+            title: a.title,
+          }),
         })
     }
     if (!isExam(a) && !a.done) {

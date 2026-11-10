@@ -530,10 +530,16 @@ function Assessments() {
                     }}
                   />
                   {t('study.askRegistered')}{' '}
-                  {a.registrationDeadline && (
+                  {a.registrationDeadline ? (
                     <span className="text-slate-500">
                       {t('study.deadline', { date: formatShort(a.registrationDeadline) })}
                     </span>
+                  ) : (
+                    a.registration === 'nije-prijavljen' && (
+                      <span className="text-red-700 dark:text-red-400">
+                        {t('study.noDeadline')}
+                      </span>
+                    )
                   )}
                 </label>
               </div>
@@ -679,6 +685,11 @@ function Assessments() {
                   value={f.regDeadline}
                   onChange={(e) => setF({ ...f, regDeadline: e.target.value })}
                 />
+                {!f.regDeadline && (
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                    {t('study.f.regDeadlineHint')}
+                  </p>
+                )}
               </Field>
               <Field label={t('study.f.maxPoints')}>
                 <NumberInput

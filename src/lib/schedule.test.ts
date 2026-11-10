@@ -140,6 +140,23 @@ describe('buildAlerts', () => {
     const data = { ...emptyData(), assessments: [exam({ registrationDeadline: '2026-11-01' })] }
     expect(buildAlerts(data, '2026-11-06')[0].text).toContain('prošao')
   })
+  it('A-04: an exam WITHOUT a deadline still warns: assumed 7 days before, "check the faculty site"', () => {
+    const noDeadline = exam({ registrationDeadline: undefined, date: '2026-11-20' })
+    const data = { ...emptyData(), subjects: [subject], assessments: [noDeadline] }
+    // 15 days before the exam: the assumed deadline is 8 days away, nothing yet
+    expect(buildAlerts(data, '2026-11-05')).toHaveLength(0)
+    const a = buildAlerts(data, '2026-11-06')
+    expect(a).toHaveLength(1)
+    expect(a[0]).toMatchObject({ id: `reg-${noDeadline.id}`, level: 'red' })
+    expect(a[0].text).toContain('Neprijavljen')
+    expect(a[0].text).toContain('rok nije unet, proveri na sajtu fakulteta')
+    // it stays until the exam, because nobody knows when the real deadline is
+    expect(buildAlerts(data, '2026-11-18').some((x) => x.text.includes('rok nije unet'))).toBe(true)
+    expect(buildAlerts(data, '2026-11-21')).toHaveLength(0)
+    // registered: quiet
+    const ok = { ...data, assessments: [{ ...noDeadline, registration: 'prijavljen' as const }] }
+    expect(buildAlerts(ok, '2026-11-10')).toHaveLength(0)
+  })
   it('homework due tomorrow', () => {
     const data = {
       ...emptyData(),

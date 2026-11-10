@@ -55,6 +55,17 @@ describe('dueReminders', () => {
     ])
       expect(dueReminders(data({ activities: [act(p)] }), at(17, 50), new Set())).toHaveLength(0)
   })
+  it('A-04: no deadline entered -> reminder on the assumed day (7 days before) to check the faculty site', () => {
+    // exam on Nov 13: assumed deadline Nov 6 (today)
+    const d = data({ assessments: [exam({ registrationDeadline: undefined, date: '2026-11-13' })] })
+    const r = dueReminders(d, at(9, 30), new Set())
+    expect(r).toHaveLength(1)
+    expect(r[0].body).toBe('Kol 1: rok za prijavu nije unet. Proveri na sajtu fakulteta.')
+    const far = data({
+      assessments: [exam({ registrationDeadline: undefined, date: '2026-12-13' })],
+    })
+    expect(dueReminders(far, at(9, 30), new Set())).toHaveLength(0)
+  })
   it('registration deadline reminder tomorrow morning onward', () => {
     const d = data({ assessments: [exam()] })
     expect(dueReminders(d, at(8, 0), new Set())).toHaveLength(0)

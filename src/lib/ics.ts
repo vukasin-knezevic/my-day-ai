@@ -1,7 +1,7 @@
 // iCalendar (.ics) export so the phone's calendar app can remind you (works without this app being open).
 import type { AppData } from '../types'
 import { addDaysStr, minToTime, timeToMin, todayStr } from './dates'
-import { isExam } from './exams'
+import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
 import { shareOrDownload, type ShareResult } from './files'
@@ -129,15 +129,12 @@ function finishIcs(data: AppData, now: Date, events: Ev[]): string {
       end: a.time ? addMinutes(a.time, 90) : undefined,
       alarmMin: 24 * 60,
     })
-    if (
-      a.registrationDeadline &&
-      a.registrationDeadline >= today &&
-      a.registration === 'nije-prijavljen'
-    )
+    const due = registrationDue(a)
+    if (due && due.date >= today)
       events.push({
         uid: `reg-${a.id}`,
-        summary: t('ics.regDeadline', { title: a.title }),
-        date: a.registrationDeadline,
+        summary: t(due.assumed ? 'ics.regCheck' : 'ics.regDeadline', { title: a.title }),
+        date: due.date,
         alarmMin: 0,
       })
   }

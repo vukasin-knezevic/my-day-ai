@@ -1,7 +1,7 @@
 // Pure helpers: what is on a given day, and what needs attention.
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
 import { daysUntil, formatDuration, formatHours, timeToMin, weekdayOf, weekStartStr } from './dates'
-import { isExam } from './exams'
+import { isExam, registrationDue } from './exams'
 import { sleepHours } from './life'
 import { t } from '../i18n'
 import { slotKindLabel } from './labels'
@@ -194,8 +194,17 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
         })
       continue
     }
-    if (a.registration === 'nije-prijavljen' && a.registrationDeadline) {
-      const d = daysUntil(a.registrationDeadline, today)
+    const due = registrationDue(a)
+    if (due?.assumed) {
+      // no deadline entered: from a week before the assumed one until the exam, "check it yourself"
+      if (daysUntil(a.date, today) >= 0 && daysUntil(due.date, today) <= 7)
+        alerts.push({
+          id: `reg-${a.id}`,
+          level: 'red',
+          text: t('alert.unregisteredAssumed', { title: a.title, subject: subjName(a.subjectId) }),
+        })
+    } else if (due) {
+      const d = daysUntil(due.date, today)
       if (d >= 0 && d <= 7)
         alerts.push({
           id: `reg-${a.id}`,

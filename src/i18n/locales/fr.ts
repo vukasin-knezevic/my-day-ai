@@ -626,6 +626,14 @@ const messages = fromEnglish({
   'err.wipe': 'Supprimer les données et recommencer',
   'err.wipeHint':
     'Si l’erreur revient : télécharge d’abord une copie, la suppression devient alors disponible.',
+  'alert.unregisteredAssumed':
+    '🚨 Pas inscrit : {title} ({subject}) — aucune date limite saisie, vérifie sur le site de la faculté',
+  'rem.reg.check':
+    '{title} : aucune date limite d’inscription saisie. Vérifie sur le site de la faculté.',
+  'ics.regCheck': '🚨 Vérifie la date limite d’inscription : {title}',
+  'study.noDeadline': '(aucune date limite saisie — vérifie sur le site de la faculté)',
+  'study.f.regDeadlineHint':
+    'Sans date limite, on compte 7 jours avant la date et on te rappelle de vérifier sur le site de la faculté.',
 })
 
 const locale: LocaleModule = {

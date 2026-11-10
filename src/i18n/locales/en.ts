@@ -718,6 +718,13 @@ const messages: Record<MessageKey, string> = {
   'err.wipe': 'Delete the data and start over',
   'err.wipeHint':
     'If the error keeps coming back: download a copy first, then deleting becomes available.',
+  'alert.unregisteredAssumed':
+    '🚨 Not registered: {title} ({subject}) — no deadline entered, check the faculty website',
+  'rem.reg.check': '{title}: no registration deadline entered. Check the faculty website.',
+  'ics.regCheck': '🚨 Check the registration deadline: {title}',
+  'study.noDeadline': '(no deadline entered — check the faculty website)',
+  'study.f.regDeadlineHint':
+    'Without a deadline we assume 7 days before the date and remind you to check the faculty website.',
 }
 
 const locale: LocaleModule = {

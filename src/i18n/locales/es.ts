@@ -625,6 +625,13 @@ const messages = fromEnglish({
   'ios.first.continue': 'Continuar en Safari',
   'err.wipe': 'Borrar los datos y empezar de nuevo',
   'err.wipeHint': 'Si el error se repite: primero descarga una copia; después podrás borrar.',
+  'alert.unregisteredAssumed':
+    '🚨 Sin inscribir: {title} ({subject}) — no hay plazo anotado, consulta la web de la facultad',
+  'rem.reg.check': '{title}: no hay plazo de inscripción anotado. Consulta la web de la facultad.',
+  'ics.regCheck': '🚨 Revisa el plazo de inscripción: {title}',
+  'study.noDeadline': '(sin plazo anotado — consulta la web de la facultad)',
+  'study.f.regDeadlineHint':
+    'Sin plazo contamos 7 días antes de la fecha y te recordamos consultar la web de la facultad.',
 })
 
 const locale: LocaleModule = {

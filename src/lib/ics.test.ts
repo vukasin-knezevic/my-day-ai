@@ -20,6 +20,36 @@ describe('buildIcsWithProgress', () => {
   })
 })
 
+describe('registration deadline in the calendar (A-04)', () => {
+  const exam = {
+    id: 'e1',
+    subjectId: 's',
+    type: 'ispit' as const,
+    title: 'Ispit',
+    date: '2026-11-20',
+    registration: 'nije-prijavljen' as const,
+    maxPoints: 100,
+    points: null,
+    difficulty: 3 as const,
+  }
+  const now = new Date('2026-11-07T10:00:00')
+  it('an entered deadline is an event on that day', () => {
+    const d = { ...emptyData(), assessments: [{ ...exam, registrationDeadline: '2026-11-10' }] }
+    const text = buildIcs(d, now)
+    expect(text).toContain('Rok za prijavu: Ispit')
+    expect(text).toContain('DTSTART;VALUE=DATE:20261110')
+  })
+  it('without a deadline: "check the deadline" 7 days before the exam', () => {
+    const text = buildIcs({ ...emptyData(), assessments: [exam] }, now)
+    expect(text).toContain('Proveri rok za prijavu: Ispit')
+    expect(text).toContain('DTSTART;VALUE=DATE:20261113')
+  })
+  it('a registered exam has no deadline event', () => {
+    const d = { ...emptyData(), assessments: [{ ...exam, registration: 'prijavljen' as const }] }
+    expect(buildIcs(d, now)).not.toContain('rok za prijavu')
+  })
+})
+
 describe('shareCalendar', () => {
   it('offers the file to the phone (Web Share) so the Calendar app can take it', async () => {
     const share = vi.fn().mockResolvedValue(undefined)

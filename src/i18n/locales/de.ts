@@ -626,6 +626,14 @@ const messages = fromEnglish({
   'err.wipe': 'Daten löschen und neu beginnen',
   'err.wipeHint':
     'Wenn der Fehler wiederkommt: Lade zuerst eine Kopie herunter, dann wird das Löschen verfügbar.',
+  'alert.unregisteredAssumed':
+    '🚨 Nicht angemeldet: {title} ({subject}) — keine Frist eingetragen, sieh auf der Website der Fakultät nach',
+  'rem.reg.check':
+    '{title}: keine Anmeldefrist eingetragen. Sieh auf der Website der Fakultät nach.',
+  'ics.regCheck': '🚨 Anmeldefrist prüfen: {title}',
+  'study.noDeadline': '(keine Frist eingetragen — sieh auf der Website der Fakultät nach)',
+  'study.f.regDeadlineHint':
+    'Ohne Frist rechnen wir mit 7 Tagen vor dem Termin und erinnern dich, auf der Website der Fakultät nachzusehen.',
 })
 
 const locale: LocaleModule = {

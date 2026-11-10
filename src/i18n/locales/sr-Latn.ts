@@ -710,6 +710,13 @@ const messages = {
   'ios.first.continue': 'Nastavi u Safariju',
   'err.wipe': 'Obriši podatke i kreni ispočetka',
   'err.wipeHint': 'Ako se greška ponavlja: prvo preuzmi kopiju, pa brisanje postaje dostupno.',
+  'alert.unregisteredAssumed':
+    '🚨 Neprijavljen: {title} ({subject}) — rok nije unet, proveri na sajtu fakulteta',
+  'rem.reg.check': '{title}: rok za prijavu nije unet. Proveri na sajtu fakulteta.',
+  'ics.regCheck': '🚨 Proveri rok za prijavu: {title}',
+  'study.noDeadline': '(rok nije unet — proveri na sajtu fakulteta)',
+  'study.f.regDeadlineHint':
+    'Bez roka računamo 7 dana pre termina i podsećamo te da proveriš na sajtu fakulteta.',
 }
 
 export type MessageKey = keyof typeof messages
