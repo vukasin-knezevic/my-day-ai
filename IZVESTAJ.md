@@ -1,6 +1,77 @@
 # IZVEŠTAJ — My Day AI
 
-Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07. Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
+Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07, verzija **0.4** 2026-11-10 (faze A–G; faza H nije urađena). Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
+
+## Update 0.4
+
+Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4` (faze A–G, verzija 0.4.0). **Faza H (Android, sat, koraci) nije urađena**: čeka ručne korake iz `AUDIT_0.4.md`, deo 5.2 (vidi odeljak „Faza H“ ispod).
+
+### Faza A: podaci su sigurni i prvi utisak je čist
+
+- **Urađeno:** „Novi update“ se ne prikazuje pri prvoj instalaciji (A-01). Neuspelo čitanje podataka daje ekran „Podaci nisu mogli da se učitaju · Pokušaj ponovo“ i ništa se ne upisuje dok čitanje ne uspe (A-02). Posle uvoda se traži trajno skladište; na iPhone-u u Safariju prvo ide kartica za instalaciju; u Podešavanjima stoji datum poslednje kopije i nedeljni podsetnik koji može da se isključi (A-03). Ispit bez roka za prijavu dobija pretpostavljeni rok 7 dana ranije, u upozorenjima, notifikacijama i kalendaru (A-04). Restart za update čeka da se upis završi (A-37, R-01), uz e2e. `progress` i `settings` se proveravaju pri uvozu i popravljaju pri učitavanju; ekran greške ima „Obriši podatke i kreni ispočetka“, aktivno tek kad je kopija sačuvana (A-15). Uvoz preko „Izaberi fajl“, izvoz i preko „Podeli fajl“, preuzimanje više ne prekida Safari (A-14).
+- **Nije urađeno:** ništa iz faze nije preskočeno.
+- **Proveriti na telefonu:** iPhone: kartica za instalaciju pre uvoda i da podaci ostaju posle 8+ dana; „Podeli fajl“ nudi „Sačuvaj u Fajlove“, a „Izaberi fajl“ otvara taj fajl. Android: nema „Novi update“ odmah posle instalacije.
+
+### Faza B: greške u ponašanju
+
+- **Urađeno:** Na ekranu Danas se bira dan: ‹ ›, traka sa 7 dana i prevlačenje levo/desno; lista, linija dana, forma i brzi unos prate izabrani dan, a „Trenutno/Sledeće“ i upozorenja se vide samo za danas (A-06). Svako brisanje daje „Obrisano · Poništi“ na 6 s; poništavanje vraća stavku na njeno mesto i XP koji je donela (A-07). „Sigurno?“ se vraća posle 4 s ili dodira sa strane (A-08). Sopstveni service worker (`src/sw.ts`, `injectManifest`): dodir na notifikaciju otvara aplikaciju, `tag` sprečava duplikate, mala jednobojna ikonica `badge-96.png` i velika ikonica, vreme u formatu iz podešavanja, poslate notifikacije se pamte po danu i posle ponovnog otvaranja (A-10, R-08). Brzi unos razume ćirilicu i „ч“ kao sat (A-11). „legao 23:30“ upisano sutradan ide u prethodnu noć; unos sna može da se izmeni i obriše; zaboravljeno „Ustao“ starije od 24 h ne blokira novo „Legao“ (A-12). Kraj manji od početka znači sutradan (22:00–01:00), a za korisnika koji leže posle ponoći vreme pre spavanja se crta na kraju dana (A-16). Opciono vreme ima „Obriši vreme“ (A-17).
+- **Urađeno drugačije:** upozorenja („Pazi“) se ne prikazuju za druge dane, jer se odnose na sadašnji trenutak. Aktivnost uneta posle ponoći za „danas“ računa se kao tekuća dok ne prođe vreme spavanja, a na liniji dana stoji na kraju tog dana.
+- **Proveriti na telefonu:** Android: dodir na notifikaciju otvara aplikaciju, ikonica u statusnoj traci je logo, a ne zvonce. iPhone: „Sigurno?“ se vraća na dodir sa strane; prevlačenje levo/desno na ekranu Danas ne smeta skrolovanju.
+
+### Faza C: iPhone, „Nazad“ i kalendar
+
+- **Urađeno:** Nepomična traka u boji pozadine, visine statusne trake, stoji iznad sadržaja, pa tekst više ne prolazi ispod sata i baterije (A-09, R-03). Pametno „Nazad“ (A-13, R-05): jedna funkcija `handleBack()` u `src/lib/back.ts` sa testom za svaki od 7 koraka; Android dugme i gest idu preko jednog rezervnog koraka u istoriji (`popstate`), a na iPhone-u isto radi prevlačenje od leve ivice i strelica ← na ekranima otvorenim iz „Više“. Forma za aktivnost pita „Odbaci izmene?“ ako je nešto ukucano; na ekranu Danas „Nazad“ sa drugog dana vraća na danas. „Dodaj u kalendar“ je sada i na ekranu Faks (uz obaveze) i na ekranu Danas, sa rečenicom da je kopija jednokratna (R-02). Celodnevni događaji podsećaju u 09:00 tog dana i 09:00 dan ranije, ne u ponoć (A-24).
+- **Urađeno drugačije:** na iPhone-u glavno dugme otvara kalendarski fajl direktno (da Safari ponudi „Dodaj sve“), a pored njega ostaje „Ne radi? Podeli fajl“, jer direktno otvaranje ne može da se proveri bez pravog telefona. Pitanje „Odbaci izmene?“ za sada ima forma za aktivnost; panele za termin i obavezu dobija u fazi D.
+- **Nije urađeno:** objašnjenje dugmeta za kalendar u tutorijalu dolazi sa tutorijalom (faza E).
+- **Proveriti na telefonu:** iPhone: traka ispod sata uspravno i položeno; „Dodaj u kalendar“ otvara ekran „Dodaj sve“ (ako ne, radi li „Podeli fajl“); prevlačenje od leve ivice. Android: dugme i gest Nazad kroz svih 7 koraka; „Napusti“ zaista zatvara instaliranu aplikaciju.
+
+### Faza D: faks, trening, obraćanje
+
+- **Urađeno:** Forme za termin i obavezu otvaraju se iza dugmeta u donjem panelu, a sačuvani termini su jasni redovi sa ✎ i ✕ (R-01). Poeni se prikazuju kao „0 / 100“ (R-09). Predmet bez obaveza nudi dodavanje kolokvijuma i ispita umesto poruke „ne može se doći do 51“ (R-11). Polje „Kako ti se obraćam“ u Podešavanjima počinje predlogom vokativa (R-10). Trening je jedna stvar (R-06, A-05): novi trening traži dan i vreme, pojavljuje se na ekranu Danas i ima podsetnik; vežbe su log vezan za zakazani trening (`Workout.activityId`), „Urađeno“ sa bilo kog ekrana daje XP jednom (`src/lib/workoutFlow.ts`), a brojač „Ove nedelje“, niz, planer i Pregled čitaju isti izvor (`doneWorkouts`). Trajanje je procena iz broja serija ili stvarno trajanje, osećaj je opcion i pita se posle. Gotovi splitovi: „Koristi ovaj plan“ otvara panel „Kada treniraš?“ sa upozorenjem o poklapanju sa terminom na faksu, plan ponavlja treninge svake nedelje, ima „✓ Aktivan“, „Promeni vreme“ i „Prekini plan“ (`until` na nizu). Predlozi naziva vežbi dolaze iz sopstvenog panela (A-36). Brisanje evidencije treninga vraća trening u „planirano“, a „Poništi“ vraća i to.
+- **Nije urađeno:** ništa iz faze nije preskočeno.
+- **Proveriti na telefonu:** iPhone i Android: panel „Kada treniraš?“ i polja za vežbe sa tastaturom; podsetnik za zakazani trening.
+
+### Faza E: tutorijal i jutarnja rutina
+
+- **Urađeno:** Interaktivni tutorijal (R-04): posle uvodnih pitanja stoji „Pre nego što kreneš, hajde da te provedemo kroz aplikaciju“ [Kreni] [Preskoči]; obilazak od 9 koraka vodi po pravim ekranima (Danas, dodavanje obaveze, štikliranje sa XP-om, Faks sa probnim predmetom i dugmetom „Dodaj u kalendar“, Trening, Život i navike, jutarnja rutina, AI, Podešavanja), istaknut deo ekrana + kartica iznad navigacije, tačkice napretka i „Preskoči“ stalno vidljivo. „Dalje“ čeka da korisnik stvarno uradi korak (ili dodirne „Označi umesto mene“). Probna obaveza i probni predmet brišu se na kraju zajedno sa XP-om (`src/lib/tour.ts`). Ponovo: Podešavanja → „Kako radi aplikacija“. Ko je uvod završio pre 0.4 ne dobija ga sam (`tutorialDone` se pri učitavanju postavlja na true). Prvi ekran uvoda u jednoj rečenici kaže čemu aplikacija služi.
+- Jutarnja rutina (R-07): u Podešavanjima uključivanje, cilj buđenja i 3–5 koraka (podrazumevano krevet, istezanje, voda, umivanje), kartica „Jutarnja rutina“ na vrhu ekrana Danas do 11 h sa štikliranjem, animacijom, 2 XP po koraku, +10 kad je gotova i +5 ako je gotova u roku od sat vremena posle cilja, svoj niz 🔥. Posle 11 h kartica postaje „Spasi dan“ sa dva koraka i rečenicom „Nije kasno, kreni od jednog malog koraka“ (bez osude, bez roda). Poništavanje koraka vraća XP i bonuse. Jutarnja notifikacija u vreme cilja sa glavnom stvarom dana i dugmetom „Urađeno ✓“ (`actions` + `notificationclick`; sledeći korak izlazi kao nova notifikacija; ako je aplikacija zatvorena, otvara se sa akcijom u adresi).
+- **Urađeno drugačije:** „bonus ako je gotova do zadatog vremena“ je protumačen kao „u roku od sat vremena posle cilja buđenja“ (cilj je vreme buđenja, ne kraj rutine). Kratki saveti na praznim ekranima nisu dodavani osim postojećih poruka; ostalo je u tutorijalu.
+- **Proveriti na telefonu:** Android: dugme „Urađeno ✓“ u notifikaciji kad je aplikacija zatvorena, i da sledeći korak stiže. iPhone: dugmadi u notifikaciji nema (iOS ih za web aplikacije ne prikazuje), isto radi kartica u aplikaciji. Tutorijal: kartica ne zaklanja važno dugme na malom ekranu.
+
+### Faza F: zarazna, a zdrava aplikacija
+
+- **Urađeno:** Ulazna animacija od ~1 s pri svakom otvaranju (logo → „Zdravo, Vukašine“ → „🔥 12 dana“), dodir je preskače, uz „manje pokreta“ samo pretapanje; ide preko već učitanog sadržaja, ne usporava prvi ekran. Glavni niz sa „spasom“ (`src/lib/streak.ts`): dan se računa ako je urađena bar jedna stvar (aktivnost, navika, trening, korak rutine, zatvoren dan, izazov); svakih 7 dana jedan spas, najviše 2; propušten dan troši spas, pri sledećem otvaranju „❄️ Spas je sačuvao tvoj niz od 12 dana“; bez spasa niz kreće od 1, uz „Najduži niz“. Dnevni izazov (`challenge.ts`): jedan izazov iz podataka (prijava ispita, blok učenja pre 14 h, cilj navike, lezi do vremena, šetnja), određen datumom, +15 XP, „Daj mi drugi“ jednom; prepoznaje se sam gde može, inače „Izazov ispunjen“. Iznenađenja (`surprise.ts`): otprilike svaki četvrti događaj, najviše 2 dnevno, bonus XP 5–20, minuti nagrade 5–15 ili značka; ishod zavisi samo od id-ja događaja, pa poništi-pa-ponovi vraća isto iznenađenje (ne novi pokušaj), a poništavanje događaja vraća i bonus. Prsten nedelje i niz na ekranu Danas; stranica „Dostignuća“ (Više) sa značkama (prva nedelja, niz 7/30/100, prvi lični rekord, sve prijave na vreme, 50 h učenja) i ličnim rekordima, sve izračunato iz podataka. Konfete (canvas, bez biblioteke) za novi nivo i zatvoren dan, zvuk (Web Audio) i vibracija; Podešavanja: Zvuk (podrazumevano isključen), Vibracija, Animacije. „Zatvori dan“: kartica od 2 h pre spavanja (ili dugme bilo kad), 3 koraka (pregled i „Prebaci na sutra“/„Preskoči“, raspoloženje 1–5 + beleška, glavna stvar za sutra), +10 XP jednom, predlog vremena za spavanje; glavna stvar stoji na vrhu ekrana Danas i u jutarnjoj notifikaciji.
+- **Urađeno drugačije:** XP koji „odleti“ do brojača nije napravljen: nagrada se vidi kao poruka na vrhu, uz animaciju štikliranja i konfete; „10 000 koraka“ čeka fazu H. Vibracija se ne proverava na iPhone-u (nema je). Ulazna animacija se preskače u automatizovanom pregledaču (`navigator.webdriver`) i u testovima, da ne smeta e2e proveri; njen izgled i trajanje treba pogledati na telefonu.
+- **Proveriti na telefonu:** Android: vibracija i zvuk (uključiti u Podešavanjima), konfete na novom nivou, ulazna animacija pri hladnom pokretanju; iPhone: ulazna animacija ne sme da trepće pre prvog ekrana, „Zatvori dan“ uveče sa tastaturom.
+
+### Faza G: kvalitet, izgled, tekstovi, README
+
+- **Urađeno:** _Pristupačnost i dodir:_ zamka fokusa u donjim panelima i `inert` na stranici iza njih, prečice su već isključene pod otvorenim panelom (A-18); vidljiv fokus na polju za datum (A-19); kvadratići za štikliranje se ne sabijaju (`shrink-0`, A-20); mete za dodir najmanje 44 px kod „Idem / Ne idem / Ponekad“, dugmeta sa XP-om i redova sa kvadratićem (A-21). _Izgled:_ red obaveze na ekranu Danas su dva uredna reda (vreme i naziv, pa glavno dugme) i „⋯“ koji otvara donji panel (izmeni, preskoči, samo danas, obriši) (A-22); od 1024 px Danas ima dve kolone (A-32); nagrada se troši u bilo kom broju minuta do stanja (A-28); navike: korak prati cilj i jedinicu, navika može da se izmeni, a ekran prati ponoć (`useToday`) (A-29); troškovi: bira se datum i može da se vidi sve (A-30). _Brzina (A-23):_ početno preuzimanje je pre bilo ~660 kB (201 kB gzip) u jednom fajlu; sada se učitavaju samo glavni kod (38 kB gzip), `react` i usmerivač (68 kB gzip) i jezik koji korisnik koristi (16–19 kB gzip), dakle oko **124 kB gzip** (cilj 120 kB nije dostignut za oko 4 kB). Ostali jezici, `zod`, Planer, AI, Podešavanja, Faks, uvod i tutorijal se učitavaju tek kad zatrebaju; spisak jezika je u `src/i18n/languageList.ts` (test proverava da se slaže sa fajlovima). _Tekstovi:_ uklonjeno „(između 8 i 10)“ i „(između 00 i 02)“, nivo „Inženjer“ → „Diplomac“, „Notifikacije pregledača“ → „Notifikacije“, „Novi kolokvijum / ispit / domaći / lab“ → „Nova obaveza“, „Dodaj nešto gore“, ženski oblici (Dobrodošla, nisi prijavljena, da bi sačuvala), AI uvoz više ne traži `domaci|lab` nego prihvata i ime druge vrste, koje postaje korisnička vrsta (A-26); AI pregled prikazuje datum i vreme u formatu aplikacije (A-27); Pregled razdvaja urađeno od planiranog i broji urađene treninge iz istog izvora kao XP (A-25). _Instalacija i link:_ manifest ima `id`, `scope`, prečice i kategorije, posebnu „maskable“ ikonicu u bezbednoj zoni, `meta description` i Open Graph sa slikom `og-image.png`, početne ekrane za iPhone 16 i 16 Pro Max (A-31). _Testovi i CI:_ `persist` ima isti broj verzije kao podaci (4) i test da stari zapisi (verzije 1 i 3) i dalje rade (A-33); `updates.ts` ima 90% pokrivenosti; kratak prolaz kroz sve ekrane u Firefox-u, na tabletu (820 px) i na 1920 px (A-34); objava na GitHub Pages ide tek kad CI za isti commit prođe (`workflow_run`, A-35). _Lični podaci:_ u `docs/razvoj/MY_DAY_AI_ZADATAK.md` i `PLAN.md` uopšteno (fakultet, vreme ustajanja i spavanja, trening, igrice, pametni sat); git istorija nije dirana; lokalne beleške u korenu su u `.gitignore` (A-38). README (srpski i engleski): „User testing“, verzija 0.4, nove funkcije i novi screenshot-ovi. `package.json` je 0.4.0, `release-bump` zna za sva mesta koja pominju verziju.
+- **Nije urađeno / drugačije:** početni paket je ~124 kB gzip umesto traženih 120 (react-dom i usmerivač zauzimaju 68 kB; dalje smanjenje traži zamenu biblioteke). Manifest nema `screenshots`: postojeće slike su cele stranice (390 × 1877 px), a manifest traži slike ekrana pravog odnosa strana. Pre je poslednji nivo bio „Inženjer“; ko je imao taj nivo vidi „Diplomac“ (isti nivo, drugo ime). Agent `i18n-checker` nije pokretan: ključeve, `{parametre}` i neprevedene engleske tekstove proveravaju testovi, ali tvrdo upisan tekst u komponentama nije pregledan ručno. Ime Andree Jovović u README-u stoji kako zadatak traži („uz njenu dozvolu“): proveri pre objave da je dozvola stvarno data. U `README.md` model kojim je 0.4 rađena ostavljen je kao `[upisuje autor]`.
+- **Proveriti na telefonu:** Android: da su meta „⋯“ i dugmad dovoljno velika; da ulazna animacija ne trepće. iPhone: instalirana aplikacija posle jezika koji nije telefonov (jezik se učitava pre prvog ekrana); `inert` panel i Tab nema na telefonu, ali čitač ekrana (VoiceOver) ne sme da čita stranicu iza otvorenog panela.
+
+### Faza H (Android, sat, koraci): nije urađena
+
+`adb` nije instaliran na ovom računaru (Android Studio i povezan telefon nisu dostupni), a zadatak kaže da se faza H preskoči kad ručni koraci iz `AUDIT_0.4.md`, deo 5.2, nisu gotovi. **Fali:** Capacitor projekat i `android/`, `src/lib/health/` i Health Connect, „Poveži sat“, san sa sata, koraci (prsten, podsetnici, izazov od 10 000 koraka), `@capacitor/local-notifications` (alarm, trajna notifikacija), uputstvo `ANDROID.md`. Šta treba od Vukašina: model telefona i verzija Androida, Android Studio, USB debugging, Health Connect i most za Huawei Health (deo 5.2 audita). PR 2 se pravi posle toga.
+
+## Provera na pravom uređaju (iz `AUDIT_0.4.md`, deo 4)
+
+**Andrea (iPhone):**
+
+- statusna traka ne pokriva sadržaj, uspravno i položeno (A-09);
+- „Sigurno?“ se vraća posle 4 s ili dodira sa strane (A-08);
+- „Dodaj u kalendar“ otvara „Dodaj sve“; ako ne, radi li „Podeli fajl“ (R-02);
+- podaci ostaju posle 8+ dana (A-03), kartica za instalaciju pre uvoda;
+- tutorijal: kartica ne zaklanja važna dugmad, probne stvari se brišu na kraju;
+- prevlačenje od leve ivice za „Nazad“ (A-13);
+- ulazna animacija pri otvaranju i „Zatvori dan“ uveče.
+
+**Vukašin (Android):**
+
+- „Novi update“ se ne pojavljuje pri prvoj instalaciji (A-01);
+- dodir na notifikaciju otvara aplikaciju, ikonica je logo (A-10), dugme „Urađeno ✓“ u jutarnjoj notifikaciji i da sledeći korak stiže;
+- dugme i gest „Nazad“ kroz svih 7 koraka, „Napusti“ zatvara aplikaciju (A-13);
+- vibracija i zvuk (uključiti u Podešavanjima), konfete na novom nivou.
 
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
@@ -40,14 +111,14 @@ Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „
 
 ## Stanje provera (poslednje pokretanje)
 
-| Provera                | Rezultat                                                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run lint`         | prolazi, 0 grešaka                                                                                                                                     |
-| `npm run typecheck`    | prolazi (TypeScript strict)                                                                                                                            |
-| `npm test`             | **271 unit/komponentni test prolazi** (parser, planer, AI sloj, `NumberInput`, `KeyScope`, migracija, prevodi…)                                        |
-| Pokrivenost `src/lib/` | **~94% linija** (cilj 80%)                                                                                                                             |
-| Playwright e2e         | **21 test prolazi** (cilj 10), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
-| `npm run build`        | bez upozorenja                                                                                                                                         |
+| Provera                | Rezultat                                                                                                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`         | prolazi, 0 grešaka                                                                                                                                                                                  |
+| `npm run typecheck`    | prolazi (TypeScript strict)                                                                                                                                                                         |
+| `npm test`             | **2099 unit/komponentnih testova prolazi** (parser, planer, AI sloj, rutina, niz, izazov, tutorijal, migracija, prevodi…)                                                                           |
+| Pokrivenost `src/lib/` | **~95% linija** (cilj 90%)                                                                                                                                                                          |
+| Playwright e2e         | **36 testova prolazi** (Chromium, iPhone profil, Firefox, tablet, 1920 px), uključujući axe proveru pristupačnosti za 9 ekrana × svetla/tamna tema, onboarding samo tastaturom, engleski i ćirilicu |
+| `npm run build`        | bez upozorenja                                                                                                                                                                                      |
 
 ## Šta je urađeno u verziji 0.1 (ranije 1.0, faze 0–12)
 

@@ -40,7 +40,7 @@ describe('levels', () => {
   })
   it('max level has no next', () => {
     const last = LEVELS[LEVELS.length - 1]
-    expect(levelFor(last.xp + 9999)).toMatchObject({ name: 'Inženjer', nextName: null, size: null })
+    expect(levelFor(last.xp + 9999)).toMatchObject({ name: 'Diplomac', nextName: null, size: null })
   })
 })
 

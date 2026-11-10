@@ -57,6 +57,44 @@ describe('export / import', () => {
     })
     expect(importJson('{"settings": 5}')).toMatchObject({ ok: false })
   })
+  it('A-15: damaged progress or settings are refused, with the name of the field', () => {
+    const bad = (data: unknown) => importJson(JSON.stringify(data))
+    expect(bad({ settings: { wakeTime: 'rano' } })).toMatchObject({
+      ok: false,
+      message: expect.stringContaining('settings.wakeTime'),
+    })
+    expect(bad({ settings: { theme: 'pink' } })).toMatchObject({
+      message: expect.stringContaining('settings.theme'),
+    })
+    expect(bad({ progress: { xp: 'mnogo' } })).toMatchObject({
+      message: expect.stringContaining('progress.xp'),
+    })
+    expect(bad({ progress: { events: [{ id: 'e' }] } })).toMatchObject({
+      message: expect.stringContaining('progress.events.0'),
+    })
+    expect(bad({ progress: 'x' })).toMatchObject({ ok: false })
+    // missing fields are fine (older backups), unknown ones are kept
+    expect(bad({ settings: { name: 'Mila', future: 1 }, progress: {} })).toMatchObject({ ok: true })
+  })
+  it('0.4: an export made by 0.3 (version 2, without the new fields) still loads, with defaults', () => {
+    const d = full()
+    const old = JSON.parse(exportJson(d)) as {
+      version: number
+      data: { settings: Record<string, unknown> }
+    }
+    old.version = 2
+    for (const k of ['lastBackupAt', 'backupReminder', 'backupNudgeAt']) delete old.data.settings[k]
+    const r = importJson(JSON.stringify(old))
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.data.subjects).toEqual(d.subjects)
+    expect(r.data.settings).toMatchObject({
+      lastBackupAt: '',
+      backupReminder: true,
+      backupNudgeAt: '',
+    })
+    expect(JSON.parse(exportJson(r.data))).toMatchObject({ version: 4 })
+  })
 })
 
 describe('migration of older data (PS5 -> reward)', () => {

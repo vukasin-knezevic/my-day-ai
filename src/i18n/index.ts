@@ -32,22 +32,61 @@ export type BaseKey = MessageKey extends infer K
   : never
 export type Params = Record<string, string | number>
 
-const modules = import.meta.glob<{ default: LocaleModule }>('./locales/*.ts', { eager: true })
-export const LANGUAGES: LocaleModule[] = Object.values(modules)
-  .map((m) => m.default)
-  .sort((a, b) => a.name.localeCompare(b.name))
+// Only English (the fallback) is in the first download. The language the user uses is loaded before the
+// first screen is drawn (see `loadLanguage`); the others are fetched when someone picks them.
+import { enUS } from 'date-fns/locale/en-US'
+import { LANGUAGE_LIST } from './languageList'
+
+const loaders = import.meta.glob<{ default: LocaleModule }>('./locales/*.ts')
+/** Shown only for an instant before the first language is loaded (main.tsx waits for it). */
+const placeholder: LocaleModule = {
+  code: 'en',
+  name: 'English',
+  dateLocale: enUS,
+  messages: {} as never,
+}
+const loaded = new Map<string, LocaleModule>()
+
+/** The languages that are loaded now (all of them in tests; in the app the one in use and English). */
+export const LANGUAGES: LocaleModule[] = [...loaded.values()]
+export { LANGUAGE_LIST }
 
 const FALLBACK = 'en'
-const byCode = (code: string) => LANGUAGES.find((l) => l.code.toLowerCase() === code.toLowerCase())
+const byCode = (code: string) => {
+  const c = code.toLowerCase()
+  return [...loaded.values()].find((l) => l.code.toLowerCase() === c)
+}
+const knownCode = (code: string) =>
+  LANGUAGE_LIST.find((l) => l.code.toLowerCase() === code.toLowerCase())?.code
+
+/** Loads a language (nothing happens when it is loaded already). Resolves to false for an unknown one. */
+export async function loadLanguage(code: string): Promise<boolean> {
+  const known = knownCode(code)
+  if (!known) return false
+  if (byCode(known)) return true
+  const load = loaders[`./locales/${known}.ts`]
+  if (!load) return false
+  const mod = await load()
+  loaded.set(mod.default.code, mod.default)
+  LANGUAGES.length = 0
+  LANGUAGES.push(...loaded.values())
+  LANGUAGES.sort((a, b) => a.name.localeCompare(b.name))
+  return true
+}
+
+/** Loads every language (the tests need them all). */
+export async function loadAllLanguages() {
+  await Promise.all(LANGUAGE_LIST.map((l) => loadLanguage(l.code)))
+}
 
 /** Picks the best supported language for a browser language tag (e.g. 'sr-RS', 'en-US', 'sr-Cyrl'). */
 export function detectLanguage(tag: string = globalThis.navigator?.language ?? FALLBACK): string {
-  const exact = byCode(tag)
-  if (exact) return exact.code
+  const exact = knownCode(tag)
+  if (exact) return exact
   const parts = tag.split('-')
   const primary = parts[0].toLowerCase()
-  const same = LANGUAGES.filter((l) => l.code.split('-')[0].toLowerCase() === primary)
-  if (same.length === 0) return byCode(FALLBACK)?.code ?? LANGUAGES[0].code
+  const same = LANGUAGE_LIST.filter((l) => l.code.split('-')[0].toLowerCase() === primary)
+  if (same.length === 0) return FALLBACK
   // an explicit script wins (sr-Cyrl); otherwise prefer the Latin variant or the plain code
   const script = parts.find((p) => p.length === 4)?.toLowerCase()
   const withScript = script && same.find((l) => l.code.toLowerCase().includes(script))
@@ -57,10 +96,10 @@ export function detectLanguage(tag: string = globalThis.navigator?.language ?? F
 
 /** The language to use for a saved setting ('' = automatic, from the browser). */
 export function resolveLanguage(saved: string | undefined): string {
-  return saved && byCode(saved) ? byCode(saved)!.code : detectLanguage()
+  return (saved && knownCode(saved)) || detectLanguage()
 }
 
-let current: LocaleModule = byCode(detectLanguage()) ?? LANGUAGES[0]
+let current: LocaleModule = placeholder
 if (typeof document !== 'undefined') document.documentElement.lang = current.code
 const listeners = new Set<() => void>()
 

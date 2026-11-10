@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { choose, isoDate, onboard } from './helpers'
+import { choose, isoDate, onboard, skipTour } from './helpers'
 
 test('1. onboarding vodi do ekrana Danas', async ({ page }) => {
   await onboard(page)
@@ -24,7 +24,8 @@ test('3. idem / ne idem za termin predmeta', async ({ page }) => {
   await page.goto('/#/faks')
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
-  await page.getByRole('button', { name: '+ Termin' }).click()
+  await page.getByRole('button', { name: '+ Dodaj termin' }).click()
+  await page.getByRole('button', { name: 'Dodaj termin', exact: true }).click()
   // the choice sits next to the class (new classes start as "Idem")
   await expect(page.getByRole('button', { name: /^Idem: Fizika/ })).toHaveAttribute(
     'aria-pressed',
@@ -55,9 +56,14 @@ test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => 
 test('6. trening sa rekordom', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/trening')
+  // a workout is scheduled (day and time), then marked done; the second one is heavier
   const log = async (kg: string) => {
+    await page.getByRole('button', { name: '+ Dodaj trening' }).click()
+    await page.getByRole('button', { name: '+ Dodaj vežbu' }).click()
     await page.getByLabel('Vežba 1').fill('Bench press')
     await page.getByLabel('Kilaža 1').fill(kg)
+    await page.getByRole('button', { name: 'Zakaži trening' }).click()
+    await page.getByRole('button', { name: 'Urađeno', exact: true }).first().click()
     await page.getByRole('button', { name: 'Sačuvaj trening' }).click()
   }
   await log('60')
@@ -127,8 +133,12 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
     .toBe(false)
   await onboard(page)
   await page.goto('/#/podesavanja')
-  await page.getByLabel('Uvoz: nalepi JSON').fill(json)
-  await page.getByRole('button', { name: 'Proveri uvoz' }).click()
+  // A-14: the backup comes back from a file, the way it does on a phone
+  await page.getByLabel('Izaberi fajl').setInputFiles({
+    name: 'my-day-ai-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(json),
+  })
   await page.getByRole('button', { name: 'Da, uvezi' }).click()
   await expect(page.getByText('Podaci su uvezeni')).toBeVisible()
   await page.goto('/#/faks')
@@ -207,7 +217,40 @@ test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ pag
   await expect(page.getByText(/Korak 6 od 7/)).toBeVisible()
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
+  await skipTour(page)
   await expect(page.getByLabel('Brzi unos')).toBeVisible()
+})
+
+test('23. obilazak: vodi kroz ekrane, probne stvari se brišu, rutina i izazov dana su na ekranu Danas', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
+  await page.keyboard.press('Enter')
+  await page.getByLabel('Kako da te zovem?').fill('Tura')
+  for (let i = 0; i < 6; i++) await page.keyboard.press('Enter')
+  const ask = page.getByRole('dialog', { name: /provedemo kroz aplikaciju/ })
+  await ask.getByRole('button', { name: 'Kreni' }).click()
+  const tour = page.getByRole('dialog', { name: 'Obilazak aplikacije' })
+  await expect(tour.getByText('Korak 1 od 9')).toBeVisible()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dodaj probnu obavezu' }).click()
+  await expect(page.getByText('Probna obaveza (briše se na kraju)').first()).toBeVisible()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Označi umesto mene' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dodaj probni predmet' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click() // workout
+  await expect(page).toHaveURL(/trening/)
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Dalje' }).click()
+  await tour.getByRole('button', { name: 'Gotovo' }).click()
+  await expect(tour).toHaveCount(0)
+  await page.goto('/#/')
+  await expect(page.getByText('Probna obaveza (briše se na kraju)')).toHaveCount(0)
+  await expect(page.getByTestId('challenge')).toBeVisible()
 })
 
 test('18. polje za broj: brisanje pa kucanje nema nulu ispred', async ({ page }) => {
@@ -227,6 +270,7 @@ test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
   await choose(page, 'Ponavljanje', 'daily')
   await page.getByRole('dialog').getByRole('button', { name: 'Dodaj' }).click()
   await expect(page.getByText('Šetnja').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Još radnji za Šetnja' }).click()
   await page.getByRole('button', { name: 'Izmeni Šetnja' }).click()
   await page.getByLabel('Naziv').fill('Duga šetnja')
   await page.getByRole('button', { name: 'Sačuvaj izmene' }).click()
@@ -272,6 +316,10 @@ test.describe('jezici', () => {
     await page.getByLabel('What should I call you?').fill('Alex')
     for (let i = 0; i < 5; i++) await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Finish' }).click()
+    await page
+      .getByRole('dialog', { name: /let us walk you through/ })
+      .getByRole('button', { name: 'Skip' })
+      .click()
     await expect(page.getByLabel('Quick entry')).toBeVisible()
     await page.getByLabel('Quick entry').fill('coffee 200')
     await page.getByRole('button', { name: 'Add', exact: true }).click()
@@ -313,4 +361,43 @@ test.describe('jezici', () => {
       }
     }
   })
+})
+
+test('22. A-13 pametno „Nazad“: panel → prvi tab → vrh → Danas → pitanje za izlazak', async ({
+  page,
+}) => {
+  await onboard(page)
+  await page.getByRole('link', { name: 'Život' }).click()
+  await page.getByRole('tab', { name: /Navike/ }).click()
+
+  // 4. a sub-tab goes back to the first tab, the section stays
+  await page.goBack()
+  await expect(page.getByRole('tab', { name: /San/ })).toHaveAttribute('aria-selected', 'true')
+  await expect(page).toHaveURL(/#\/zivot/)
+
+  // 6. another section goes to Today
+  await page.goBack()
+  await expect(page).toHaveURL(/#\/$/)
+
+  // 1. an open panel closes, the screen stays
+  await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
+  await page.getByLabel('Početak').click()
+  await expect(page.getByRole('listbox', { name: 'Sati' })).toBeVisible()
+  await page.goBack()
+  await expect(page.getByRole('listbox', { name: 'Sati' })).toBeHidden()
+  await expect(page.getByRole('dialog', { name: /aktivnost/i })).toBeVisible()
+
+  // 2. a form with something typed asks before it is thrown away
+  await page.getByLabel('Naziv').fill('Proba')
+  await page.goBack()
+  await expect(page.getByRole('alertdialog', { name: 'Odbaci izmene?' })).toBeVisible()
+  await page.getByRole('button', { name: 'Odbaci' }).click()
+  await expect(page.getByLabel('Naziv')).toBeHidden()
+
+  // 7. Today at the top: "Leave the app?"
+  await page.goBack()
+  await expect(page.getByRole('alertdialog', { name: 'Napusti aplikaciju?' })).toBeVisible()
+  await page.getByRole('button', { name: 'Ostani' }).click()
+  await expect(page.getByRole('alertdialog')).toBeHidden()
+  await expect(page).toHaveURL(/#\/$/)
 })

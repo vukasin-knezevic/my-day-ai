@@ -26,6 +26,20 @@ body {
     sans-serif;
 }
 
+/* iPhone: the page scrolls under the clock and the battery (the padding above scrolls away with it).
+   A fixed strip in the background colour, as tall as the status bar, stays on top of the content. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  z-index: 15;
+  pointer-events: none;
+  @apply bg-slate-50 dark:bg-slate-950;
+}
+
 /* AA contrast for secondary text on dark backgrounds */
 .dark .text-slate-500,
 .dark .text-slate-600 {
@@ -93,6 +107,40 @@ select,
 }
 .anim-pop {
   animation: pop-in 0.2s ease-out;
+}
+@keyframes check-in {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+}
+.anim-check {
+  animation: check-in 0.28s ease-out;
+}
+@keyframes splash-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  25%,
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.anim-splash {
+  animation: splash-in 1.1s ease-in-out forwards;
+}
+.tour-hl {
+  outline: 3px solid #f59e0b;
+  outline-offset: 4px;
+  border-radius: 1rem;
+  transition: outline-color 0.2s;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

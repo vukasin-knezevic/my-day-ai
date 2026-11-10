@@ -1,7 +1,15 @@
 // Pure helpers: what is on a given day, and what needs attention.
 import type { Activity, ActivityStatus, AppData, Category, ClassSlot, Subject } from '../types'
-import { daysUntil, formatDuration, formatHours, timeToMin, weekdayOf, weekStartStr } from './dates'
-import { isExam } from './exams'
+import {
+  daysUntil,
+  formatDuration,
+  formatHours,
+  timeToMin,
+  weekdayOf,
+  weekStartStr,
+  durationMin,
+} from './dates'
+import { isExam, registrationDue } from './exams'
 import { sleepHours } from './life'
 import { t } from '../i18n'
 import { slotKindLabel } from './labels'
@@ -25,6 +33,7 @@ export interface Occurrence {
 
 function occursOn(a: Activity, date: string): boolean {
   if (date < a.date) return false
+  if (a.until !== undefined && date > a.until) return false
   if (a.excludedDates?.includes(date)) return false
   switch (a.recurrence) {
     case 'none':
@@ -115,6 +124,11 @@ export function occurrencesOn(
   )
 }
 
+/** The days on which an activity was done (a repeating one keeps a list). */
+export function doneDates(a: Activity): string[] {
+  return a.recurrence === 'none' ? (a.status === 'done' ? [a.date] : []) : (a.doneDates ?? [])
+}
+
 /** Marks one occurrence done/skipped (handles recurring activities). */
 export function withStatus(a: Activity, date: string, status: ActivityStatus): Activity {
   if (a.recurrence === 'none') return { ...a, status }
@@ -164,12 +178,75 @@ export function patchOccurrence(
   return { updated: withoutOccurrence(a, date), single }
 }
 
-export function currentAndNext(occ: Occurrence[], nowMin: number) {
-  const active = occ.filter((o) => o.status === 'planned' && !o.suggested)
-  const current =
-    active.find((o) => timeToMin(o.start) <= nowMin && nowMin < timeToMin(o.end)) ?? null
-  const next = active.find((o) => timeToMin(o.start) > nowMin) ?? null
-  return { current, next, minutesToNext: next ? timeToMin(next.start) - nowMin : null }
+/** When the user's day starts and ends (from the settings). The end may be after midnight. */
+export interface DayBounds {
+  wakeTime: string
+  bedTime: string
+}
+
+/** Minutes after midnight until which the previous day still lasts (0 if bedtime is before midnight). */
+function lateBed(day?: DayBounds): number {
+  if (!day) return 0
+  const bed = timeToMin(day.bedTime)
+  return bed < timeToMin(day.wakeTime) ? bed : 0
+}
+
+/**
+ * Where an occurrence sits in its day, in minutes from the midnight that starts its date.
+ * - An end that is not after the start is on the next day: 22:00-01:00 is 1320-1500.
+ * - For someone who goes to bed after midnight, a time before bedtime (00:15) is the end of the
+ *   day, not its beginning: 1455.
+ */
+export function daySpan(
+  o: Pick<Occurrence, 'start' | 'end'>,
+  day?: DayBounds,
+): { start: number; end: number } {
+  let start = timeToMin(o.start)
+  let end = timeToMin(o.end)
+  if (start < lateBed(day)) {
+    start += 1440
+    end += 1440
+  }
+  if (end <= start) end += 1440
+  return { start, end }
+}
+
+/** The occurrences of a day in the order they happen (after-midnight ones last). */
+export function inDayOrder(occ: Occurrence[], day?: DayBounds): Occurrence[] {
+  return [...occ].sort((a, b) => daySpan(a, day).start - daySpan(b, day).start)
+}
+
+/**
+ * What is going on now and what comes next. `yesterday` are the occurrences of the day before:
+ * the ones that run past midnight are still "now" in the small hours.
+ */
+export function currentAndNext(
+  occ: Occurrence[],
+  nowMin: number,
+  opts: { day?: DayBounds; yesterday?: Occurrence[] } = {},
+) {
+  // after midnight but not yet in bed: today's early entries are happening now, not tomorrow night
+  const tail = nowMin < lateBed(opts.day)
+  const back = (o: Occurrence) => {
+    const s = daySpan(o, opts.day)
+    return { o, start: s.start - 1440, end: s.end - 1440 }
+  }
+  const spans = [
+    ...occ.map((o) => {
+      const s = daySpan(o, opts.day)
+      return tail && s.start >= 1440 ? back(o) : { o, ...s }
+    }),
+    ...(opts.yesterday ?? []).map(back).filter((x) => x.end > 0),
+  ]
+    .filter((x) => x.o.status === 'planned' && !x.o.suggested)
+    .sort((a, b) => a.start - b.start)
+  const current = spans.find((x) => x.start <= nowMin && nowMin < x.end)?.o ?? null
+  const upcoming = spans.find((x) => x.start > nowMin)
+  return {
+    current,
+    next: upcoming?.o ?? null,
+    minutesToNext: upcoming ? upcoming.start - nowMin : null,
+  }
 }
 
 export interface Alert {
@@ -194,8 +271,17 @@ export function buildAlerts(data: AppData, today: string): Alert[] {
         })
       continue
     }
-    if (a.registration === 'nije-prijavljen' && a.registrationDeadline) {
-      const d = daysUntil(a.registrationDeadline, today)
+    const due = registrationDue(a)
+    if (due?.assumed) {
+      // no deadline entered: from a week before the assumed one until the exam, "check it yourself"
+      if (daysUntil(a.date, today) >= 0 && daysUntil(due.date, today) <= 7)
+        alerts.push({
+          id: `reg-${a.id}`,
+          level: 'red',
+          text: t('alert.unregisteredAssumed', { title: a.title, subject: subjName(a.subjectId) }),
+        })
+    } else if (due) {
+      const d = daysUntil(due.date, today)
       if (d >= 0 && d <= 7)
         alerts.push({
           id: `reg-${a.id}`,
@@ -242,7 +328,7 @@ export function daySummary(occ: Occurrence[], studyAndWorkoutLabel = true): stri
   const workouts = planned.filter((o) => o.category === 'workout').length
   const studyMin = planned
     .filter((o) => o.type === 'activity' && o.category === 'study')
-    .reduce((n, o) => n + timeToMin(o.end) - timeToMin(o.start), 0)
+    .reduce((n, o) => n + durationMin(o.start, o.end), 0)
   const parts: string[] = []
   if (classes) parts.push(t('day.classes', { n: classes }))
   if (workouts) parts.push(t('day.workouts', { n: workouts }))

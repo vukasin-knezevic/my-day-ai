@@ -75,6 +75,7 @@ test('izmena postojeće aktivnosti', async () => {
       <Today />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Staro ime' }))
   await user.click(screen.getByRole('button', { name: 'Izmeni Staro ime' }))
   const title = screen.getByLabelText('Naziv')
   await user.clear(title)
@@ -98,7 +99,7 @@ test('Escape zatvara formu bez čuvanja', async () => {
   expect(useStore.getState().activities).toHaveLength(0)
 })
 
-test('kraj pre početka daje grešku', async () => {
+test('A-16: kraj isti kao početak daje grešku; kraj pre početka je sutradan', async () => {
   const user = userEvent.setup()
   render(
     <MemoryRouter>
@@ -106,11 +107,17 @@ test('kraj pre početka daje grešku', async () => {
     </MemoryRouter>,
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
-  await user.type(screen.getByLabelText('Naziv'), 'X')
-  await setTime(user, 'Kraj', '17:00')
+  await user.type(screen.getByLabelText('Naziv'), 'Izlazak')
+  await setTime(user, 'Početak', '22:00')
+  await setTime(user, /^Kraj/, '22:00')
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
-  expect(screen.getByRole('alert')).toHaveTextContent('Kraj mora biti posle početka')
+  expect(screen.getByRole('alert')).toHaveTextContent('Kraj ne može biti isti kao početak')
   expect(useStore.getState().activities).toHaveLength(0)
+
+  await setTime(user, /^Kraj/, '01:00')
+  expect(screen.getByLabelText('Kraj (sutradan)')).toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
+  expect(useStore.getState().activities[0]).toMatchObject({ start: '22:00', end: '01:00' })
 })
 
 test('neprijavljen kolokvijum se vidi kao upozorenje', () => {
@@ -158,6 +165,7 @@ test('ponavljajuća aktivnost: „Samo danas“ uklanja dan, a niz ostaje', asyn
       <Today />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Još radnji za Jutarnje trčanje' }))
   await user.click(screen.getByRole('button', { name: 'Ukloni Jutarnje trčanje samo za ovaj dan' }))
   expect(screen.queryByText(/Jutarnje trčanje/)).toBeNull()
   const [a] = useStore.getState().activities
@@ -209,4 +217,33 @@ test('prazan brzi unos ne ćuti', async () => {
   )
   await user.click(screen.getByRole('button', { name: 'Dodaj' }))
   expect(screen.getByRole('alert')).toHaveTextContent('Napiši šta da dodam')
+})
+
+test('A-06: sutrašnja aktivnost se vidi i menja kad se izabere sutra; „Trenutno“ je samo za danas', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <Today />
+    </MemoryRouter>,
+  )
+  await user.type(screen.getByLabelText('Brzi unos'), 'sutra trening 18-19')
+  await user.click(screen.getByRole('button', { name: 'Dodaj' }))
+  expect(screen.queryByRole('button', { name: /Urađeno/ })).toBeNull()
+  expect(screen.getByText('Trenutno')).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Sledeći dan' }))
+  expect(screen.queryByText('Trenutno')).toBeNull()
+  await user.click(screen.getByRole('button', { name: /Urađeno/ }))
+  const a = useStore.getState().activities[0]
+  expect(a.date).not.toBe(todayStr())
+  expect(a.status).toBe('done')
+
+  // typed while looking at tomorrow: lands on tomorrow
+  await user.type(screen.getByLabelText('Brzi unos'), 'učenje 10-11')
+  await user.click(screen.getByRole('button', { name: 'Dodaj' }))
+  expect(useStore.getState().activities[1].date).toBe(a.date)
+
+  await user.click(screen.getByRole('button', { name: /Nazad na danas/ }))
+  expect(screen.getByText('Trenutno')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Urađeno/ })).toBeNull()
 })

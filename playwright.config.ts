@@ -18,7 +18,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /iphone\.spec\.ts/,
+      testIgnore: /(iphone|screens)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
     },
     {
@@ -26,6 +26,22 @@ export default defineConfig({
       name: 'iphone',
       testMatch: /iphone\.spec\.ts/,
       use: { ...devices['iPhone 14'] },
+    },
+    // the same short walk through the screens in other browsers and sizes (A-34)
+    {
+      name: 'firefox',
+      testMatch: /screens\.spec\.ts/,
+      use: { ...devices['Desktop Firefox'], viewport: { width: 390, height: 844 } },
+    },
+    {
+      name: 'tablet',
+      testMatch: /screens\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 820, height: 1180 } },
+    },
+    {
+      name: 'desktop1920',
+      testMatch: /screens\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
     },
   ],
   webServer: {

@@ -120,7 +120,7 @@ export function TimeField({
   ariaLabel?: string
 }) {
   const { t } = useT()
-  const { invalid } = useFieldState()
+  const { invalid, optional } = useFieldState()
   const format = useStore((s) => s.settings.timeFormat)
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(parse(value))
@@ -178,6 +178,7 @@ export function TimeField({
           />
           {is12 && (
             <Wheel
+              // AM / PM are international marks of the 12-hour clock, the same in every language
               label="AM / PM"
               items={[
                 { value: 0, label: 'AM' },
@@ -198,6 +199,18 @@ export function TimeField({
         >
           {t('common.done')}
         </button>
+        {optional && value && (
+          <button
+            type="button"
+            onClick={() => {
+              onChange('')
+              setOpen(false)
+            }}
+            className="mt-2 min-h-12 w-full rounded-xl px-4 py-2 text-base font-medium text-red-700 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-800"
+          >
+            {t('picker.clearTime')}
+          </button>
+        )}
       </Sheet>
     </>
   )
@@ -222,7 +235,7 @@ export function DateField({
   const { invalid } = useFieldState()
   return (
     <div
-      className={`${inputCls} ${invalid ? invalidCls : ''} relative min-h-[2.75rem] tabular-nums ${className}`}
+      className={`${inputCls} ${invalid ? invalidCls : ''} relative min-h-[2.75rem] tabular-nums focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-blue-600 ${className}`}
     >
       <span aria-hidden>{value ? formatDateNumeric(value) : ' '}</span>
       <input

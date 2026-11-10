@@ -54,6 +54,10 @@ const refDay = (d: Weekday) => fromDateStr(`2024-01-0${d}`)
 export function weekdayName(d: Weekday): string {
   return capitalize(format(refDay(d), 'EEEE', { locale: locale() }))
 }
+/** "Pet" / "Fri" / "Пт" — the short weekday name the language itself uses. */
+export function weekdayShort(d: Weekday): string {
+  return capitalize(format(refDay(d), 'EEE', { locale: locale() })).replace(/\.$/, '')
+}
 /** Month name (1-12) in the selected language, capitalised. */
 export function monthName(month: number): string {
   return capitalize(format(new Date(2024, month - 1, 1), 'LLLL', { locale: locale() }))
@@ -79,6 +83,11 @@ export function formatShort(s: string): string {
 export function timeToMin(t: string): number {
   const [h, m] = t.split(':').map(Number)
   return h * 60 + (m || 0)
+}
+/** Length of "start-end" in minutes. An end that is not after the start is on the next day (22:00-01:00 = 3 h). */
+export function durationMin(start: string, end: string): number {
+  const d = timeToMin(end) - timeToMin(start)
+  return d > 0 ? d : d + 1440
 }
 export function minToTime(min: number): string {
   const m = ((Math.round(min) % 1440) + 1440) % 1440

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store'
 import { Button, Card, Field, Input, Select } from './ui'
 import KeyScope from './KeyScope'
@@ -6,6 +6,7 @@ import { CATEGORY_META, type Activity, type Category, type Recurrence } from '..
 import { useT } from '../i18n'
 import { categoryLabel, recurrenceLabel } from '../lib/labels'
 import { timeToMin } from '../lib/dates'
+import { useBackHandler, useBackPrompt } from '../lib/back'
 
 const RECURRENCES: Recurrence[] = ['none', 'daily', 'weekdays', 'weekly']
 
@@ -32,12 +33,20 @@ export default function ActivityForm({
     note: initial?.note ?? '',
   })
   const [errors, setErrors] = useState<{ title?: string; date?: string; end?: string }>({})
+  const first = useRef(JSON.stringify(f))
+
+  // "Back" closes the form; with something typed in, it asks first
+  const dirty = JSON.stringify(f) !== first.current
+  useBackHandler('overlay', true, () =>
+    dirty ? useBackPrompt.getState().ask({ kind: 'discard', discard: onClose }) : onClose(),
+  )
 
   function save() {
     const found = {
       title: f.title.trim() ? undefined : t('act.errTitle'),
       date: f.date ? undefined : t('act.errDate'),
-      end: timeToMin(f.end) <= timeToMin(f.start) ? t('act.errEnd') : undefined,
+      // an end before the start is fine: it is on the next day (22:00-01:00)
+      end: f.end === f.start ? t('act.errSame') : undefined,
     }
     setErrors(found)
     if (found.title || found.date || found.end) return
@@ -56,7 +65,13 @@ export default function ActivityForm({
   }
 
   return (
-    <KeyScope onEnter={save} onEscape={onClose} role="dialog" aria-label={t('act.dialog')}>
+    <KeyScope
+      onEnter={save}
+      onEscape={onClose}
+      manualBack
+      role="dialog"
+      aria-label={t('act.dialog')}
+    >
       <Card className="mb-4 border-blue-300 dark:border-blue-800">
         <h2 className="mb-3 font-semibold">{initial ? t('act.edit') : t('act.new')}</h2>
         <div className="grid grid-cols-2 gap-3">
@@ -115,7 +130,10 @@ export default function ActivityForm({
                 onChange={(e) => setF({ ...f, start: e.target.value })}
               />
             </Field>
-            <Field label={t('act.end')} error={errors.end}>
+            <Field
+              label={t(timeToMin(f.end) < timeToMin(f.start) ? 'act.endNextDay' : 'act.end')}
+              error={errors.end}
+            >
               <Input
                 type="time"
                 value={f.end}

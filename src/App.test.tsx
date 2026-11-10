@@ -11,7 +11,7 @@ beforeEach(() => {
 test('prvo otvaranje prikazuje onboarding, pa glavnu aplikaciju', async () => {
   const user = userEvent.setup()
   render(<App />)
-  expect(screen.getByRole('heading', { name: /Dobrodošao/ })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /Dobrodošao/ })).toBeInTheDocument()
   for (let i = 0; i < 6; i++) await user.click(screen.getByRole('button', { name: 'Dalje' }))
   await user.click(screen.getByRole('button', { name: 'Završi' }))
   expect(useStore.getState().settings.onboarded).toBe(true)
@@ -21,5 +21,5 @@ test('prvo otvaranje prikazuje onboarding, pa glavnu aplikaciju', async () => {
 
 test('verzija iz package.json je 0.x do zvanične objave', () => {
   expect(__APP_VERSION__).toMatch(/^0\.\d+\.\d+$/)
-  expect(__APP_VERSION__).toBe('0.3.1')
+  expect(__APP_VERSION__).toBe('0.4.0')
 })

@@ -1,9 +1,10 @@
 // iCalendar (.ics) export so the phone's calendar app can remind you (works without this app being open).
 import type { AppData } from '../types'
 import { addDaysStr, minToTime, timeToMin, todayStr } from './dates'
-import { isExam } from './exams'
+import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
 import { t } from '../i18n'
+import { shareOrDownload, type ShareResult } from './files'
 
 const esc = (s: string) =>
   s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
@@ -50,6 +51,9 @@ interface Ev {
   description?: string
 }
 
+/** Relative to midnight at the start of the day: 09:00 that day, 09:00 the day before. */
+export const ALL_DAY_TRIGGERS = ['PT9H', '-PT15H']
+
 function vevent(e: Ev, dtstamp: string): string[] {
   const l = [
     'BEGIN:VEVENT',
@@ -60,7 +64,8 @@ function vevent(e: Ev, dtstamp: string): string[] {
   if (e.start && e.end) {
     l.push(
       `DTSTART:${compactDate(e.date)}T${compactTime(e.start)}`,
-      `DTEND:${compactDate(e.date)}T${compactTime(e.end)}`,
+      // an end that is not after the start is on the next day (22:00-01:00)
+      `DTEND:${compactDate(e.end > e.start ? e.date : addDaysStr(e.date, 1))}T${compactTime(e.end)}`,
     )
   } else {
     l.push(
@@ -69,14 +74,19 @@ function vevent(e: Ev, dtstamp: string): string[] {
     )
   }
   if (e.description) l.push(`DESCRIPTION:${esc(e.description)}`)
-  if (e.alarmMin !== undefined)
-    l.push(
-      'BEGIN:VALARM',
-      'ACTION:DISPLAY',
-      `DESCRIPTION:${esc(e.summary)}`,
-      `TRIGGER:-PT${e.alarmMin}M`,
-      'END:VALARM',
-    )
+  if (e.alarmMin !== undefined) {
+    // An all-day event starts at midnight, so "x minutes before" would ring in the middle of the
+    // night. It reminds at 09:00 that day and at 09:00 the day before instead.
+    const triggers = e.start ? [`-PT${e.alarmMin}M`] : ALL_DAY_TRIGGERS
+    for (const trigger of triggers)
+      l.push(
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:${esc(e.summary)}`,
+        `TRIGGER:${trigger}`,
+        'END:VALARM',
+      )
+  }
   l.push('END:VEVENT')
   return l
 }
@@ -128,15 +138,12 @@ function finishIcs(data: AppData, now: Date, events: Ev[]): string {
       end: a.time ? addMinutes(a.time, 90) : undefined,
       alarmMin: 24 * 60,
     })
-    if (
-      a.registrationDeadline &&
-      a.registrationDeadline >= today &&
-      a.registration === 'nije-prijavljen'
-    )
+    const due = registrationDue(a)
+    if (due && due.date >= today)
       events.push({
         uid: `reg-${a.id}`,
-        summary: t('ics.regDeadline', { title: a.title }),
-        date: a.registrationDeadline,
+        summary: t(due.assumed ? 'ics.regCheck' : 'ics.regDeadline', { title: a.title }),
+        date: due.date,
         alarmMin: 0,
       })
   }
@@ -159,33 +166,17 @@ const addMinutes = (time: string, m: number) => minToTime(Math.min(1439, timeToM
  * Hands the calendar file to the phone: the share sheet offers the Calendar app straight away.
  * Without Web Share for files (a laptop) it is an ordinary download. Returns what happened.
  */
-export async function shareCalendar(
-  text: string,
-  filename = 'my-day-ai.ics',
-): Promise<'shared' | 'downloaded' | 'cancelled'> {
-  const file = new File([text], filename, { type: 'text/calendar' })
-  if (
-    typeof navigator !== 'undefined' &&
-    navigator.share &&
-    navigator.canShare?.({ files: [file] })
-  ) {
-    try {
-      await navigator.share({ files: [file], title: 'My Day AI' })
-      return 'shared'
-    } catch (e) {
-      // the user closed the share sheet: that is an answer, not an error
-      if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled'
-    }
-  }
-  downloadText(filename, text)
-  return 'downloaded'
+/**
+ * iPhone: opens the calendar file itself, so Safari shows its own "Add All" screen. (The share sheet
+ * there does not offer the Calendar app for a file.)
+ */
+export function openCalendarFile(text: string): ShareResult {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }))
+  window.location.assign(url)
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  return 'shared'
 }
 
-export function downloadText(filename: string, text: string, mime = 'text/calendar') {
-  const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
+export function shareCalendar(text: string, filename = 'my-day-ai.ics'): Promise<ShareResult> {
+  return shareOrDownload(filename, text, 'text/calendar')
 }

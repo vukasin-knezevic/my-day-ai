@@ -1,9 +1,39 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useBackHandler, useBackPrompt } from '../lib/back'
 
 const DURATION = 220 // ms, open / close / snap back
 const CLOSE_FRACTION = 0.3 // dragged further than this share of the height closes the panel
 const CLOSE_VELOCITY = 0.5 // px/ms downwards: a quick flick closes it too
+
+let inertCount = 0
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+
+/** Tab and Shift+Tab stay inside the panel (A-18). */
+export function trapTab(e: KeyboardEvent, panel: HTMLElement) {
+  const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+    (el) => !el.closest('[hidden],[aria-hidden="true"]'),
+  )
+  if (!items.length) {
+    e.preventDefault()
+    panel.focus()
+    return
+  }
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement
+  if (e.shiftKey && (active === first || active === panel)) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault()
+    first.focus()
+  } else if (!panel.contains(active)) {
+    e.preventDefault()
+    first.focus()
+  }
+}
 
 /**
  * The app's own bottom panel (bottom sheet): used instead of the system pop-ups for lists and
@@ -16,11 +46,14 @@ export default function Sheet({
   onClose,
   title,
   children,
+  dirty = false,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
+  /** Something was typed inside: "Back" asks before it is thrown away. */
+  dirty?: boolean
 }) {
   const [closing, setClosing] = useState(false)
   const [shown, setShown] = useState(open)
@@ -30,6 +63,10 @@ export default function Sheet({
   const scroller = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  // "Back" closes the panel instead of leaving the screen
+  useBackHandler('overlay', open, () =>
+    dirty ? useBackPrompt.getState().ask({ kind: 'discard', discard: onClose }) : onClose(),
+  )
 
   // keep it mounted for the exit animation
   useEffect(() => {
@@ -51,15 +88,21 @@ export default function Sheet({
     if (!open) return
     const previous = document.activeElement as HTMLElement | null
     panel.current?.focus()
+    // the page behind cannot be reached by Tab or by a screen reader while the panel is open
+    const root = document.getElementById('root')
+    inertCount++
+    root?.setAttribute('inert', '')
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         onCloseRef.current()
       }
+      if (e.key === 'Tab' && panel.current) trapTab(e, panel.current)
     }
     document.addEventListener('keydown', onKey, true)
     return () => {
       document.removeEventListener('keydown', onKey, true)
+      if (--inertCount <= 0) root?.removeAttribute('inert')
       previous?.focus?.()
     }
   }, [open])

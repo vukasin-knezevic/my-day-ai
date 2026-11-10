@@ -1,3 +1,5 @@
+import srLatn from '../i18n/locales/sr-Latn'
+import srCyrl from '../i18n/locales/sr-Cyrl'
 import { parseQuick, normalize } from './quickParse'
 
 // Friday, 6 Nov 2026, 14:20
@@ -215,5 +217,74 @@ describe('activities: recurrence', () => {
   it('plain sentences stay one-off', () => {
     expect(p('trening u ponedeljak u 18')).not.toHaveProperty('recurrence')
     expect(p('svaki put trening u 18')).not.toHaveProperty('recurrence')
+  })
+})
+
+describe('A-11: Cyrillic is understood like Latin', () => {
+  const now = new Date(2026, 10, 6, 14, 20)
+  const latin = srLatn.messages['today.quickPlaceholder'].split(' · ')
+  const cyrillic = srCyrl.messages['today.quickPlaceholder'].split(' · ')
+
+  it('the example in the field is in Cyrillic, with ч for hours', () => {
+    expect(cyrillic).toHaveLength(latin.length)
+    expect(cyrillic.join(' ')).toMatch(/[а-я]/)
+    expect(cyrillic.join(' ')).toContain('2ч')
+  })
+
+  it.each(latin.map((l, i) => [l, cyrillic[i]]))('„%s“ = „%s“', (l, c) => {
+    const a = parseQuick(l, now)
+    const b = parseQuick(c, now)
+    expect(a.kind).not.toBe('unknown')
+    const strip = (x: object) => ({ ...x, title: undefined, description: undefined })
+    expect(strip(b)).toEqual(strip(a))
+  })
+
+  it('what the user named stays in Cyrillic', () => {
+    expect(parseQuick('сутра учење мата 2ч', now)).toMatchObject({
+      kind: 'activity',
+      category: 'study',
+      date: '2026-11-07',
+      title: expect.stringMatching(/мата/i),
+    })
+    expect(parseQuick('кафа 200', now)).toMatchObject({ kind: 'expense', amount: 200 })
+    expect(parseQuick('легао 1:30', now)).toMatchObject({
+      kind: 'sleep',
+      event: 'bed',
+      time: '01:30',
+    })
+    expect(parseQuick('устала у 9', now)).toMatchObject({
+      kind: 'sleep',
+      event: 'wake',
+      time: '09:00',
+    })
+    expect(parseQuick('тренинг 18ч', now)).toMatchObject({ kind: 'activity', start: '18:00' })
+  })
+})
+
+describe('A-12: a bedtime typed the next day', () => {
+  it('"legao 23:30" typed at 09:00 is last night', () => {
+    expect(parseQuick('legao 23:30', new Date(2026, 10, 7, 9, 0))).toMatchObject({
+      event: 'bed',
+      time: '23:30',
+      date: '2026-11-06',
+    })
+  })
+  it('"legao 1:30" typed at 09:00 is this morning', () => {
+    expect(parseQuick('legao 1:30', new Date(2026, 10, 7, 9, 0))).toMatchObject({
+      date: '2026-11-07',
+    })
+  })
+  it('an explicit day wins', () => {
+    expect(parseQuick('juče legao 23:30', new Date(2026, 10, 7, 9, 0))).toMatchObject({
+      date: '2026-11-06',
+    })
+  })
+})
+
+describe('A-16: past midnight', () => {
+  const now = new Date(2026, 10, 6, 14, 20)
+  it('"izlazak 22-01" ends the next day instead of being cut at 23:59', () => {
+    expect(parseQuick('izlazak 22-01', now)).toMatchObject({ start: '22:00', end: '01:00' })
+    expect(parseQuick('učenje 23:30 2h', now)).toMatchObject({ start: '23:30', end: '01:30' })
   })
 })

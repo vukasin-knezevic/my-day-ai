@@ -6,7 +6,7 @@ import { Button, Card, Field, Input, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
 import KeyScope from '../components/KeyScope'
 import Rich from '../i18n/Rich'
-import { LANGUAGES, getLanguage, useT } from '../i18n'
+import { LANGUAGE_LIST, getLanguage, useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
 const STEPS: BaseKey[] = [
@@ -52,6 +52,7 @@ export default function Onboarding() {
         <Card className="space-y-4">
           {step === 0 && (
             <>
+              <p className="text-sm font-medium">{t('ob.purpose')}</p>
               <p className="text-sm">{t('ob.lang.intro')}</p>
               <Field label={t('set.language')}>
                 <Select
@@ -63,9 +64,10 @@ export default function Onboarding() {
                   }}
                 >
                   <option value="">
-                    {t('set.langAuto')} · {LANGUAGES.find((l) => l.code === getLanguage())?.name}
+                    {t('set.langAuto')} ·{' '}
+                    {LANGUAGE_LIST.find((l) => l.code === getLanguage())?.name}
                   </option>
-                  {LANGUAGES.map((l) => (
+                  {LANGUAGE_LIST.map((l) => (
                     <option key={l.code} value={l.code}>
                       {l.name}
                     </option>
@@ -108,7 +110,7 @@ export default function Onboarding() {
                         <input
                           type="radio"
                           name="gender"
-                          className="size-5"
+                          className="size-5 shrink-0"
                           checked={draft.gender === g}
                           onChange={() => {
                             set('gender', g)
@@ -213,12 +215,12 @@ export default function Onboarding() {
               <p className="text-sm">
                 <Rich text={t('ob.subjects.text')} />
               </p>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
                   checked={demo}
                   onChange={(e) => setDemo(e.target.checked)}
-                  className="size-5"
+                  className="size-5 shrink-0"
                 />
                 {t('ob.demo')}
               </label>
@@ -226,10 +228,10 @@ export default function Onboarding() {
           )}
           {step === 6 && (
             <>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5"
+                  className="size-5 shrink-0"
                   checked={draft.autoUpdate}
                   onChange={(e) => set('autoUpdate', e.target.checked)}
                 />
@@ -242,7 +244,7 @@ export default function Onboarding() {
                   <input
                     type="radio"
                     name="ai-mode"
-                    className="mt-1 size-4"
+                    className="mt-1 size-4 shrink-0"
                     checked={draft.aiMode === 'manual'}
                     onChange={() => set('aiMode', 'manual')}
                   />
@@ -256,7 +258,7 @@ export default function Onboarding() {
                   <input
                     type="radio"
                     name="ai-mode"
-                    className="mt-1 size-4"
+                    className="mt-1 size-4 shrink-0"
                     checked={draft.aiMode === 'api'}
                     onChange={() => set('aiMode', 'api')}
                   />

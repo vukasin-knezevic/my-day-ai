@@ -17,6 +17,7 @@ import {
 import { assessmentLabel } from '../lib/labels'
 import { planWeek, type Adjustment } from '../lib/planner'
 import { patchOccurrence } from '../lib/schedule'
+import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
 
 export default function Planner() {
@@ -119,7 +120,9 @@ export default function Planner() {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => suggested.forEach((a) => remove('activities', a.id))}
+              onClick={() =>
+                deleteWithUndo(() => suggested.forEach((a) => remove('activities', a.id)))
+              }
             >
               {t('pl.rejectAll')}
             </Button>
@@ -183,7 +186,7 @@ export default function Planner() {
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => remove('activities', a.id)}
+                  onClick={() => deleteWithUndo(() => remove('activities', a.id))}
                   aria-label={t('pl.reject', { title: a.title })}
                 >
                   ✕

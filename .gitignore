@@ -12,3 +12,13 @@ test-results
 dev-dist
 *.tsbuildinfo
 graphify-out/
+scripts/.batch.json
+
+.local-automation/
+docs/razvoj/automatizacija/*.log
+
+# personal notes kept next to the project, not part of it (A-38)
+MY_DAY_AI_REZIME.md
+MY_DAY_AI_V03_ZADATAK.md
+MY_DAY_AI_V031_ZADATAK.md
+My Day AI.txt

@@ -3,8 +3,9 @@
 // "gym tomorrow 18-19:30", "study math 2h", "coffee 200", "slept 1:30".
 import type { Category, ExpenseCategory, Recurrence, Weekday } from '../types'
 import { t as tr } from '../i18n'
+import { cyrillicToLatin, latinToCyrillic } from '../i18n/translit'
 import { categoryLabel } from './labels'
-import { addDaysStr, minToTime, timeToMin, todayStr, weekdayOf } from './dates'
+import { addDaysStr, minToTime, todayStr, weekdayOf } from './dates'
 
 export type Parsed =
   | {
@@ -152,7 +153,24 @@ function parseAmount(raw: string): number {
   return Number(raw.replace(/\.(?=\d{3}\b)/g, ''))
 }
 
+const CYRILLIC = /[\u0400-\u04FF]/
+
+/**
+ * Understands a short sentence. Cyrillic is read as Latin (the words are the same), and what the
+ * user named (the title, the description) is given back in the script they typed it in.
+ */
 export function parseQuick(input: string, now: Date = new Date()): Parsed {
+  if (!CYRILLIC.test(input)) return parseLatin(input, now)
+  // "2ч" is two hours: the letter ч after a number is the hour unit, not "č"
+  const hours = input.replace(/(\d)\s*[чЧ](?![\u0400-\u04FF])/g, '$1h')
+  const p = parseLatin(cyrillicToLatin(hours), now)
+  if (p.kind === 'activity') return { ...p, title: latinToCyrillic(p.title) }
+  if (p.kind === 'expense') return { ...p, description: latinToCyrillic(p.description) }
+  if (p.kind === 'unknown') return { ...p, text: input.trim() }
+  return p
+}
+
+function parseLatin(input: string, now: Date): Parsed {
   const text = input.trim()
   if (!text) return { kind: 'unknown', text }
   const t = new Text(text, normalize(text))
@@ -167,8 +185,9 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     const isBed = /^(leg|went to bed|go(?:ing)? to bed|slept)/.test(sleepMatch[0])
     const m = t.cut(new RegExp(String.raw`\b(?:(?:u|at)\s+)?${TIME}\s*h?\b`)) ?? null
     const min = m ? toMin(m[1], m[2]) : nowMin
-    // "legao 23:30" typed at half past midnight means last night, not tonight
-    const lastNight = isBed && nowMin < 6 * 60 && min >= 12 * 60
+    // a bedtime later than the present moment cannot be today's: "legao 23:30" typed at half past
+    // midnight, or the next morning, means last night
+    const lastNight = isBed && m !== null && validTime(min) && min > nowMin
     const date = parseDate(t, now) ?? (lastNight ? addDaysStr(today, -1) : today)
     return {
       kind: 'sleep',
@@ -276,8 +295,6 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     start = targetDate === today ? Math.min(Math.ceil((nowMin + 1) / 60) * 60, 23 * 60) : 18 * 60
   }
   if (end === null) end = start + (duration ?? DEFAULT_MINUTES[cat])
-  const dayEnd = 24 * 60 - 1
-  if (end > dayEnd) end = dayEnd
   const title = cleanTitle(t.orig) || categoryLabel(cat)
   return {
     kind: 'activity',
@@ -285,7 +302,8 @@ export function parseQuick(input: string, now: Date = new Date()): Parsed {
     category: cat,
     date: targetDate,
     start: minToTime(start),
-    end: minToTime(Math.max(end, timeToMin(minToTime(start)) + 5)),
+    // past midnight the end wraps to the next day: "izlazak 22-01" is 22:00-01:00
+    end: minToTime(Math.max(end, start + 5)),
     ...(recurrence ? { recurrence } : {}),
   }
 }

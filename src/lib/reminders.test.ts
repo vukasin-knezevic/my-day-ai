@@ -1,3 +1,4 @@
+import { setTimeFormat } from './dates'
 import { dueReminders } from './reminders'
 import { buildIcs } from './ics'
 import { hoursByCategory, overview, periodDates } from './overview'
@@ -39,6 +40,15 @@ describe('dueReminders', () => {
     expect(r).toHaveLength(1)
     expect(r[0].body).toContain('18:00')
   })
+  it('A-10: the time in the text follows the 12h / 24h setting', () => {
+    setTimeFormat('12h')
+    try {
+      const r = dueReminders(data({ activities: [act()] }), at(17, 50), new Set())
+      expect(r[0].body).toMatch(/6:00\s?PM/i)
+    } finally {
+      setTimeFormat('24h')
+    }
+  })
   it('does not fire too early, after start, or twice', () => {
     expect(dueReminders(data({ activities: [act()] }), at(17, 0), new Set())).toHaveLength(0)
     expect(dueReminders(data({ activities: [act()] }), at(18, 5), new Set())).toHaveLength(0)
@@ -54,6 +64,17 @@ describe('dueReminders', () => {
       { status: 'skipped' as const },
     ])
       expect(dueReminders(data({ activities: [act(p)] }), at(17, 50), new Set())).toHaveLength(0)
+  })
+  it('A-04: no deadline entered -> reminder on the assumed day (7 days before) to check the faculty site', () => {
+    // exam on Nov 13: assumed deadline Nov 6 (today)
+    const d = data({ assessments: [exam({ registrationDeadline: undefined, date: '2026-11-13' })] })
+    const r = dueReminders(d, at(9, 30), new Set())
+    expect(r).toHaveLength(1)
+    expect(r[0].body).toBe('Kol 1: rok za prijavu nije unet. Proveri na sajtu fakulteta.')
+    const far = data({
+      assessments: [exam({ registrationDeadline: undefined, date: '2026-12-13' })],
+    })
+    expect(dueReminders(far, at(9, 30), new Set())).toHaveLength(0)
   })
   it('registration deadline reminder tomorrow morning onward', () => {
     const d = data({ assessments: [exam()] })
@@ -124,6 +145,15 @@ describe('buildIcs', () => {
     expect(ics).toContain('DTSTART:20261112T100000')
     expect(ics).toContain('DTSTART;VALUE=DATE:20261107')
     expect(ics).toContain('Rok za prijavu')
+  })
+  it('A-24: all-day events remind at 09:00 that day and 09:00 the day before, never at midnight', () => {
+    const allDay = ics.split('BEGIN:VEVENT').filter((e) => e.includes('DTSTART;VALUE=DATE'))
+    expect(allDay.length).toBeGreaterThan(0)
+    for (const e of allDay) {
+      expect(e).toContain('TRIGGER:PT9H')
+      expect(e).toContain('TRIGGER:-PT15H')
+      expect(e).not.toMatch(/TRIGGER:-PT(0|1440)M/)
+    }
   })
   it('skips suggestions and escapes special characters', () => {
     const x = buildIcs(

@@ -4,6 +4,7 @@ import { CATEGORY_META } from '../types'
 import { formatShort } from './dates'
 import { t } from '../i18n'
 import { currencyOf, expenseLabel } from './labels'
+import { openSleep } from './life'
 
 type Actions = Pick<Store, 'add' | 'update'> & {
   sleep: Store['sleep']
@@ -57,7 +58,8 @@ export function applyParsed(p: Parsed, st: Actions): string {
         })
         return t('apply.bed', { time: p.time })
       }
-      const open = [...st.sleep].reverse().find((s) => s.wakeTime === null)
+      // a "went to bed" from days ago (a forgotten "woke up") is not this night
+      const open = openSleep(st.sleep, iso)
       if (open) st.update('sleep', open.id, { wakeTime: iso, date: p.date })
       else
         st.add('sleep', {

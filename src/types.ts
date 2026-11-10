@@ -125,6 +125,10 @@ export interface Activity {
   skippedDates?: string[]
   /** Occurrences removed ("only this day") without deleting the whole series */
   excludedDates?: string[]
+  /** Last day of a repeating series (a workout plan that was stopped); none = it goes on */
+  until?: string
+  /** Set on the weekly workouts made from the active workout plan: which day of the plan this is */
+  planDay?: Weekday
   demo?: boolean
 }
 
@@ -142,7 +146,12 @@ export interface Workout {
   type: string
   durationMin: number
   exercises: WorkoutExercise[]
-  feeling: 1 | 2 | 3 | 4 | 5
+  /** Optional, asked after the workout */
+  feeling: 1 | 2 | 3 | 4 | 5 | null
+  /** The scheduled workout (an activity) these exercises belong to */
+  activityId?: string
+  /** true = exercises planned for a scheduled workout that is not done yet (not in the history) */
+  planned?: boolean
   demo?: boolean
 }
 
@@ -155,6 +164,8 @@ export interface WorkoutPlan {
   name: string
   source: 'template' | 'ai' | 'manual'
   days: WorkoutPlanDay[]
+  /** Set while the plan is in use: when each of its days is trained (same order as `days`) */
+  schedule?: { day: Weekday; start: string }[]
 }
 
 /** A saved workout the user can load into the "new workout" form again. */
@@ -282,6 +293,47 @@ export interface Settings {
   rewardName: string
   rewardEmoji: string
   onboarded: boolean
+  /** When a backup was last copied / downloaded / shared (ISO time). '' = never. */
+  lastBackupAt: string
+  /** The guided tour was finished or skipped (existing users never see it by themselves) */
+  tutorialDone: boolean
+  /** Morning routine: on/off, the wake-up goal ('' = the wake time above) and the steps ([] = the defaults) */
+  routineOn: boolean
+  routineGoal: string
+  routineSteps: RoutineStep[]
+  /** Little sounds, vibration and celebrations (all can be switched off) */
+  sound: boolean
+  vibration: boolean
+  animations: boolean
+  /** How many streak saves the user was already told about (-1 = not counted yet) */
+  streakSavesSeen: number
+  /** Gentle reminder once a week to save a backup */
+  backupReminder: boolean
+  /** The day ('yyyy-MM-dd') the weekly reminder counts from (set at first use and by "Later") */
+  backupNudgeAt: string
+}
+
+export interface RoutineStep {
+  emoji: string
+  text: string
+}
+
+/** Everything the app remembers about one calendar day (besides the lists above). */
+export interface DayRecord {
+  /** Morning routine: indexes of the steps that are ticked */
+  routine?: number[]
+  /** The daily challenge chosen for this day (so it stays the same when the data changes) */
+  challengeId?: string
+  /** "Give me another" was used this many times for the daily challenge */
+  challengeSkips?: number
+  /** The daily challenge was done */
+  challengeDone?: boolean
+  /** Ids of the awards that got a surprise (so redoing the same thing never rolls again) */
+  surprised?: string[]
+  /** The day was closed in the evening: how it went (1-5, null = not said) and a note */
+  closed?: { mood: 1 | 2 | 3 | 4 | 5 | null; note: string }
+  /** The one main thing chosen the evening before */
+  mainThing?: string
 }
 
 export interface AiUsage {
@@ -307,4 +359,5 @@ export interface AppData {
   progress: Progress
   settings: Settings
   aiUsage: AiUsage
+  days: Record<string, DayRecord>
 }

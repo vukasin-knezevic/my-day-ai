@@ -23,7 +23,14 @@ Počeo sam da je pravim kao student, za svoj dan: da faks, kolokvijumi, trening 
 
 ### Verzije
 
-Do zvanične objave sve verzije su **0.x**: **0.1** (prva cela aplikacija), **0.2** (opšta verzija, noćne popravke i pregled koda), **0.3** (popravke posle prvog stvarnog korišćenja na telefonu, nova podešavanja, iPhone). Verzija **1.0** je rezervisana za prvu zvaničnu objavu (kolege + Google Play).
+Do zvanične objave sve verzije su **0.x**: **0.1** (prva cela aplikacija), **0.2** (opšta verzija, noćne popravke i pregled koda), **0.3** (popravke posle prvog stvarnog korišćenja na telefonu, nova podešavanja, iPhone), **0.4** (sigurnost podataka, „Nazad“ i kalendar na telefonu, trening kao jedna stvar, tutorijal, jutarnja rutina, dnevni izazov i „Zatvori dan“; rađena uz Claude Code iz zadatka koji sam napisao, model: _[upisuje autor]_). Verzija **1.0** je rezervisana za prvu zvaničnu objavu (kolege + Google Play).
+
+### User testing
+
+Aplikaciju su testirala **dva testera**, na dva različita telefona. Tester testira i javlja, ne piše kod; svaka primedba je ušla u zadatak za sledeću verziju.
+
+- **Vukašin (Android)**: posle verzije 0.3 su zapisane primedbe sa pravog telefona. Zbog njih: dodir na notifikaciju otvara aplikaciju, bez duplih notifikacija i sa logotipom u statusnoj traci; dugme i gest „Nazad“ rade kroz ceo tok; izbor dana na ekranu Danas; jedno „Obrisano · Poništi“ za sva brisanja.
+- **Andrea Jovović (iPhone)**, studentkinja Fakulteta za medije i komunikacije (ime je navedeno uz njenu dozvolu): zbog nje sadržaj više ne prolazi ispod sata i baterije, „Dodaj u kalendar“ je na ekranu Faks i Danas i otvara Safari „Dodaj sve“, termini i obaveze izgledaju sačuvano, trening je jedna stvar (dan, vreme, podsetnik), „Nazad“ radi prevlačenjem od leve ivice, i napravljen je **interaktivni tutorijal**, jer joj nije bilo jasno čemu aplikacija služi.
 
 ### Problem koji rešava
 
@@ -37,7 +44,10 @@ Student ima predavanja, kolokvijume sa rokovima za prijavu, trening, zabavu i sa
 - 🤖 **AI (Claude)**: plan dana i nedelje, chat asistent, rezime nedelje, pametan unos, uvoz rasporeda kolokvijuma iz nalepljenog teksta, plan treninga. Odgovori se **validiraju `zod` šemama** pre prikaza, a ton asistenta se menja (drugarski / strog / podržavajući). Prompt i odgovori su na izabranom jeziku. Vidi [dva režima](#dva-ai-režima).
 - 🏋️ **Trening i ishrana**: serije × ponavljanja × kilaža, grafikon napretka, automatski **lični rekordi 🎉**, gotovi splitovi i **sopstveni šabloni treninga**, dnevni cilj proteina.
 - 😴💰✅ **San, novac, navike**: „Legao / Ustao", prosek sna, predlog vremena spavanja; budžet po kategoriji sa upozorenjem na 80% (valuta po izboru); navike sa nizom dana.
-- 🎁 **Motivacija**: XP, nivoi (Brucoš → Inženjer), nizovi 🔥 i **nagrada koju sam biraš** (npr. vreme za igrice, epizoda serije, izlazak) koju zarađuješ učenjem. Aplikacija je samo broji, bez zamerki.
+- ☀️ **Jutarnja rutina, dnevni izazov, „Zatvori dan“**: 3–5 malih koraka ujutru (sa notifikacijom i, na Androidu, dugmetom „Urađeno“), jedan mali izazov dnevno izabran iz tvojih podataka, i uveče 3 kratka koraka koji zatvaraju dan (pregled, raspoloženje, glavna stvar za sutra). Bez osude: propušten dan nudi kratku verziju, a niz ima „spasove“ ❄️.
+- 🧭 **Tutorijal**: vođeni obilazak po pravim ekranima (oko minut), probne stvari se brišu na kraju; ponovo u Podešavanja → „Kako radi aplikacija“.
+- 🏆 **Dostignuća**: značke, lični rekordi, prsten nedelje i iznenađenja 🎁 (najviše dva dnevno; zvuk, vibracija i animacije mogu da se isključe).
+- 🎁 **Motivacija**: XP, nivoi (Brucoš → Diplomac), nizovi 🔥 i **nagrada koju sam biraš** (npr. vreme za igrice, epizoda serije, izlazak) koju zarađuješ učenjem. Aplikacija je samo broji, bez zamerki.
 - 🔔 **Podsetnici i pregled**: notifikacije pregledača + **„Dodaj u kalendar“**, pregled nedelje i meseca sa grafikonima.
 - 💾 Izvoz/uvoz svih podataka (JSON, bez API ključa), tamna tema, prečice na tastaturi (`N`, `T`, `W`, `/`, `?`; `Enter` potvrđuje, `Esc` otkazuje).
 
@@ -65,7 +75,8 @@ Dodavanje jezika je **samo jedan novi fajl**, bez menjanja koda:
 
 1. Kopiraj `src/i18n/locales/en.ts` u `src/i18n/locales/<kod>.ts` (npr. `de.ts`).
 2. U novom fajlu prevedi tekstove (desna strana), postavi `code`, `name` (naziv jezika na tom jeziku) i `dateLocale` (iz `date-fns/locale`). Ostavi `{parametre}` na svom mestu; oblici množine su ključevi sa `.one`, `.few` i `.other`.
-3. Pokreni `npm test`: test koji pada tačno kaže koji ključ ili `{parametar}` fali. Kad prođe, jezik se sam pojavi u izboru jezika.
+3. Dodaj red sa istim `code` i `name` u `src/i18n/languageList.ts` (jezici se učitavaju tek kad su potrebni, pa izbor jezika ne sme da ih sve preuzme).
+4. Pokreni `npm test`: test koji pada tačno kaže koji ključ ili `{parametar}` fali ili da lista ne odgovara fajlovima. Kad prođe, jezik je u izboru jezika.
 
 ### Dva AI režima
 
@@ -163,7 +174,14 @@ I started building it as a student, for my own day: so that classes, exams, work
 
 ### Versions
 
-Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone). **1.0** is reserved for the first official release (colleagues + Google Play).
+Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_). **1.0** is reserved for the first official release (colleagues + Google Play).
+
+### User testing
+
+The app was tested by **two testers** on two different phones. A tester tests and reports, and writes no code; every remark went into the task file for the next version.
+
+- **Vukašin (Android)**: after version 0.3 the remarks from a real phone were written down. Because of them: a tap on a notification opens the app, with no duplicate notifications and with the logo in the status bar; the Back button and gesture work through the whole flow; a day picker on the Today screen; one shared “Deleted · Undo” for every delete.
+- **Andrea Jovović (iPhone)**, a student at the Faculty of Media and Communications (named with her permission): because of her, content no longer runs under the clock and battery, “Add to calendar” is on the Study and Today screens and opens Safari’s “Add all”, slots and obligations look saved, a workout is one thing (day, time, reminder), “Back” works by swiping from the left edge, and an **interactive tutorial** was made, because it was not clear to her what the app is for.
 
 ### The problem
 
@@ -177,6 +195,9 @@ A student juggles lectures, exams with registration deadlines, workouts, fun and
 - 🤖 **AI (Claude)**: day/week plan, chat, weekly summary, smart entry, exam schedule import from pasted text, workout plan. Every answer is **validated with `zod`** before it is shown; the assistant's tone adapts (friendly / strict / supportive). Prompts and answers use the selected language.
 - 🏋️ **Workouts & nutrition**: sets × reps × weight, progress chart, automatic **personal records**, ready-made splits and **your own workout templates**, daily protein goal.
 - 😴💰✅ **Sleep, money, habits**: bed/wake with two clicks, 7-day average, bedtime suggestion; budget per category with an 80% warning (your currency); habits with day streaks.
+- ☀️ **Morning routine, daily challenge, “Close the day”**: 3–5 small steps in the morning (with a notification and, on Android, a “Done” button), one small challenge a day chosen from your own data, and three short steps in the evening that close the day (review, mood, the main thing for tomorrow). No blame: a missed day offers a short version, and the streak has saves ❄️.
+- 🧭 **Guided tour**: a walk through the real screens (about a minute), the sample things are deleted at the end; again under Settings → “How the app works”.
+- 🏆 **Achievements**: badges, personal records, the week ring and surprises 🎁 (at most two a day; sound, vibration and animations can be switched off).
 - 🎁 **Motivation**: XP, levels, streaks 🔥 and **a reward you name yourself** (gaming time, an episode of a series, a night out…) earned by studying. The app only counts it, no judging.
 - 🔔 **Reminders + “Add to calendar”**, 📊 **week/month overview**, 💾 **JSON export/import** (without the API key), dark theme, keyboard shortcuts (`N`, `T`, `W`, `/`, `?`; `Enter` confirms, `Esc` cancels).
 
@@ -198,7 +219,8 @@ One new file, no code changes:
 
 1. Copy `src/i18n/locales/en.ts` to `src/i18n/locales/<code>.ts` (e.g. `de.ts`).
 2. Translate the texts (right-hand side), then set `code`, `name` (the language's name in that language) and `dateLocale` (from `date-fns/locale`). Keep the `{placeholders}`; plural forms are keys ending in `.one`, `.few` and `.other`.
-3. Run `npm test`: the failing test names the missing key or `{placeholder}`. Once it passes, the language shows up in the language picker by itself.
+3. Add a line with the same `code` and `name` to `src/i18n/languageList.ts` (languages are loaded only when needed, so the picker must not download them all).
+4. Run `npm test`: the failing test names the missing key or `{placeholder}`, or tells you that the list does not match the files. Once it passes, the language is in the picker.
 
 ### Two AI modes
 

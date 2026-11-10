@@ -10,6 +10,7 @@ import {
   timeToMin,
   weekStartStr,
   weekdayOf,
+  durationMin,
 } from './dates'
 import { isExam, studyHoursOf } from './exams'
 import { freeSlots, occurrencesOn, type Occurrence } from './schedule'
@@ -204,7 +205,7 @@ function dayState(occurrences: Occurrence[], window: Iv, startAt: number | null)
   let load = 0
   let existingStudy = 0
   for (const o of occ) {
-    const iv = { s: timeToMin(o.start), e: timeToMin(o.end) }
+    const iv = { s: timeToMin(o.start), e: timeToMin(o.start) + durationMin(o.start, o.end) }
     free = subtract(free, iv)
     load += Math.max(0, iv.e - iv.s)
     if (o.category === 'study' && o.type === 'activity') existingStudy += iv.e - iv.s
@@ -237,7 +238,7 @@ function shortenWorkoutsBeforeExams(plan: Plan) {
     const long = plan.fixed.filter((a) => {
       if (a.category !== 'workout') return false
       const [occ] = occurrencesOn({ activities: [a], subjects: [] }, date)
-      return occ?.status === 'planned' && timeToMin(a.end) - timeToMin(a.start) > EVE_WORKOUT_MAX
+      return occ?.status === 'planned' && durationMin(a.start, a.end) > EVE_WORKOUT_MAX
     })
     for (const a of long)
       plan.adjustments.push({
@@ -343,7 +344,7 @@ function scheduledMinutes(activities: Activity[], examId: string, from: string):
   return activities
     .filter((a) => a.assessmentId === examId && a.status !== 'skipped')
     .filter((a) => a.status === 'done' || a.date >= from)
-    .reduce((n, a) => n + timeToMin(a.end) - timeToMin(a.start), 0)
+    .reduce((n, a) => n + durationMin(a.start, a.end), 0)
 }
 
 /** Places study blocks day by day. What does not fit moves on to the next day. */

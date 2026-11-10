@@ -1,10 +1,11 @@
 // Week / month overview numbers. Pure functions.
 import type { AppData, Category, ExpenseCategory } from '../types'
-import { addDaysStr, monthOf, timeToMin, weekDates } from './dates'
+import { addDaysStr, monthOf, weekDates, durationMin } from './dates'
 import { occurrencesOn } from './schedule'
 import { avgSleep } from './life'
 import { subjectPoints } from './grades'
 import { computeStreaks } from './xp'
+import { doneWorkouts } from './workout'
 
 export type Period = 'week' | 'month'
 
@@ -30,7 +31,7 @@ export function hoursByCategory(data: AppData, dates: string[]): Record<Category
   for (const d of dates)
     for (const o of occurrencesOn(data, d)) {
       if (o.suggested || o.status === 'skipped') continue
-      out[o.category] += (timeToMin(o.end) - timeToMin(o.start)) / 60
+      out[o.category] += durationMin(o.start, o.end) / 60
     }
   for (const c of Object.keys(out) as Category[]) out[c] = Math.round(out[c] * 10) / 10
   return out
@@ -39,14 +40,34 @@ export function hoursByCategory(data: AppData, dates: string[]): Record<Category
 export interface Overview {
   dates: string[]
   hours: Record<Category, number>
-  workouts: { done: number; goal: number }
-  studyHours: { actual: number; goal: number }
+  /** done = finished, planned = still to do in the period, goal = from the settings */
+  workouts: { done: number; planned: number; goal: number }
+  studyHours: { actual: number; done: number; planned: number; goal: number }
   avgSleep: number | null
   spent: number
   spentByCategory: Record<ExpenseCategory, number>
   xp: number
   streaks: ReturnType<typeof computeStreaks>
   pointsBySubject: { name: string; earned: number; max: number }[]
+}
+
+/** Study hours finished, and workouts still waiting, in the given days (A-25: done is not planned). */
+function doneAndPlanned(data: AppData, dates: string[]) {
+  let studyDone = 0
+  let studyPlanned = 0
+  let workoutsPlanned = 0
+  for (const d of dates)
+    for (const o of occurrencesOn(data, d)) {
+      if (o.suggested || o.status === 'skipped') continue
+      const hours = durationMin(o.start, o.end) / 60
+      if (o.category === 'study') {
+        if (o.status === 'done') studyDone += hours
+        else studyPlanned += hours
+      }
+      if (o.category === 'workout' && o.status === 'planned') workoutsPlanned++
+    }
+  const round = (n: number) => Math.round(n * 10) / 10
+  return { studyDone: round(studyDone), studyPlanned: round(studyPlanned), workoutsPlanned }
 }
 
 export function overview(data: AppData, period: Period, today: string): Overview {
@@ -56,6 +77,7 @@ export function overview(data: AppData, period: Period, today: string): Overview
   const inRange = (d: string) => d >= first && d <= last
   const hours = hoursByCategory(data, dates)
   const scale = dates.length / 7
+  const dp = doneAndPlanned(data, dates)
   const filtered = data.expenses.filter((e) => inRange(e.date))
   const cat: Record<ExpenseCategory, number> = {
     hrana: 0,
@@ -70,11 +92,14 @@ export function overview(data: AppData, period: Period, today: string): Overview
     dates,
     hours,
     workouts: {
-      done: data.workouts.filter((w) => inRange(w.date)).length,
+      done: doneWorkouts(data).filter((w) => inRange(w.date)).length,
+      planned: dp.workoutsPlanned,
       goal: Math.round(data.settings.workoutsPerWeek * scale),
     },
     studyHours: {
       actual: hours.study,
+      done: dp.studyDone,
+      planned: dp.studyPlanned,
       goal: Math.round(data.settings.studyHoursPerDay * dates.length),
     },
     avgSleep: avgSleep(

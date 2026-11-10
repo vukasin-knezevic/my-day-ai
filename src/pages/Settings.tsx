@@ -1,17 +1,19 @@
 import { currentEnv, notificationSupport } from '../lib/ios'
 import { isSerbian } from '../lib/address'
 import { vocative } from '../lib/vocative'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DataCard from './DataCard'
-import { selectData, useStore } from '../store'
-import { buildIcsWithProgress, shareCalendar } from '../lib/ics'
+import { useStore } from '../store'
+import CalendarButton from '../components/CalendarButton'
 import { requestNotifications, showNotification } from '../lib/useReminders'
 import { estimateCost } from '../lib/ai/usage'
 import { Button, Card, Field, Input, PageTitle, Select } from '../components/ui'
 import NumberInput from '../components/NumberInput'
-import { LANGUAGES, getLanguage, useT } from '../i18n'
+import { LANGUAGE_LIST, getLanguage, useT } from '../i18n'
 import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
+import { routineGoal, routineSteps } from '../lib/routine'
+import { useTour } from '../lib/tour'
 
 export default function Settings() {
   const { t, lang } = useT()
@@ -21,9 +23,15 @@ export default function Settings() {
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
   const support = notificationSupport(currentEnv())
+  // R-10: an empty "how do I address you" starts with the suggested form of the name
+  useEffect(() => {
+    const s = useStore.getState().settings
+    if (isSerbian(getLanguage()) && !s.addressName.trim() && s.name.trim())
+      setSettings({ addressName: vocative(s.name) })
+  }, [setSettings])
   const [notifMsg, setNotifMsg] = useState('')
-  const [calProgress, setCalProgress] = useState<number | null>(null)
-  const [calMsg, setCalMsg] = useState('')
+  const steps = routineSteps(settings)
+  const setSteps = (list: SettingsT['routineSteps']) => setSettings({ routineSteps: list })
   const aiUsage = useStore((s) => s.aiUsage)
   // rough estimate: all tokens at the strong model price (upper bound)
   const cost = estimateCost(settings.modelStrong, aiUsage.inputTokens, aiUsage.outputTokens)
@@ -63,9 +71,9 @@ export default function Settings() {
               onChange={(e) => setSettings({ language: e.target.value })}
             >
               <option value="">
-                {t('set.langAuto')} · {LANGUAGES.find((l) => l.code === getLanguage())?.name}
+                {t('set.langAuto')} · {LANGUAGE_LIST.find((l) => l.code === getLanguage())?.name}
               </option>
-              {LANGUAGES.map((l) => (
+              {LANGUAGE_LIST.map((l) => (
                 <option key={l.code} value={l.code}>
                   {l.name}
                 </option>
@@ -95,6 +103,7 @@ export default function Settings() {
               <Field label={t('set.address')} optional>
                 <Input
                   value={settings.addressName}
+                  placeholder={vocative(settings.name)}
                   onChange={(e) => setSettings({ addressName: e.target.value })}
                 />
               </Field>
@@ -200,12 +209,115 @@ export default function Settings() {
             </div>
           </div>
         </Card>
-        <Card className="space-y-3">
-          <h2 className="font-semibold">{t('set.updates')}</h2>
-          <label className="flex items-center gap-2 text-sm">
+        <Card className="space-y-3" data-testid="routine-settings">
+          <h2 className="font-semibold">{t('set.routine.title')}</h2>
+          <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="size-5"
+              className="size-5 shrink-0"
+              checked={settings.routineOn}
+              onChange={(e) => setSettings({ routineOn: e.target.checked })}
+            />
+            {t('set.routine.on')}
+          </label>
+          {settings.routineOn && (
+            <>
+              <Field label={t('set.routine.goal')}>
+                <Input
+                  type="time"
+                  value={routineGoal(settings)}
+                  onChange={(e) => setSettings({ routineGoal: e.target.value })}
+                />
+              </Field>
+              <ul className="space-y-2">
+                {steps.map((st, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <Input
+                      aria-label={t('set.routine.emoji')}
+                      className="!w-14 text-center"
+                      maxLength={4}
+                      value={st.emoji}
+                      onChange={(e) =>
+                        setSteps(
+                          steps.map((x, j) => (j === i ? { ...x, emoji: e.target.value } : x)),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label={t('set.routine.step', { n: i + 1 })}
+                      value={st.text}
+                      onChange={(e) =>
+                        setSteps(
+                          steps.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)),
+                        )
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      disabled={steps.length <= 3}
+                      aria-label={t('set.routine.remove', { n: i + 1 })}
+                      onClick={() => setSteps(steps.filter((_, j) => j !== i))}
+                    >
+                      ✕
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="soft"
+                  disabled={steps.length >= 5}
+                  onClick={() => setSteps([...steps, { emoji: '✨', text: '' }])}
+                >
+                  {t('set.routine.add')}
+                </Button>
+                <Button variant="ghost" onClick={() => setSteps([])}>
+                  {t('set.routine.reset')}
+                </Button>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.routine.note')}</p>
+            </>
+          )}
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.effects.title')}</h2>
+          {(
+            [
+              ['sound', 'set.effects.sound'],
+              ['vibration', 'set.effects.vibration'],
+              ['animations', 'set.effects.animations'],
+            ] as const
+          ).map(([k, label]) => (
+            <label key={k} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-5 shrink-0"
+                checked={settings[k]}
+                onChange={(e) => setSettings({ [k]: e.target.checked })}
+              />
+              {t(label)}
+            </label>
+          ))}
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.effects.note')}</p>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.tour.title')}</h2>
+          <Button
+            variant="soft"
+            onClick={() => {
+              useTour.getState().stop()
+              setSettings({ tutorialDone: false })
+            }}
+          >
+            {t('set.tour.button')}
+          </Button>
+        </Card>
+        <Card className="space-y-3">
+          <h2 className="font-semibold">{t('set.updates')}</h2>
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-5 shrink-0"
               checked={settings.autoUpdate}
               onChange={(e) => setSettings({ autoUpdate: e.target.checked })}
             />
@@ -217,10 +329,10 @@ export default function Settings() {
           <h2 className="font-semibold">{t('set.reminders')}</h2>
           {support === 'ok' ? (
             <>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5"
+                  className="size-5 shrink-0"
                   checked={settings.reminders}
                   onChange={async (e) => {
                     if (e.target.checked) {
@@ -255,43 +367,7 @@ export default function Settings() {
               {t('set.notifTest')}
             </Button>
           )}
-          <Button
-            variant="soft"
-            disabled={calProgress !== null}
-            onClick={async () => {
-              setCalMsg('')
-              setCalProgress(0)
-              const text = await buildIcsWithProgress(selectData(useStore.getState()), (f) =>
-                setCalProgress(f * 0.9),
-              )
-              const result = await shareCalendar(text)
-              setCalProgress(1)
-              setCalMsg(result === 'cancelled' ? '' : t('set.calDone'))
-              setTimeout(() => setCalProgress(null), 600)
-            }}
-          >
-            {t('set.ics')}
-          </Button>
-          {calProgress !== null && (
-            <div
-              role="progressbar"
-              aria-label={t('set.ics')}
-              aria-valuenow={Math.round(calProgress * 100)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              className="h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
-            >
-              <div
-                className="h-full bg-blue-600 transition-[width] duration-200"
-                style={{ width: `${Math.round(calProgress * 100)}%` }}
-              />
-            </div>
-          )}
-          {calMsg && (
-            <p role="status" className="text-sm">
-              {calMsg}
-            </p>
-          )}
+          <CalendarButton />
         </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.ai')}</h2>

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useBackHandler } from '../lib/back'
 import type { KeyboardEvent, ReactNode } from 'react'
 
 /**
@@ -14,6 +15,7 @@ export default function KeyScope({
   className,
   focusOnMount,
   focusKey,
+  manualBack,
   ...rest
 }: {
   onEnter?: () => void
@@ -24,11 +26,16 @@ export default function KeyScope({
   focusOnMount?: boolean
   /** When this value changes, focus moves to the first field inside (e.g. on a new wizard step). */
   focusKey?: unknown
+  /** The owner decides itself what "Back" does (a form that asks before discarding changes). */
+  manualBack?: boolean
   role?: string
   'aria-label'?: string
   'aria-modal'?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  // a dialog closes on "Back" the same way it closes on Escape
+  const isDialog = rest.role === 'dialog' || rest.role === 'alertdialog'
+  useBackHandler('overlay', isDialog && !!onEscape && !manualBack, () => onEscape?.())
   useEffect(() => {
     if (focusOnMount) ref.current?.focus()
   }, [focusOnMount])

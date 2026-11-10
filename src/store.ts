@@ -1,21 +1,24 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { AppData, Settings } from './types'
-import { emptyData, normalizeData, uid, DEFAULT_SETTINGS } from './lib/defaults'
-import { idbStorage } from './lib/storage'
+import type { AppData, DayRecord, Settings } from './types'
+import { emptyData, normalizeData, uid, DEFAULT_SETTINGS, DATA_VERSION } from './lib/defaults'
+import { allowWrites, idbStorage } from './lib/storage'
 import { makeDemoData } from './lib/demo'
 import { monthOf, setTimeFormat, todayStr } from './lib/dates'
 import {
   award as awardXp,
   revokeWhere,
+  levelFor,
   rewardBalance,
   spendReward as spendTime,
   type AwardEvent,
 } from './lib/xp'
 import { useToast } from './lib/toast'
+import { SURPRISE_PER_DAY, SURPRISE_PREFIX, surpriseFor, surpriseId } from './lib/surprise'
+import { celebrate, cue, setEffectPrefs } from './lib/effects'
 import { rewardNameOf } from './lib/labels'
 import { addUsage } from './lib/ai/usage'
-import { resolveLanguage, setGender, setLanguage } from './i18n'
+import { loadLanguage, resolveLanguage, setGender, setLanguage, t } from './i18n'
 
 /** Collections where every item has an `id`. */
 export type CollectionKey =
@@ -50,10 +53,18 @@ const REWARD_IDS: Partial<Record<CollectionKey, (id: string) => (awardId: string
   assessments: (id) => (a) => a === `reg-${id}`,
 }
 
+/** A surprise belongs to the award that started it: taking that award back takes the surprise back too. */
+const withSurprise =
+  (match: (awardId: string) => boolean) =>
+  (x: string): boolean =>
+    match(x) || (x.startsWith(SURPRISE_PREFIX) && match(x.slice(SURPRISE_PREFIX.length)))
+
 type Item<K extends CollectionKey> = AppData[K][number]
 
 interface Actions {
   hydrated: boolean
+  /** The saved data could not be read: the app shows "try again" and writes nothing (see lib/storage.ts). */
+  hydrationError: boolean
   setSettings: (patch: Partial<Settings>) => void
   add: <K extends CollectionKey>(key: K, item: Omit<Item<K>, 'id'> & { id?: string }) => string
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void
@@ -61,6 +72,8 @@ interface Actions {
   /** Deletes a subject together with its exams, so the planner does not keep counting them. */
   removeSubject: (id: string) => void
   patch: (patch: Partial<AppData>) => void
+  /** Changes what is remembered about one day (the morning routine, the challenge, the evening...). */
+  setDay: (date: string, patch: Partial<DayRecord>) => void
   loadDemo: () => void
   clearDemo: () => void
   hasDemo: () => boolean
@@ -68,6 +81,8 @@ interface Actions {
   resetAll: () => void
   /** Gives XP (once per event id) and shows a toast with the result. */
   award: (e: AwardEvent) => void
+  /** Rolls the surprise of an award (see lib/surprise.ts); returns the message to show, if any. */
+  rollSurprise: (awardId: string, date: string) => string[]
   /** Takes back XP and reward minutes of one award id (exact) or of every id with the given prefix. */
   revoke: (id: string, opts?: { prefix?: boolean }) => void
   /** Records reward time I used (no judging). */
@@ -94,6 +109,7 @@ export const useStore = create<Store>()(
     (set, get) => ({
       ...emptyData(),
       hydrated: false,
+      hydrationError: false,
       setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
       add: (key, item) => {
         const id = item.id ?? uid()
@@ -114,7 +130,10 @@ export const useStore = create<Store>()(
         )
         // deleting something takes back what it paid out
         const p = get().progress
-        const next = revokeWhere(p, (x) => (REWARD_IDS[key]?.(id) ?? (() => false))(x))
+        const next = revokeWhere(
+          p,
+          withSurprise((x) => (REWARD_IDS[key]?.(id) ?? (() => false))(x)),
+        )
         if (next !== p) set({ progress: next })
       },
       removeSubject: (id) => {
@@ -127,10 +146,14 @@ export const useStore = create<Store>()(
         }))
         // the registrations of the removed assessments paid XP: take it back too
         const p = get().progress
-        const next = revokeWhere(p, (x) => gone.some((a) => x === `reg-${a}`))
+        const next = revokeWhere(
+          p,
+          withSurprise((x) => gone.some((a) => x === `reg-${a}`)),
+        )
         if (next !== p) set({ progress: next })
       },
       patch: (p) => set(p as Partial<Store>),
+      setDay: (date, p) => set((s) => ({ days: { ...s.days, [date]: { ...s.days[date], ...p } } })),
       loadDemo: () => {
         if (get().hasDemo()) return
         const demo = makeDemoData(todayStr())
@@ -165,7 +188,9 @@ export const useStore = create<Store>()(
           const goneAssessments = s.assessments.filter((a) => goneSubjects.has(a.subjectId))
           const progress = revokeWhere(
             s.progress,
-            (id) => gone.some((m) => m(id)) || goneAssessments.some((a) => id === `reg-${a.id}`),
+            withSurprise(
+              (id) => gone.some((m) => m(id)) || goneAssessments.some((a) => id === `reg-${a.id}`),
+            ),
           )
           if (progress !== s.progress) next.progress = progress
           return next
@@ -184,12 +209,49 @@ export const useStore = create<Store>()(
             emoji: settings.rewardEmoji,
           },
         )
-        if (r.progress !== get().progress) set({ progress: r.progress })
-        useToast.getState().push(r.messages)
+        const changed = r.progress !== get().progress
+        const levelUp = changed && levelFor(r.progress.xp).index > levelFor(get().progress.xp).index
+        if (changed) set({ progress: r.progress })
+        const messages = changed ? [...r.messages, ...get().rollSurprise(e.id, e.date)] : r.messages
+        useToast.getState().push(messages)
+        if (changed) {
+          if (levelUp) celebrate('level')
+          else cue('tick')
+        }
+      },
+      rollSurprise: (awardId, date) => {
+        const sur = surpriseFor(awardId)
+        const seen = get().days[date]?.surprised ?? []
+        if (!sur) return []
+        // At most two a day. A thing that already had its roll (done, undone, done again) gets the
+        // same surprise back, never a new try.
+        const again = seen.includes(awardId)
+        if (!again && seen.length >= SURPRISE_PER_DAY) return []
+        if (!again) get().setDay(date, { surprised: [...seen, awardId] })
+        const at = new Date().toISOString()
+        const base = { id: surpriseId(awardId), date, category: 'habits' as const, at }
+        const badge = sur.kind === 'badge' ? t(`badge.s${sur.amount}` as 'badge.s0') : ''
+        const ev =
+          sur.kind === 'xp'
+            ? { ...base, reason: t('surprise.label'), xp: sur.amount }
+            : sur.kind === 'reward'
+              ? { ...base, reason: t('surprise.label'), xp: 0, rewardMin: sur.amount }
+              : { ...base, reason: badge, xp: 1 }
+        const r = awardXp(get().progress, ev)
+        if (r.progress === get().progress) return []
+        set({ progress: r.progress })
+        cue('surprise')
+        if (sur.kind === 'xp') return [t('surprise.xp', { n: sur.amount })]
+        if (sur.kind === 'reward')
+          return [t('surprise.reward', { n: sur.amount, name: rewardNameOf(get().settings) })]
+        return [t('surprise.badge', { name: badge })]
       },
       revoke: (id, opts) => {
         const p = get().progress
-        const next = revokeWhere(p, (x) => (opts?.prefix ? x.startsWith(id) : x === id))
+        const next = revokeWhere(
+          p,
+          withSurprise((x) => (opts?.prefix ? x.startsWith(id) : x === id)),
+        )
         if (next !== p) set({ progress: next })
       },
       spendReward: (min, game = rewardNameOf(get().settings)) => {
@@ -217,29 +279,69 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'my-day-ai',
-      version: 1,
-      storage: createJSONStorage(() => idbStorage),
+      // the same number as the data format (lib/defaults.ts). The real conversion of older data is
+      // `normalizeData` (see `merge`), so the step from one version to the next changes nothing by itself.
+      version: DATA_VERSION,
+      migrate: (persisted) => persisted as Store,
+      // the language of the saved data is loaded before the data is read into the app (old data may need
+      // its texts while it is being migrated)
+      storage: createJSONStorage(() => ({
+        ...idbStorage,
+        getItem: async (name) => {
+          const raw = await idbStorage.getItem(name)
+          await preloadSavedLanguage(raw)
+          return raw
+        },
+      })),
       partialize: (s) => selectData(s as Store) as unknown as Store,
       merge: (persisted, current) => ({
         ...current,
         ...normalizeData(persisted as Partial<AppData>),
       }),
-      onRehydrateStorage: () => () => {
-        useStore.setState({ hydrated: true })
+      onRehydrateStorage: () => (_state, error) => {
+        if (error) {
+          console.error('Saved data could not be read', error)
+          useStore.setState({ hydrationError: true })
+          return
+        }
+        allowWrites()
+        useStore.setState({ hydrated: true, hydrationError: false })
       },
     },
   ),
 )
 
 // Keep the UI language in sync with the saved setting ('' = automatic, from the browser).
+/** Loads the language written in a saved copy of the data (the text is the JSON that persist saved). */
+async function preloadSavedLanguage(raw: string | null | undefined) {
+  try {
+    const saved = (
+      JSON.parse(raw ?? 'null') as { state?: { settings?: { language?: unknown } } } | null
+    )?.state?.settings?.language
+    await loadLanguage(resolveLanguage(typeof saved === 'string' ? saved : ''))
+  } catch {
+    /* damaged data is dealt with later; English is there */
+  }
+}
+
 const syncLanguage = (s: Pick<AppData, 'settings'>) => {
-  setLanguage(resolveLanguage(s.settings.language))
+  const code = resolveLanguage(s.settings.language)
+  void loadLanguage(code).then(() => setLanguage(code))
   setGender(s.settings.gender === 'f' ? 'f' : 'm')
 }
 syncLanguage(useStore.getState())
 useStore.subscribe(syncLanguage)
 
 // Times are shown as 24h or 12h, as set in the settings.
+const syncEffects = (s: Pick<AppData, 'settings'>) =>
+  setEffectPrefs({
+    sound: s.settings.sound,
+    vibration: s.settings.vibration,
+    animations: s.settings.animations,
+  })
+syncEffects(useStore.getState())
+useStore.subscribe(syncEffects)
+
 const syncTimeFormat = (s: Pick<AppData, 'settings'>) => setTimeFormat(s.settings.timeFormat)
 syncTimeFormat(useStore.getState())
 useStore.subscribe(syncTimeFormat)

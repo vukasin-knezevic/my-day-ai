@@ -20,6 +20,11 @@ export default defineConfig({
     VitePWA({
       // a new version is downloaded in the background, the app shows "New update" and restarts when the user agrees
       registerType: 'prompt',
+      // our own service worker (src/sw.ts): the same offline cache, plus what a generated one cannot
+      // do: a tap on a notification opens the app, and buttons inside a notification
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       manifest: {
         name: 'My Day AI',
         short_name: 'My Day',
@@ -28,16 +33,42 @@ export default defineConfig({
         theme_color: '#020617',
         background_color: '#020617',
         display: 'standalone',
+        // a stable identity of the installed app, and the part of the site it covers
+        id: base,
+        scope: base,
         start_url: base,
         lang: 'en',
+        categories: ['education', 'productivity', 'lifestyle'],
+        shortcuts: [
+          { name: 'Today', url: base, icons: [{ src: 'icon-192.png', sizes: '192x192' }] },
+          {
+            name: 'University',
+            url: `${base}#/faks`,
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+          },
+          {
+            name: 'Workout',
+            url: `${base}#/trening`,
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+          },
+        ],
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg}'] },
+      injectManifest: {
+        // the icons are needed offline too (notifications, the install screen); the big iPhone start
+        // screens are not
+        globPatterns: ['**/*.{js,css,html,svg}', '*.png'],
+      },
     }),
   ],
   test: {

@@ -1,15 +1,19 @@
 // Browser notifications logic (pure part). The browser can only show them while the app is open
 // or recently used; for reliable phone reminders use the .ics export (see lib/ics.ts).
 import type { AppData } from '../types'
-import { addDaysStr, daysUntil, timeToMin, todayStr } from './dates'
-import { isExam } from './exams'
+import { addDaysStr, daysUntil, formatTimeOfDay, timeToMin, todayStr } from './dates'
+import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
+import { addressName } from './address'
+import { routineGoal, routineSteps, tickedOn } from './routine'
 import { t } from '../i18n'
 
 export interface Reminder {
   id: string
   title: string
   body: string
+  /** Buttons inside the notification (Android) */
+  actions?: { action: string; title: string }[]
 }
 
 export const LEAD = { event: 15, bed: 30 }
@@ -27,19 +31,22 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
       out.push({
         id: `ev-${o.key}`,
         title: o.type === 'class' ? t('rem.class') : t('rem.soon'),
-        body: t('rem.body', { title: o.title, start: o.start, n: until }),
+        body: t('rem.body', { title: o.title, start: formatTimeOfDay(o.start), n: until }),
       })
     }
   }
 
   for (const a of data.assessments) {
-    if (a.registration === 'nije-prijavljen' && a.registrationDeadline) {
-      const d = daysUntil(a.registrationDeadline, today)
+    const due = registrationDue(a)
+    if (due) {
+      const d = daysUntil(due.date, today)
       if (d >= 0 && d <= 1 && nowMin >= 9 * 60)
         out.push({
           id: `reg-${a.id}-${today}`,
           title: t('rem.reg.title'),
-          body: t(d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', { title: a.title }),
+          body: t(due.assumed ? 'rem.reg.check' : d === 0 ? 'rem.reg.today' : 'rem.reg.tomorrow', {
+            title: a.title,
+          }),
         })
     }
     if (!isExam(a) && !a.done) {
@@ -53,6 +60,23 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     }
   }
 
+  // the morning routine, at the wake-up goal (with a "Done" button where the system shows buttons)
+  const set = data.settings
+  if (set.routineOn && set.onboarded) {
+    const goal = timeToMin(routineGoal(set))
+    const left = routineSteps(set).length - tickedOn(data, today).length
+    if (nowMin >= goal && nowMin <= goal + 30 && left > 0) {
+      const name = addressName(set)
+      const main = data.days[today]?.mainThing
+      out.push({
+        id: `routine-${today}`,
+        title: name ? t('rem.routine.title', { name }) : t('rem.routine.titleNoName'),
+        body: `${t('rem.routine.body', { n: left })}${main ? ` · ${t('rem.routine.main', { text: main })}` : ''}`,
+        actions: [{ action: 'done', title: t('rem.routine.done') }],
+      })
+    }
+  }
+
   // bedtime (settings.bedTime can be after midnight, e.g. 01:00 -> also checked for "tomorrow" 24:00+)
   const bed = timeToMin(data.settings.bedTime)
   const bedAbs = bed < 12 * 60 ? bed + 1440 : bed
@@ -63,7 +87,7 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     out.push({
       id: `bed-${key}`,
       title: t('rem.bed.title'),
-      body: t('rem.bed.body', { time: data.settings.bedTime }),
+      body: t('rem.bed.body', { time: formatTimeOfDay(data.settings.bedTime) }),
     })
   }
 

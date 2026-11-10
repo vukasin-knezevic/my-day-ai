@@ -1,22 +1,46 @@
 import { get, set, del } from 'idb-keyval'
 import type { StateStorage } from 'zustand/middleware'
 
-/** IndexedDB storage for zustand persist. Every call is in try/catch so the app still works without it. */
+let writable = false
+let pending: Promise<void> = Promise.resolve()
+
+/**
+ * Saving is switched on only after the saved data was read successfully. Otherwise a failed read
+ * (IndexedDB sometimes drops the connection on iOS) would look like "no data" and overwrite the real data.
+ */
+export function allowWrites(on = true) {
+  writable = on
+}
+
+/** Resolves when the write that is on its way (if any) has reached the database. */
+/**
+ * Asks the browser not to delete the data by itself when the device runs low on space.
+ * Browsers answer without a prompt (installed apps and often-used sites get a yes).
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.storage?.persist) return false
+    if (await navigator.storage.persisted?.()) return true
+    return await navigator.storage.persist()
+  } catch {
+    return false
+  }
+}
+
+export function flushStorage(): Promise<void> {
+  return pending
+}
+
+/** IndexedDB storage for zustand persist. A failed READ is reported (thrown); failed writes only warn. */
 export const idbStorage: StateStorage = {
-  getItem: async (name) => {
-    try {
-      return (await get<string>(name)) ?? null
-    } catch (e) {
-      console.warn('IndexedDB read failed', e)
-      return null
-    }
-  },
-  setItem: async (name, value) => {
-    try {
-      await set(name, value)
-    } catch (e) {
-      console.warn('IndexedDB write failed', e)
-    }
+  getItem: async (name) => (await get<string>(name)) ?? null,
+  setItem: (name, value) => {
+    if (!writable) return Promise.resolve()
+    const write = pending
+      .then(() => set(name, value))
+      .catch((e: unknown) => console.warn('IndexedDB write failed', e))
+    pending = write
+    return write
   },
   removeItem: async (name) => {
     try {

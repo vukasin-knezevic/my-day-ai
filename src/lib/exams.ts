@@ -41,6 +41,19 @@ export function monthRegistrations(assessments: Assessment[], month: string) {
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
+/** With no deadline entered, registration is assumed to close this many days before the exam. */
+export const ASSUMED_REG_DAYS = 7
+
+/**
+ * The registration deadline of an exam that is not registered yet. If none was entered, it is assumed
+ * (7 days before the exam) and `assumed` says so, so the app can tell the student to check it.
+ */
+export function registrationDue(a: Assessment): { date: string; assumed: boolean } | null {
+  if (!isExam(a) || a.registration !== 'nije-prijavljen') return null
+  if (a.registrationDeadline) return { date: a.registrationDeadline, assumed: false }
+  return { date: addDaysStr(a.date, -ASSUMED_REG_DAYS), assumed: true }
+}
+
 export function unregisteredIn(assessments: Assessment[], month: string): Assessment[] {
   return monthRegistrations(assessments, month).filter((a) => a.registration === 'nije-prijavljen')
 }

@@ -1,7 +1,13 @@
 import IosInstallHint from './IosInstallHint'
 import UpdateBanner from './UpdateBanner'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import BackupNudge from './BackupNudge'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useBackHandler } from '../lib/back'
+import { useAppBack } from './BackController'
 import { useToast } from '../lib/toast'
+import UndoBar from './UndoBar'
+import { lazy, Suspense } from 'react'
+const Tutorial = lazy(() => import('./Tutorial'))
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
@@ -15,6 +21,7 @@ const MAIN: { to: string; label: BaseKey; icon: string }[] = [
 const EXTRA: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/planer', label: 'nav.planner', icon: '🧠' },
   { to: '/pregled', label: 'nav.overview', icon: '📊' },
+  { to: '/dostignuca', label: 'nav.achievements', icon: '🏆' },
   { to: '/ai', label: 'nav.ai', icon: '🤖' },
   { to: '/podesavanja', label: 'nav.settings', icon: '⚙️' },
 ]
@@ -46,9 +53,16 @@ function Toasts() {
 export default function Layout() {
   const { t } = useT()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const back = useAppBack()
+  // Planner, Overview, AI and Settings are opened from "More" on a phone: Back returns to that list
+  const subScreen = EXTRA.some((e) => e.to === pathname)
+  const phone = () => typeof matchMedia !== 'function' || !matchMedia('(min-width: 768px)').matches
+  useBackHandler('detail', subScreen, () => navigate(phone() ? '/vise' : '/', { replace: true }))
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
+      <UndoBar />
       <aside className="hidden w-56 shrink-0 border-r border-slate-200 p-3 md:block dark:border-slate-800">
         <div className="mb-4 px-3 text-lg font-bold">🌅 My Day AI</div>
         <nav aria-label={t('nav.main')} className="space-y-1">
@@ -59,10 +73,28 @@ export default function Layout() {
           ))}
         </nav>
       </aside>
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8">
+      <main
+        className={`mx-auto w-full max-w-3xl flex-1 ${pathname === '/' ? 'lg:max-w-6xl' : ''} p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-8 md:pb-8`}
+      >
         <IosInstallHint />
         <UpdateBanner />
-        <div key={pathname} className="anim-page">
+        <Suspense fallback={null}>
+          <Tutorial />
+        </Suspense>
+        <BackupNudge />
+        {subScreen && (
+          <button
+            type="button"
+            onClick={() => back()}
+            className="-ml-2 mb-1 flex min-h-11 items-center gap-1 rounded-xl px-2 text-sm font-medium text-blue-700 md:hidden dark:text-blue-300"
+          >
+            <span aria-hidden className="text-lg">
+              ←
+            </span>
+            {t('back.arrow')}
+          </button>
+        )}
+        <div key={pathname} className="anim-page" data-tour-page>
           <Outlet />
         </div>
       </main>
