@@ -646,6 +646,17 @@ const messages = fromEnglish({
   'today.onlyThisDay': 'Ce jour seulement',
   'today.emptyDay': 'Rien de prévu ce jour-là.',
   'undo.deleted': 'Supprimé',
+  'common.save': 'Enregistrer',
+  'life.sleepLog': 'Nuits enregistrées',
+  'life.sleepOpen': 'réveil non saisi',
+  'life.sleepEdit': 'Modifier la nuit ({date})',
+  'life.sleepDelete': 'Supprimer la nuit ({date})',
+  'life.sleepEditTitle': 'Modifier la nuit',
+  'life.bedDate': 'Coucher : date',
+  'life.bedTimeField': 'Coucher à',
+  'life.wakeDate': 'Lever : date',
+  'life.wakeTimeField': 'Lever à',
+  'life.sleepInvalid': 'Le réveil doit être après le coucher, au plus 24 h plus tard.',
 })
 
 const locale: LocaleModule = {

@@ -646,6 +646,17 @@ const messages = fromEnglish({
   'today.onlyThisDay': 'Только этот день',
   'today.emptyDay': 'На этот день ничего не запланировано.',
   'undo.deleted': 'Удалено',
+  'common.save': 'Сохранить',
+  'life.sleepLog': 'Записи сна',
+  'life.sleepOpen': 'пробуждение не записано',
+  'life.sleepEdit': 'Изменить сон ({date})',
+  'life.sleepDelete': 'Удалить сон ({date})',
+  'life.sleepEditTitle': 'Изменение сна',
+  'life.bedDate': 'Лёг: дата',
+  'life.bedTimeField': 'Лёг в',
+  'life.wakeDate': 'Встал: дата',
+  'life.wakeTimeField': 'Встал в',
+  'life.sleepInvalid': 'Пробуждение должно быть после отхода ко сну, не позже чем через 24 ч.',
 })
 
 const locale: LocaleModule = {

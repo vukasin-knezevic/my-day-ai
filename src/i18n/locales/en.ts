@@ -737,6 +737,17 @@ const messages: Record<MessageKey, string> = {
   'today.onlyThisDay': 'This day only',
   'today.emptyDay': 'Nothing planned for this day.',
   'undo.deleted': 'Deleted',
+  'common.save': 'Save',
+  'life.sleepLog': 'Sleep entries',
+  'life.sleepOpen': 'no wake-up entered',
+  'life.sleepEdit': 'Edit sleep ({date})',
+  'life.sleepDelete': 'Delete sleep ({date})',
+  'life.sleepEditTitle': 'Edit sleep',
+  'life.bedDate': 'Went to bed: date',
+  'life.bedTimeField': 'Went to bed at',
+  'life.wakeDate': 'Got up: date',
+  'life.wakeTimeField': 'Got up at',
+  'life.sleepInvalid': 'The wake-up must be after the bedtime, at most 24 h later.',
 }
 
 const locale: LocaleModule = {

@@ -52,3 +52,26 @@ describe('quick entry saved into the store', () => {
     expect([...activities, ...expenses, ...sleep]).toHaveLength(0)
   })
 })
+
+describe('A-12: sleep typed the next morning, and a forgotten "woke up"', () => {
+  beforeEach(() => useStore.setState({ ...emptyData() }))
+  const apply = (text: string, now: Date) => applyParsed(parseQuick(text, now), useStore.getState())
+
+  it('"legao 23:30" then "ustao 8", both typed at 09:00, is 8.5 h of sleep', () => {
+    const morning = new Date(2026, 10, 7, 9, 0)
+    apply('legao 23:30', morning)
+    apply('ustao 8', morning)
+    const [night] = useStore.getState().sleep
+    expect(useStore.getState().sleep).toHaveLength(1)
+    expect(night.date).toBe('2026-11-07')
+    expect(sleepHours(night)).toBe(8.5)
+  })
+
+  it("a bedtime from three days ago does not swallow today's wake-up", () => {
+    apply('legao 23:30', new Date(2026, 10, 3, 23, 40))
+    apply('ustao 8', new Date(2026, 10, 7, 8, 5))
+    const logs = useStore.getState().sleep
+    expect(logs).toHaveLength(2)
+    expect(logs[0].wakeTime).toBeNull()
+  })
+})

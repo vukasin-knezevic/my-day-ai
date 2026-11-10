@@ -644,6 +644,18 @@ const messages = fromEnglish({
   'today.onlyThisDay': 'Solo este día',
   'today.emptyDay': 'No hay nada previsto para este día.',
   'undo.deleted': 'Eliminado',
+  'common.save': 'Guardar',
+  'life.sleepLog': 'Registros de sueño',
+  'life.sleepOpen': 'sin hora de despertar',
+  'life.sleepEdit': 'Editar sueño ({date})',
+  'life.sleepDelete': 'Eliminar sueño ({date})',
+  'life.sleepEditTitle': 'Editar sueño',
+  'life.bedDate': 'Me acosté: fecha',
+  'life.bedTimeField': 'Me acosté a las',
+  'life.wakeDate': 'Me levanté: fecha',
+  'life.wakeTimeField': 'Me levanté a las',
+  'life.sleepInvalid':
+    'La hora de despertar debe ser posterior a la de acostarse, como máximo 24 h después.',
 })
 
 const locale: LocaleModule = {

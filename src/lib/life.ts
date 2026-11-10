@@ -11,6 +11,30 @@ export function sleepHours(log: SleepLog): number | null {
   return h > 0 && h < 24 ? Math.round(h * 10) / 10 : null
 }
 
+/** How long after going to bed a wake-up still belongs to that night. */
+const NIGHT_MAX_HOURS = 24
+
+/**
+ * The night that is still "open" at the given moment: the latest bedtime without a wake-up, no more
+ * than a day old. An older one is a forgotten "woke up": it must not swallow tonight's sleep.
+ */
+export function openSleep(logs: SleepLog[], atIso: string): SleepLog | undefined {
+  const at = new Date(atIso).getTime()
+  return logs
+    .filter((l) => {
+      if (l.wakeTime !== null) return false
+      const h = (at - new Date(l.bedtime).getTime()) / 3600000
+      return h >= 0 && h < NIGHT_MAX_HOURS
+    })
+    .sort((a, b) => b.bedtime.localeCompare(a.bedtime))[0]
+}
+
+/** Can these two moments be one night of sleep? */
+export function validNight(bedIso: string, wakeIso: string): boolean {
+  const h = (new Date(wakeIso).getTime() - new Date(bedIso).getTime()) / 3600000
+  return h > 0 && h < NIGHT_MAX_HOURS
+}
+
 /** Average sleep over the last `days` days (by wake-up date), or null if no data. */
 export function avgSleep(logs: SleepLog[], today: string, days = 7): number | null {
   const from = addDaysStr(today, -(days - 1))

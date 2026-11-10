@@ -729,6 +729,17 @@ const messages = {
   'today.onlyThisDay': 'Samo ovaj dan',
   'today.emptyDay': 'Nema obaveza za ovaj dan.',
   'undo.deleted': 'Obrisano',
+  'common.save': 'Sačuvaj',
+  'life.sleepLog': 'Unosi sna',
+  'life.sleepOpen': 'buđenje nije upisano',
+  'life.sleepEdit': 'Izmeni san ({date})',
+  'life.sleepDelete': 'Obriši san ({date})',
+  'life.sleepEditTitle': 'Izmena sna',
+  'life.bedDate': 'Legao: datum',
+  'life.bedTimeField': 'Legao u',
+  'life.wakeDate': 'Ustao: datum',
+  'life.wakeTimeField': 'Ustao u',
+  'life.sleepInvalid': 'Buđenje mora da bude posle leganja, najviše 24 h kasnije.',
 }
 
 export type MessageKey = keyof typeof messages
@@ -742,6 +753,10 @@ const feminine: Partial<Record<MessageKey, string>> = {
   'study.askRegistered': 'Da li si prijavila?',
   'life.bed': '😴 Legla',
   'life.wake': '🌅 Ustala',
+  'life.bedDate': 'Legla: datum',
+  'life.bedTimeField': 'Legla u',
+  'life.wakeDate': 'Ustala: datum',
+  'life.wakeTimeField': 'Ustala u',
 }
 
 const locale: LocaleModule = {

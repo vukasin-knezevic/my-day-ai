@@ -5,9 +5,17 @@ import { useStore, selectData } from '../store'
 import { tooltipProps } from '../components/chart'
 import { Badge, Button, Card, Field, Input, PageTitle, Select, Tabs } from '../components/ui'
 import NumberInput from '../components/NumberInput'
+import SleepEditor from '../components/SleepEditor'
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type Habit, type SleepLog } from '../types'
 import { XP } from '../lib/xp'
-import { addDaysStr, formatHours, formatShort, monthOf, todayStr } from '../lib/dates'
+import {
+  addDaysStr,
+  formatHours,
+  formatShort,
+  formatTimeOfDay,
+  monthOf,
+  todayStr,
+} from '../lib/dates'
 import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
 import { currencyOf, expenseLabel } from '../lib/labels'
@@ -20,6 +28,7 @@ import {
   fmtMoney,
   habitDone,
   habitStreak,
+  openSleep,
   sleepHours,
   spentByCategory,
   suggestBedtime,
@@ -53,7 +62,10 @@ function Sleep() {
   const today = todayStr()
   const now = new Date()
   const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-  const open = [...data.sleep].reverse().find((s) => s.wakeTime === null)
+  // the night in progress; a "went to bed" from days ago (a forgotten "woke up") does not count
+  const open = openSleep(data.sleep, `${today}T${hhmm}:00`)
+  const [editing, setEditing] = useState<SleepLog | null>(null)
+  const recent = [...data.sleep].sort((a, b) => b.bedtime.localeCompare(a.bedtime)).slice(0, 7)
   const avg = avgSleep(data.sleep, today)
   const tomorrow = occurrencesOn(data, addDaysStr(today, 1)).filter((o) => !o.suggested)
   const first = tomorrow[0]?.start ?? data.settings.wakeTime
@@ -91,7 +103,7 @@ function Sleep() {
         </div>
         {open && (
           <p className="mt-2 text-sm">
-            {t('life.sleepingSince', { time: open.bedtime.slice(11, 16) })}
+            {t('life.sleepingSince', { time: formatTimeOfDay(open.bedtime.slice(11, 16)) })}
           </p>
         )}
         <p className="mt-2 text-sm">
@@ -107,6 +119,45 @@ function Sleep() {
         </p>
       </Card>
       {last && <Quality log={last} />}
+      {recent.length > 0 && (
+        <Card>
+          <h2 className="mb-2 font-semibold">{t('life.sleepLog')}</h2>
+          <ul className="space-y-1 text-sm">
+            {recent.map((s) => {
+              const h = sleepHours(s)
+              const date = formatShort(s.date)
+              return (
+                <li key={s.id} className="flex items-center gap-2">
+                  <span className="w-20 shrink-0 text-slate-600 dark:text-slate-400">{date}</span>
+                  <span className="min-w-0 flex-1 tabular-nums">
+                    {formatTimeOfDay(s.bedtime.slice(11, 16))} →{' '}
+                    {s.wakeTime ? formatTimeOfDay(s.wakeTime.slice(11, 16)) : '…'}
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {' · '}
+                      {s.wakeTime ? (h === null ? '—' : formatHours(h)) : t('life.sleepOpen')}
+                    </span>
+                  </span>
+                  <Button
+                    variant="ghost"
+                    aria-label={t('life.sleepEdit', { date })}
+                    onClick={() => setEditing(s)}
+                  >
+                    ✎
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    aria-label={t('life.sleepDelete', { date })}
+                    onClick={() => deleteWithUndo(() => store.remove('sleep', s.id))}
+                  >
+                    ✕
+                  </Button>
+                </li>
+              )
+            })}
+          </ul>
+        </Card>
+      )}
+      {editing && <SleepEditor key={editing.id} log={editing} onClose={() => setEditing(null)} />}
       <Card>
         <h2 className="mb-2 font-semibold">{t('life.chart7')}</h2>
         <div style={{ width: '100%', height: 180 }}>
