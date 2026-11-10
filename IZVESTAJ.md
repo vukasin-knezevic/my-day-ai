@@ -2,6 +2,14 @@
 
 Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07, verzija **0.4** 2026-11-10 (faze A–G; faza H nije urađena). Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Verzija 0.4.1 (2026-11-10): štiklira se samo kvadratić, glatko paljenje
+
+- Primedba posle testa 0.4 na telefonu: u jutarnjoj rutini / „Spasi dan“ ceo red je reagovao na dodir, pa se korak štiklirao slučajno pri skrolovanju.
+- Sada štiklira samo kvadratić (zona 44 px oko njega), tekst ne. Isto za „Urađeno danas“ kod navika i „Prijavljen/Predato“ na Faksu. Prekidači u Podešavanjima ostaju kao pre.
+- Test: dodir na tekst koraka ništa ne menja, dodir na kvadratić štiklira.
+- **Paljenje aplikacije:** više se ne vidi „Učitavanje…“ ni ekran Danas na tren pre uvodnog ekrana. Dok se aplikacija pokreće, vidi se isti tamni ekran i sunce kao na početnom ekranu telefona (i u `index.html`, pre nego što se JavaScript učita). Uvodni ekran je od prvog trenutka neprovidan.
+- **Življa uvodna animacija (~1,9 s):** sunce poskoči, zraci se rašire i zarotiraju uz sjaj, pozdrav uklizi, niz dana „iskoči“, pa se ekran otvori u aplikaciju (blago uvećanje i nestajanje). Uz `prefers-reduced-motion` bez animacije.
+
 ## Update 0.4
 
 Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4` (faze A–G, verzija 0.4.0). **Faza H (Android, sat, koraci) nije urađena**: čeka ručne korake iz `AUDIT_0.4.md`, deo 5.2 (vidi odeljak „Faza H“ ispod).

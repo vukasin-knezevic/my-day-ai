@@ -44,13 +44,15 @@ export default function MorningRoutine({ now, today }: { now: Date; today: strin
         {shown.map(({ i, step }) => {
           const on = view.done.includes(i)
           return (
-            <li key={i}>
+            <li key={i} className="flex min-h-11 items-center gap-1 text-sm">
+              {/* Only the box toggles, so scrolling over the text never ticks a step by accident. */}
               <button
                 type="button"
                 role="checkbox"
                 aria-checked={on}
+                aria-labelledby={`routine-step-${i}`}
                 onClick={() => toggleRoutineStep(i, today, new Date())}
-                className="flex min-h-11 w-full items-center gap-3 rounded-xl px-2 text-left text-sm hover:bg-amber-100 dark:hover:bg-amber-900"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900"
               >
                 <span
                   aria-hidden
@@ -62,10 +64,13 @@ export default function MorningRoutine({ now, today }: { now: Date; today: strin
                 >
                   {on ? '✓' : ''}
                 </span>
-                <span className={`user-text ${on ? 'line-through opacity-60' : ''}`}>
-                  {step.emoji} {step.text}
-                </span>
               </button>
+              <span
+                id={`routine-step-${i}`}
+                className={`user-text ${on ? 'line-through opacity-60' : ''}`}
+              >
+                {step.emoji} {step.text}
+              </span>
             </li>
           )
         })}

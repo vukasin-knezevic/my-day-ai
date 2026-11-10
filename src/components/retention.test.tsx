@@ -52,6 +52,15 @@ describe('morning routine card', () => {
     expect(st().progress.xp).toBe(0)
   })
 
+  test('only the box ticks a step: a tap on the text (e.g. while scrolling) does nothing', async () => {
+    const user = userEvent.setup()
+    render(<MorningRoutine now={at(8, 30)} today={TODAY} />)
+    await user.click(screen.getByText(/Namesti krevet/))
+    expect(st().days[TODAY]?.routine ?? []).toEqual([])
+    await user.click(screen.getByRole('checkbox', { name: /Namesti krevet/ }))
+    expect(st().days[TODAY]?.routine).toEqual([0])
+  })
+
   test('late in the day it offers "Save the day" with two steps, kindly', () => {
     render(<MorningRoutine now={at(14)} today={TODAY} />)
     expect(screen.getByText(/Spasi dan/)).toBeInTheDocument()

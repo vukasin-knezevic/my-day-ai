@@ -7,6 +7,7 @@ import { activeDays, mainStreak } from '../lib/streak'
 import { reducedMotion } from '../lib/effects'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
+import SunLogo from './SunLogo'
 
 /** Once per opening of the app: logo, a greeting and the streak, about a second. A tap skips it. */
 let shownThisOpening = false
@@ -34,7 +35,7 @@ export default function Splash({ force = false }: { force?: boolean }) {
 
   useEffect(() => {
     if (!visible) return
-    const id = setTimeout(() => setVisible(false), reducedMotion() ? 500 : 1100)
+    const id = setTimeout(() => setVisible(false), reducedMotion() ? 500 : 1900)
     return () => clearTimeout(id)
   }, [visible])
 
@@ -55,22 +56,18 @@ export default function Splash({ force = false }: { force?: boolean }) {
       role="presentation"
       data-testid="splash"
       onClick={() => setVisible(false)}
-      className={`fixed inset-0 z-[80] flex flex-col items-center justify-center gap-3 bg-slate-950 text-white ${
-        reducedMotion() ? 'anim-fade' : 'anim-splash'
+      className={`fixed inset-0 z-[80] flex flex-col items-center justify-center gap-3 bg-[#020617] text-white ${
+        reducedMotion() ? '' : 'anim-splash'
       }`}
     >
-      <img
-        src={`${import.meta.env.BASE_URL}icon-192.png`}
-        alt=""
-        width={96}
-        height={96}
-        className="rounded-3xl"
-      />
-      <p className="text-2xl font-bold">
+      <SunLogo size={112} animated={!reducedMotion()} />
+      <p className={`text-2xl font-bold ${reducedMotion() ? '' : 'splash-text'}`}>
         {name ? t('splash.hello', { name }) : t('splash.helloNoName')}
       </p>
       {streak.current > 0 && (
-        <p className="text-lg">🔥 {t('streak.days', { n: streak.current })}</p>
+        <p className={`text-lg ${reducedMotion() ? '' : 'splash-streak'}`}>
+          🔥 {t('streak.days', { n: streak.current })}
+        </p>
       )}
     </div>
   )

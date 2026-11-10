@@ -444,15 +444,19 @@ function Habits() {
               </Button>
             </div>
             {h.goal === 1 && !h.unit ? (
-              <label className="mt-2 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="size-5 shrink-0"
-                  checked={v >= 1}
-                  onChange={(e) => setEntry(h, e.target.checked ? 1 : 0)}
-                />
-                {t('life.doneToday')}
-              </label>
+              <div className="mt-2 flex items-center text-sm">
+                {/* Only the box toggles (a 44 px zone around it), not the text. */}
+                <label className="-ml-3 flex size-11 shrink-0 items-center justify-center">
+                  <input
+                    type="checkbox"
+                    className="size-5"
+                    aria-label={t('life.doneToday')}
+                    checked={v >= 1}
+                    onChange={(e) => setEntry(h, e.target.checked ? 1 : 0)}
+                  />
+                </label>
+                <span aria-hidden>{t('life.doneToday')}</span>
+              </div>
             ) : (
               <div className="mt-2 flex items-center gap-2 text-sm">
                 <Button

@@ -600,51 +600,59 @@ function Assessments({
             </div>
             {exam && (
               <div className="mt-2 text-sm">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="size-5 shrink-0"
-                    checked={a.registration === 'prijavljen'}
-                    onChange={(e) => {
-                      update('assessments', a.id, {
-                        registration: e.target.checked ? 'prijavljen' : 'nije-prijavljen',
-                      })
-                      if (e.target.checked)
-                        award({
-                          id: `reg-${a.id}`,
-                          date: today,
-                          reason: t('study.xp.registered', { title: a.title }),
-                          xp: XP.registration,
-                          category: 'study',
+                <div className="flex items-center">
+                  <label className="-ml-3 flex size-11 shrink-0 items-center justify-center">
+                    <input
+                      type="checkbox"
+                      className="size-5"
+                      aria-label={t('study.askRegistered')}
+                      checked={a.registration === 'prijavljen'}
+                      onChange={(e) => {
+                        update('assessments', a.id, {
+                          registration: e.target.checked ? 'prijavljen' : 'nije-prijavljen',
                         })
-                      else revoke(`reg-${a.id}`)
-                    }}
-                  />
-                  {t('study.askRegistered')}{' '}
-                  {a.registrationDeadline ? (
-                    <span className="text-slate-500">
-                      {t('study.deadline', { date: formatShort(a.registrationDeadline) })}
-                    </span>
-                  ) : (
-                    a.registration === 'nije-prijavljen' && (
-                      <span className="text-red-700 dark:text-red-400">
-                        {t('study.noDeadline')}
+                        if (e.target.checked)
+                          award({
+                            id: `reg-${a.id}`,
+                            date: today,
+                            reason: t('study.xp.registered', { title: a.title }),
+                            xp: XP.registration,
+                            category: 'study',
+                          })
+                        else revoke(`reg-${a.id}`)
+                      }}
+                    />
+                  </label>
+                  <span>
+                    <span aria-hidden>{t('study.askRegistered')}</span>{' '}
+                    {a.registrationDeadline ? (
+                      <span className="text-slate-500">
+                        {t('study.deadline', { date: formatShort(a.registrationDeadline) })}
                       </span>
-                    )
-                  )}
-                </label>
+                    ) : (
+                      a.registration === 'nije-prijavljen' && (
+                        <span className="text-red-700 dark:text-red-400">
+                          {t('study.noDeadline')}
+                        </span>
+                      )
+                    )}
+                  </span>
+                </div>
               </div>
             )}
             {!exam && (
-              <label className="mt-2 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="size-5 shrink-0"
-                  checked={!!a.done}
-                  onChange={(e) => update('assessments', a.id, { done: e.target.checked })}
-                />
-                {t('study.submitted')}
-              </label>
+              <div className="mt-2 flex items-center text-sm">
+                <label className="-ml-3 flex size-11 shrink-0 items-center justify-center">
+                  <input
+                    type="checkbox"
+                    className="size-5"
+                    aria-label={t('study.submitted')}
+                    checked={!!a.done}
+                    onChange={(e) => update('assessments', a.id, { done: e.target.checked })}
+                  />
+                </label>
+                <span aria-hidden>{t('study.submitted')}</span>
+              </div>
             )}
             {exam && (
               <div className="mt-2 text-sm">
