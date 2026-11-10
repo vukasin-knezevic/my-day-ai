@@ -5,7 +5,7 @@ import type { Category, ExpenseCategory, Recurrence, Weekday } from '../types'
 import { t as tr } from '../i18n'
 import { cyrillicToLatin, latinToCyrillic } from '../i18n/translit'
 import { categoryLabel } from './labels'
-import { addDaysStr, minToTime, timeToMin, todayStr, weekdayOf } from './dates'
+import { addDaysStr, minToTime, todayStr, weekdayOf } from './dates'
 
 export type Parsed =
   | {
@@ -295,8 +295,6 @@ function parseLatin(input: string, now: Date): Parsed {
     start = targetDate === today ? Math.min(Math.ceil((nowMin + 1) / 60) * 60, 23 * 60) : 18 * 60
   }
   if (end === null) end = start + (duration ?? DEFAULT_MINUTES[cat])
-  const dayEnd = 24 * 60 - 1
-  if (end > dayEnd) end = dayEnd
   const title = cleanTitle(t.orig) || categoryLabel(cat)
   return {
     kind: 'activity',
@@ -304,7 +302,8 @@ function parseLatin(input: string, now: Date): Parsed {
     category: cat,
     date: targetDate,
     start: minToTime(start),
-    end: minToTime(Math.max(end, timeToMin(minToTime(start)) + 5)),
+    // past midnight the end wraps to the next day: "izlazak 22-01" is 22:00-01:00
+    end: minToTime(Math.max(end, start + 5)),
     ...(recurrence ? { recurrence } : {}),
   }
 }

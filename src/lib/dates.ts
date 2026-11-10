@@ -80,6 +80,11 @@ export function timeToMin(t: string): number {
   const [h, m] = t.split(':').map(Number)
   return h * 60 + (m || 0)
 }
+/** Length of "start-end" in minutes. An end that is not after the start is on the next day (22:00-01:00 = 3 h). */
+export function durationMin(start: string, end: string): number {
+  const d = timeToMin(end) - timeToMin(start)
+  return d > 0 ? d : d + 1440
+}
 export function minToTime(min: number): string {
   const m = ((Math.round(min) % 1440) + 1440) % 1440
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`

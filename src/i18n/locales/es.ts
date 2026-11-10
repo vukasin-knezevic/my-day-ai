@@ -193,7 +193,7 @@ const messages = fromEnglish({
   'act.note': `Nota (opcional)`,
   'act.errTitle': `Escribe un título para la actividad.`,
   'act.errDate': `Elige una fecha.`,
-  'act.errEnd': `El fin debe ser posterior al inicio.`,
+  'act.errEnd': 'El final debe ser posterior al inicio.',
   'act.saveChanges': `Guardar cambios`,
   'data.title': `💾 Datos`,
   'data.note': `La exportación no contiene la clave API. Todo se guarda solo en este dispositivo.`,
@@ -656,6 +656,10 @@ const messages = fromEnglish({
   'life.wakeTimeField': 'Me levanté a las',
   'life.sleepInvalid':
     'La hora de despertar debe ser posterior a la de acostarse, como máximo 24 h después.',
+  'today.afterMidnight': 'después de medianoche',
+  'act.endNextDay': 'Hasta (día siguiente)',
+  'act.errSame': 'El final no puede ser igual al inicio.',
+  'picker.clearTime': 'Borrar la hora',
 })
 
 const locale: LocaleModule = {

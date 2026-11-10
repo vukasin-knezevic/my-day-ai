@@ -193,7 +193,7 @@ const messages = fromEnglish({
   'act.note': `Notiz (optional)`,
   'act.errTitle': `Gib einen Titel für die Aktivität ein.`,
   'act.errDate': `Wähle ein Datum.`,
-  'act.errEnd': `Das Ende muss nach dem Beginn liegen.`,
+  'act.errEnd': 'Das Ende muss nach dem Beginn liegen.',
   'act.saveChanges': `Änderungen speichern`,
   'data.title': `💾 Daten`,
   'data.note': `Der Export enthält den API-Schlüssel nicht. Alles wird nur auf diesem Gerät gespeichert.`,
@@ -657,6 +657,10 @@ const messages = fromEnglish({
   'life.wakeDate': 'Aufgestanden: Datum',
   'life.wakeTimeField': 'Aufgestanden um',
   'life.sleepInvalid': 'Das Aufwachen muss nach dem Zubettgehen liegen, höchstens 24 h später.',
+  'today.afterMidnight': 'nach Mitternacht',
+  'act.endNextDay': 'Bis (am nächsten Tag)',
+  'act.errSame': 'Das Ende darf nicht gleich dem Beginn sein.',
+  'picker.clearTime': 'Uhrzeit löschen',
 })
 
 const locale: LocaleModule = {

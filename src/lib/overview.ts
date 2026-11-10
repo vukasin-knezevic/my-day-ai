@@ -1,6 +1,6 @@
 // Week / month overview numbers. Pure functions.
 import type { AppData, Category, ExpenseCategory } from '../types'
-import { addDaysStr, monthOf, timeToMin, weekDates } from './dates'
+import { addDaysStr, monthOf, weekDates, durationMin } from './dates'
 import { occurrencesOn } from './schedule'
 import { avgSleep } from './life'
 import { subjectPoints } from './grades'
@@ -30,7 +30,7 @@ export function hoursByCategory(data: AppData, dates: string[]): Record<Category
   for (const d of dates)
     for (const o of occurrencesOn(data, d)) {
       if (o.suggested || o.status === 'skipped') continue
-      out[o.category] += (timeToMin(o.end) - timeToMin(o.start)) / 60
+      out[o.category] += durationMin(o.start, o.end) / 60
     }
   for (const c of Object.keys(out) as Category[]) out[c] = Math.round(out[c] * 10) / 10
   return out

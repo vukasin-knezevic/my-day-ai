@@ -193,7 +193,7 @@ const messages = fromEnglish({
   'act.note': `Note (facultatif)`,
   'act.errTitle': `Saisis un titre pour l'activité.`,
   'act.errDate': `Choisis une date.`,
-  'act.errEnd': `La fin doit être après le début.`,
+  'act.errEnd': 'La fin doit être après le début.',
   'act.saveChanges': `Enregistrer`,
   'data.title': `💾 Données`,
   'data.note': `L'export ne contient pas la clé API. Tout est stocké uniquement sur cet appareil.`,
@@ -657,6 +657,10 @@ const messages = fromEnglish({
   'life.wakeDate': 'Lever : date',
   'life.wakeTimeField': 'Lever à',
   'life.sleepInvalid': 'Le réveil doit être après le coucher, au plus 24 h plus tard.',
+  'today.afterMidnight': 'après minuit',
+  'act.endNextDay': 'Fin (le lendemain)',
+  'act.errSame': 'La fin ne peut pas être identique au début.',
+  'picker.clearTime': 'Effacer l’heure',
 })
 
 const locale: LocaleModule = {

@@ -98,7 +98,7 @@ test('Escape zatvara formu bez čuvanja', async () => {
   expect(useStore.getState().activities).toHaveLength(0)
 })
 
-test('kraj pre početka daje grešku', async () => {
+test('A-16: kraj isti kao početak daje grešku; kraj pre početka je sutradan', async () => {
   const user = userEvent.setup()
   render(
     <MemoryRouter>
@@ -106,11 +106,17 @@ test('kraj pre početka daje grešku', async () => {
     </MemoryRouter>,
   )
   await user.click(screen.getByRole('button', { name: '+ Nova aktivnost' }))
-  await user.type(screen.getByLabelText('Naziv'), 'X')
-  await setTime(user, 'Kraj', '17:00')
+  await user.type(screen.getByLabelText('Naziv'), 'Izlazak')
+  await setTime(user, 'Početak', '22:00')
+  await setTime(user, /^Kraj|^Do/, '22:00')
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
-  expect(screen.getByRole('alert')).toHaveTextContent('Kraj mora biti posle početka')
+  expect(screen.getByRole('alert')).toHaveTextContent('Kraj ne može biti isti kao početak')
   expect(useStore.getState().activities).toHaveLength(0)
+
+  await setTime(user, /^Kraj|^Do/, '01:00')
+  expect(screen.getByLabelText('Do (sutradan)')).toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj' }))
+  expect(useStore.getState().activities[0]).toMatchObject({ start: '22:00', end: '01:00' })
 })
 
 test('neprijavljen kolokvijum se vidi kao upozorenje', () => {

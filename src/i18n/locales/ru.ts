@@ -194,7 +194,7 @@ const messages = fromEnglish({
   'act.note': `Заметка (необязательно)`,
   'act.errTitle': `Введи название занятия.`,
   'act.errDate': `Выбери дату.`,
-  'act.errEnd': `Конец должен быть позже начала.`,
+  'act.errEnd': 'Конец должен быть после начала.',
   'act.saveChanges': `Сохранить изменения`,
   'data.title': `💾 Данные`,
   'data.note': `Экспорт не содержит ключ API. Всё хранится только на этом устройстве.`,
@@ -657,6 +657,10 @@ const messages = fromEnglish({
   'life.wakeDate': 'Встал: дата',
   'life.wakeTimeField': 'Встал в',
   'life.sleepInvalid': 'Пробуждение должно быть после отхода ко сну, не позже чем через 24 ч.',
+  'today.afterMidnight': 'после полуночи',
+  'act.endNextDay': 'До (на следующий день)',
+  'act.errSame': 'Конец не может совпадать с началом.',
+  'picker.clearTime': 'Убрать время',
 })
 
 const locale: LocaleModule = {

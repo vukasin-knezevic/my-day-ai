@@ -61,7 +61,8 @@ function vevent(e: Ev, dtstamp: string): string[] {
   if (e.start && e.end) {
     l.push(
       `DTSTART:${compactDate(e.date)}T${compactTime(e.start)}`,
-      `DTEND:${compactDate(e.date)}T${compactTime(e.end)}`,
+      // an end that is not after the start is on the next day (22:00-01:00)
+      `DTEND:${compactDate(e.end > e.start ? e.date : addDaysStr(e.date, 1))}T${compactTime(e.end)}`,
     )
   } else {
     l.push(

@@ -17,6 +17,8 @@ import {
 import {
   buildAlerts,
   currentAndNext,
+  daySpan,
+  inDayOrder,
   daySummary,
   occurrencesOn,
   withStatus,
@@ -47,6 +49,7 @@ function Timeline({
   occ: Occurrence[]
   wake: string
   bed: string
+  /** -1 = no "now" line (another day is on screen) */
   nowMin: number
 }) {
   const { t } = useT()
@@ -55,6 +58,9 @@ function Timeline({
   if (b <= w) b += 1440
   const height = ((b - w) / 60) * PX_PER_HOUR
   const y = (min: number) => ((Math.min(Math.max(min, w), b) - w) / 60) * PX_PER_HOUR
+  const bounds = { wakeTime: wake, bedTime: bed }
+  // after midnight, before bedtime: "now" is at the end of the day that is drawn
+  const nowAt = nowMin >= 0 && nowMin < w && nowMin + 1440 <= b ? nowMin + 1440 : nowMin
   const hours: number[] = []
   for (let m = Math.ceil(w / 60) * 60; m <= b; m += 60) hours.push(m)
   return (
@@ -73,8 +79,9 @@ function Timeline({
       {occ
         .filter((o) => o.status !== 'skipped')
         .map((o) => {
-          const top = y(timeToMin(o.start))
-          const h = Math.max(y(timeToMin(o.end)) - top, 18)
+          const span = daySpan(o, bounds)
+          const top = y(span.start)
+          const h = Math.max(y(span.end) - top, 18)
           const meta = CATEGORY_META[o.category]
           return (
             <div
@@ -88,10 +95,10 @@ function Timeline({
             </div>
           )
         })}
-      {nowMin >= w && nowMin <= b && (
+      {nowAt >= w && nowAt <= b && (
         <div
           className="absolute inset-x-0 z-10 border-t-2 border-red-500"
-          style={{ top: y(nowMin) }}
+          style={{ top: y(nowAt) }}
           aria-hidden="true"
         />
       )}
@@ -122,9 +129,18 @@ export default function Today() {
   const pickDay = (d: string) => setPicked(d === today ? null : d)
   const swipe = useSwipe((dir) => pickDay(addDaysStr(day, dir === 'left' ? 1 : -1)))
   const nowMin = now.getHours() * 60 + now.getMinutes()
-  const occ = useMemo(() => occurrencesOn(data, day), [data, day])
+  const bounds = useMemo(
+    () => ({ wakeTime: data.settings.wakeTime, bedTime: data.settings.bedTime }),
+    [data.settings.wakeTime, data.settings.bedTime],
+  )
+  const occ = useMemo(() => inDayOrder(occurrencesOn(data, day), bounds), [data, day, bounds])
+  // what started yesterday and runs past midnight is still "now" in the small hours
+  const lastNight = useMemo(() => occurrencesOn(data, addDaysStr(today, -1)), [data, today])
   const alerts = useMemo(() => buildAlerts(data, today), [data, today])
-  const { current, next, minutesToNext } = currentAndNext(occ, nowMin)
+  const { current, next, minutesToNext } = currentAndNext(isToday ? occ : [], nowMin, {
+    day: bounds,
+    yesterday: lastNight,
+  })
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -267,6 +283,9 @@ export default function Today() {
                   {CATEGORY_META[o.category].emoji} {o.title}
                 </span>
               </span>
+              {daySpan(o, bounds).start >= 1440 && (
+                <Badge className="bg-indigo-100 text-indigo-800">{t('today.afterMidnight')}</Badge>
+              )}
               {o.suggested && (
                 <Badge className="bg-amber-100 text-amber-800">{t('today.badge.suggested')}</Badge>
               )}

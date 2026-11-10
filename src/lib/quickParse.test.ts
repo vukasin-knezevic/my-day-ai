@@ -280,3 +280,11 @@ describe('A-12: a bedtime typed the next day', () => {
     })
   })
 })
+
+describe('A-16: past midnight', () => {
+  const now = new Date(2026, 10, 6, 14, 20)
+  it('"izlazak 22-01" ends the next day instead of being cut at 23:59', () => {
+    expect(parseQuick('izlazak 22-01', now)).toMatchObject({ start: '22:00', end: '01:00' })
+    expect(parseQuick('učenje 23:30 2h', now)).toMatchObject({ start: '23:30', end: '01:30' })
+  })
+})

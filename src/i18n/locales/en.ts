@@ -748,6 +748,10 @@ const messages: Record<MessageKey, string> = {
   'life.wakeDate': 'Got up: date',
   'life.wakeTimeField': 'Got up at',
   'life.sleepInvalid': 'The wake-up must be after the bedtime, at most 24 h later.',
+  'today.afterMidnight': 'after midnight',
+  'act.endNextDay': 'To (next day)',
+  'act.errSame': 'The end cannot be the same as the start.',
+  'picker.clearTime': 'Clear the time',
 }
 
 const locale: LocaleModule = {

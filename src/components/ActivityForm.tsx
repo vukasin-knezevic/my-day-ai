@@ -37,7 +37,8 @@ export default function ActivityForm({
     const found = {
       title: f.title.trim() ? undefined : t('act.errTitle'),
       date: f.date ? undefined : t('act.errDate'),
-      end: timeToMin(f.end) <= timeToMin(f.start) ? t('act.errEnd') : undefined,
+      // an end before the start is fine: it is on the next day (22:00-01:00)
+      end: f.end === f.start ? t('act.errSame') : undefined,
     }
     setErrors(found)
     if (found.title || found.date || found.end) return
@@ -115,7 +116,10 @@ export default function ActivityForm({
                 onChange={(e) => setF({ ...f, start: e.target.value })}
               />
             </Field>
-            <Field label={t('act.end')} error={errors.end}>
+            <Field
+              label={t(timeToMin(f.end) < timeToMin(f.start) ? 'act.endNextDay' : 'act.end')}
+              error={errors.end}
+            >
               <Input
                 type="time"
                 value={f.end}

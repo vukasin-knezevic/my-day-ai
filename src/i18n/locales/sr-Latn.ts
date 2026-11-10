@@ -740,6 +740,10 @@ const messages = {
   'life.wakeDate': 'Ustao: datum',
   'life.wakeTimeField': 'Ustao u',
   'life.sleepInvalid': 'Buđenje mora da bude posle leganja, najviše 24 h kasnije.',
+  'today.afterMidnight': 'posle ponoći',
+  'act.endNextDay': 'Do (sutradan)',
+  'act.errSame': 'Kraj ne može biti isti kao početak.',
+  'picker.clearTime': 'Obriši vreme',
 }
 
 export type MessageKey = keyof typeof messages

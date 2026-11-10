@@ -1,6 +1,6 @@
 // XP, levels, streaks and the user-named reward time. Pure functions.
 import type { Activity, AppData, Category, Progress } from '../types'
-import { addDaysStr, timeToMin } from './dates'
+import { addDaysStr, durationMin } from './dates'
 import { habitDone, sleepHours } from './life'
 import { t } from '../i18n'
 
@@ -154,7 +154,7 @@ export function rewardForDone(
   date: string,
   rewardMinPerStudyHour: number,
 ): AwardEvent | null {
-  const minutes = timeToMin(a.end) - timeToMin(a.start)
+  const minutes = durationMin(a.start, a.end)
   const xp = xpForActivity(a.category, minutes)
   const rewardMin = a.category === 'study' ? rewardForStudy(minutes, rewardMinPerStudyHour) : 0
   if (xp <= 0 && !rewardMin) return null

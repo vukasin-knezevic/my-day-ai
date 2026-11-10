@@ -2,7 +2,10 @@ import { emptyData } from './defaults'
 import {
   buildAlerts,
   currentAndNext,
+  daySpan,
   daySummary,
+  inDayOrder,
+  type Occurrence,
   freeSlots,
   occurrencesOn,
   patchOccurrence,
@@ -11,6 +14,7 @@ import {
   withoutOccurrence,
 } from './schedule'
 import type { Activity, Assessment, Subject } from '../types'
+import { durationMin } from './dates'
 
 const act = (p: Partial<Activity> = {}): Activity => ({
   id: 'a1',
@@ -232,5 +236,59 @@ describe('hasSlot', () => {
     expect(hasSlot(slots, s)).toBe(true)
     expect(hasSlot(slots, { ...s, kind: 'predavanje' })).toBe(false)
     expect(hasSlot(slots, { ...s, start: '11:00' })).toBe(false)
+  })
+})
+
+describe('A-16: activities after midnight', () => {
+  const day = { wakeTime: '09:00', bedTime: '01:00' }
+  const o = (start: string, end: string, extra: Partial<Occurrence> = {}): Occurrence => ({
+    key: `${start}-${end}`,
+    title: start,
+    category: 'games',
+    date: '2026-11-06',
+    start,
+    end,
+    status: 'planned',
+    suggested: false,
+    type: 'activity',
+    ...extra,
+  })
+
+  it('an end before the start is on the next day', () => {
+    expect(daySpan(o('22:00', '01:00'))).toEqual({ start: 1320, end: 1500 })
+    expect(durationMin('22:00', '01:00')).toBe(180)
+    expect(durationMin('10:00', '11:30')).toBe(90)
+  })
+
+  it('for a night owl, 00:15 is the end of the day, not its start', () => {
+    expect(daySpan(o('00:15', '00:45'), day)).toEqual({ start: 1455, end: 1485 })
+    // early morning before the wake-up stays where it is
+    expect(daySpan(o('06:00', '07:00'), day)).toEqual({ start: 360, end: 420 })
+    // someone who goes to bed before midnight: nothing moves
+    expect(daySpan(o('00:15', '00:45'), { wakeTime: '07:00', bedTime: '23:00' }).start).toBe(15)
+    expect(inDayOrder([o('00:15', '00:45'), o('10:00', '11:00')], day).map((x) => x.start)).toEqual(
+      ['10:00', '00:15'],
+    )
+  })
+
+  it('"now" at 23:30 inside 22:00-01:00, and still at 00:30 the next calendar day', () => {
+    const party = o('22:00', '01:00')
+    expect(currentAndNext([party], 23 * 60 + 30, { day }).current).toBe(party)
+    expect(currentAndNext([], 30, { day, yesterday: [party] }).current).toBe(party)
+    expect(currentAndNext([], 61, { day, yesterday: [party] }).current).toBeNull()
+  })
+
+  it('00:15 entered for today is "next" at 00:05, not tomorrow night', () => {
+    const late = o('00:15', '00:45')
+    const r = currentAndNext([late], 5, { day })
+    expect(r.next).toBe(late)
+    expect(r.minutesToNext).toBe(10)
+    // in the afternoon the same entry is the end of this day
+    expect(currentAndNext([late], 15 * 60, { day }).minutesToNext).toBe(1455 - 900)
+  })
+
+  it('done and suggested ones from yesterday are not "now"', () => {
+    const done = o('22:00', '01:00', { status: 'done' })
+    expect(currentAndNext([], 30, { day, yesterday: [done] }).current).toBeNull()
   })
 })
