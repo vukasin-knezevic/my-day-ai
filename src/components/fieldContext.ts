@@ -4,6 +4,8 @@ import { createContext, useContext } from 'react'
 export interface FieldState {
   required: boolean
   invalid: boolean
+  /** The field may stay empty: a picker inside it offers "clear". */
+  optional?: boolean
 }
 export const FieldContext = createContext<FieldState>({ required: false, invalid: false })
 export const useFieldState = () => useContext(FieldContext)

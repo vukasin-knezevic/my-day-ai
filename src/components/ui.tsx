@@ -118,7 +118,9 @@ export function Field({
         >
           {label}
         </span>
-        <FieldContext.Provider value={{ required: !!required, invalid: !!error }}>
+        <FieldContext.Provider
+          value={{ required: !!required, invalid: !!error, optional: !!optional }}
+        >
           {children}
         </FieldContext.Provider>
       </label>

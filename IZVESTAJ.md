@@ -12,6 +12,12 @@ Rađeno iz `docs/razvoj/ZADATAK_0.4.md` na grani `update-0.4`. Faza H (Android, 
 - **Nije urađeno:** ništa iz faze nije preskočeno.
 - **Proveriti na telefonu:** iPhone: kartica za instalaciju pre uvoda i da podaci ostaju posle 8+ dana; „Podeli fajl“ nudi „Sačuvaj u Fajlove“, a „Izaberi fajl“ otvara taj fajl. Android: nema „Novi update“ odmah posle instalacije.
 
+### Faza B: greške u ponašanju
+
+- **Urađeno:** Na ekranu Danas se bira dan: ‹ ›, traka sa 7 dana i prevlačenje levo/desno; lista, linija dana, forma i brzi unos prate izabrani dan, a „Trenutno/Sledeće“ i upozorenja se vide samo za danas (A-06). Svako brisanje daje „Obrisano · Poništi“ na 6 s; poništavanje vraća stavku na njeno mesto i XP koji je donela (A-07). „Sigurno?“ se vraća posle 4 s ili dodira sa strane (A-08). Sopstveni service worker (`src/sw.ts`, `injectManifest`): dodir na notifikaciju otvara aplikaciju, `tag` sprečava duplikate, mala jednobojna ikonica `badge-96.png` i velika ikonica, vreme u formatu iz podešavanja, poslate notifikacije se pamte po danu i posle ponovnog otvaranja (A-10, R-08). Brzi unos razume ćirilicu i „ч“ kao sat (A-11). „legao 23:30“ upisano sutradan ide u prethodnu noć; unos sna može da se izmeni i obriše; zaboravljeno „Ustao“ starije od 24 h ne blokira novo „Legao“ (A-12). Kraj manji od početka znači sutradan (22:00–01:00), a za korisnika koji leže posle ponoći vreme pre spavanja se crta na kraju dana (A-16). Opciono vreme ima „Obriši vreme“ (A-17).
+- **Urađeno drugačije:** upozorenja („Pazi“) se ne prikazuju za druge dane, jer se odnose na sadašnji trenutak. Aktivnost uneta posle ponoći za „danas“ računa se kao tekuća dok ne prođe vreme spavanja, a na liniji dana stoji na kraju tog dana.
+- **Proveriti na telefonu:** Android: dodir na notifikaciju otvara aplikaciju, ikonica u statusnoj traci je logo, a ne zvonce. iPhone: „Sigurno?“ se vraća na dodir sa strane; prevlačenje levo/desno na ekranu Danas ne smeta skrolovanju.
+
 ## Verzija 0.3.1 (2026-11-07): popravka donjeg panela
 
 - **Panel prati prst:** prevlačenje nadole za crticu, naslov ili vrh liste (kad je skrolovana do vrha) pomera panel tačno koliko i prst (`translateY`, bez animacije tokom prevlačenja, `touch-action: none` na zoni za hvatanje, pointer događaji).
