@@ -26,6 +26,20 @@ body {
     sans-serif;
 }
 
+/* iPhone: the page scrolls under the clock and the battery (the padding above scrolls away with it).
+   A fixed strip in the background colour, as tall as the status bar, stays on top of the content. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  z-index: 15;
+  pointer-events: none;
+  @apply bg-slate-50 dark:bg-slate-950;
+}
+
 /* AA contrast for secondary text on dark backgrounds */
 .dark .text-slate-500,
 .dark .text-slate-600 {
