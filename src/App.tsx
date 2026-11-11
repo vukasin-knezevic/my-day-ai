@@ -1,6 +1,6 @@
 import { initUpdates } from './lib/updates'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useStore } from './store'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import Layout from './components/Layout'
@@ -75,15 +75,19 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Today />} />
-            <Route path="faks" element={<Study />} />
+            <Route path="study" element={<Study />} />
             <Route path="planer" element={<Planner />} />
-            <Route path="trening" element={<Workout />} />
+            <Route path="workout" element={<Workout />} />
             <Route path="zivot" element={<Life />} />
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
             <Route path="vise" element={<More />} />
-            <Route path="podesavanja" element={<Settings />} />
+            <Route path="settings" element={<Settings />} />
+            {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}
+            <Route path="faks" element={<Navigate to="/study" replace />} />
+            <Route path="trening" element={<Navigate to="/workout" replace />} />
+            <Route path="podesavanja" element={<Navigate to="/settings" replace />} />
           </Route>
         </Routes>
       </Suspense>

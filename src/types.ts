@@ -63,7 +63,7 @@ export interface ClassSlot {
   start: string
   end: string
   room?: string
-  attendance: Attendance | null // null = još nisam odgovorio
+  attendance: Attendance | null // null = not answered yet
   /** For 'ponekad': weeks (Monday date) for which I confirmed attending */
   attendingWeeks?: string[]
   /** Monday date of the week for which I answered the weekly question */

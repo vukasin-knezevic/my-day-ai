@@ -15,7 +15,7 @@ graphify-out/
 scripts/.batch.json
 
 .local-automation/
-docs/razvoj/automatizacija/*.log
+docs/development/automation/*.log
 
 # personal notes kept next to the project, not part of it (A-38)
 MY_DAY_AI_REZIME.md

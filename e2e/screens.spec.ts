@@ -5,17 +5,17 @@ import { onboard } from './helpers'
 
 const ROUTES = [
   '/',
-  '/faks',
-  '/trening',
+  '/study',
+  '/workout',
   '/zivot',
   '/pregled',
   '/planer',
   '/ai',
   '/dostignuca',
-  '/podesavanja',
+  '/settings',
 ]
 
-test('svi ekrani se otvaraju bez grešaka i bez horizontalnog skrola', async ({ page }, info) => {
+test('all screens open without errors and without horizontal scroll', async ({ page }, info) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
@@ -31,12 +31,12 @@ test('svi ekrani se otvaraju bez grešaka i bez horizontalnog skrola', async ({ 
   expect(errors).toEqual([])
 })
 
-test('na širokom ekranu Danas ima dve kolone: obaveze levo, linija dana desno', async ({
+test('on a wide screen Today has two columns: obligations on the left, the day line on the right', async ({
   page,
 }, info) => {
   test.skip(
     info.project.name !== 'desktop1920' && info.project.name !== 'tablet',
-    'samo za široke ekrane',
+    'wide screens only',
   )
   await onboard(page, { demo: true })
   await page.goto('/#/')

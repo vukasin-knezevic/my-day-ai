@@ -1,43 +1,43 @@
-# Podaci o snu sa pametnog sata — šta je realno moguće
+# Sleep data from a smartwatch — what is realistically possible
 
-_Primer: Huawei Health i Huawei satovi. Isti zaključci važe za većinu proizvođača: bez zvaničnog, potvrđenog formata izvoza uvoz bi bio izmišljanje._
+_Example: Huawei Health and Huawei watches. The same conclusions apply to most manufacturers: without an official, confirmed export format, an import would be guesswork._
 
-> Status istraživanja: **delimično potvrđeno**. Tamo gde nisam našao pouzdan izvor, piše „nepotvrđeno". Nijedan format fajla nije izmišljen.
+> Research status: **partly confirmed**. Where I did not find a reliable source, it says "unconfirmed". No file format was made up.
 
-## 1. Izvoz podataka iz Huawei Health aplikacije
+## 1. Exporting data from the Huawei Health app
 
-- Pretraga je vratila samo SEO stranice niskog kvaliteta (bez Huawei izvora) koje tvrde da postoji izvoz u CSV/JSON, ali se **međusobno ne slažu oko menija**. Zato to tretiram kao **nepotvrđeno**.
-- Što je verovatno: Huawei nalog ima „Privacy Center → zahtev za kopiju podataka" (GDPR), ali **format i polja za san nisam uspeo da potvrdim** iz zvaničnog izvora.
-- **Zaključak:** u verziji 1 nema uvoza fajla, jer bi to značilo izmišljanje formata. Polje `source: 'watch'` u tipu `SleepLog` je ostavljeno za verziju 2.
-- **Šta ti možeš da uradiš:** zatraži kopiju podataka (Huawei Health → Ja → Podešavanja → Privatnost, ili account.huawei.com → Privacy Center), pošalji mi dobijeni fajl i na osnovu **pravog** uzorka napravićemo uvoz.
+- The search returned only low-quality SEO pages (with no Huawei source) that claim a CSV/JSON export exists, but they **disagree with each other about the menu**. So I treat it as **unconfirmed**.
+- What is probable: a Huawei account has "Privacy Center → request a copy of your data" (GDPR), but I **could not confirm the format and the sleep fields** from an official source.
+- **Conclusion:** version 1 has no file import, because that would mean making up a format. The field `source: 'watch'` in the `SleepLog` type is left for version 2.
+- **What you can do:** request a copy of your data (Huawei Health → Me → Settings → Privacy, or account.huawei.com → Privacy Center), send me the file you get and we will build the import from a **real** sample.
 
-## 2. Huawei Health Kit iz web aplikacije bez servera
+## 2. Huawei Health Kit from a web app without a server
 
-Izvori (zvanična dokumentacija):
+Sources (official documentation):
 
-- REST referenca: <https://developer.huawei.com/consumer/en/doc/HMSCore-References/rest-overview-0000001254420693>
-- Model podataka: <https://developer.huawei.com/consumer/en/doc/HMSCore-References/data-model-0000001054556973>
-- Podaci sa pametnih satova: <https://developer.huawei.com/consumer/en/doc/hmscore-guides/obtain-smart-watch-data-0000001365189921>
+- REST reference: <https://developer.huawei.com/consumer/en/doc/HMSCore-References/rest-overview-0000001254420693>
+- Data model: <https://developer.huawei.com/consumer/en/doc/HMSCore-References/data-model-0000001054556973>
+- Smartwatch data: <https://developer.huawei.com/consumer/en/doc/hmscore-guides/obtain-smart-watch-data-0000001365189921>
 
-Šta stoji u njima:
+What they say:
 
-- Postoji **REST API** (`health-api.cloud.huawei.com/healthkit/v2`) sa **OAuth 2.0** (authorization code) i bearer tokenom, i opseg za čitanje sna (`HEALTHKIT_SLEEP_READ`).
-- Sleep se vodi kao tip `com.huawei.continuous.sleep.fragment`; REST podaci kasne oko 10 minuta.
-- Dokumentacija za satove navodi da se čitaju istorijski zapisi sna (vreme uspavljivanja, buđenja, ukupno trajanje).
+- There is a **REST API** (`health-api.cloud.huawei.com/healthkit/v2`) with **OAuth 2.0** (authorization code) and a bearer token, and a scope for reading sleep (`HEALTHKIT_SLEEP_READ`).
+- Sleep is stored as the type `com.huawei.continuous.sleep.fragment`; REST data lags by about 10 minutes.
+- The watch documentation says that historical sleep records can be read (fall-asleep time, wake-up time, total duration).
 
-Zašto **ne** ide direktno iz ove aplikacije (zaključak, deo je moje tumačenje):
+Why it does **not** work directly from this app (a conclusion, partly my own interpretation):
 
-1. Potreban je **Huawei Developer nalog i registrovana aplikacija** sa odobrenjem za zdravstvene opsege (pregled od strane Huawei-ja). **Nepotvrđeno:** tačan proces i da li se odobrava privatnim/studentskim aplikacijama.
-2. OAuth razmena koda za token traži **client secret**, a on ne sme u kod koji radi u pregledaču. To znači da je potreban **mali server** (zadatak kaže: bez servera).
-3. Forum Huawei developera sadrži prijave da REST vraća prazne liste dok se ne postave podaci (nepotvrđeno, anegdotski).
+1. A **Huawei Developer account and a registered app** with approval for health scopes are needed (reviewed by Huawei). **Unconfirmed:** the exact process and whether private/student apps are approved.
+2. The OAuth code-for-token exchange needs a **client secret**, which must not go into code that runs in the browser. That means a **small server** is needed (the task says: no server).
+3. The Huawei developer forum has reports that REST returns empty lists until data is set up (unconfirmed, anecdotal).
 
-## 3. Odluka za verziju 1
+## 3. Decision for version 1
 
-- **Ručni unos sna**: dugmad „Legao" i „Ustao" (2 klika) ili brzi unos „legao 1:30".
-- Nema uvoza fajla dok nemamo pravi uzorak izvoza.
+- **Manual sleep entry**: "Went to bed" and "Got up" buttons (2 clicks) or quick entry "bed 1:30".
+- No file import until we have a real export sample.
 
-## 4. Plan za verziju 2
+## 4. Plan for version 2
 
-1. Zatražiti kopiju podataka iz Huawei naloga, pogledati stvarni format i napraviti uvoz (`lib/importSleep.ts`) + testove na stvarnom uzorku.
-2. Alternativa: sinhronizacija Huawei Health → Health Connect/Google Fit (ako je podržano za tvoj telefon), pa čitanje odatle preko male Android/PWA integracije. **Nepotvrđeno** da GT 6 Pro to podržava.
-3. Mali server (npr. besplatna serverless funkcija) koji čuva client secret i radi OAuth, pa PWA čita san preko Health Kit REST-a.
+1. Request a copy of the data from the Huawei account, look at the actual format and build the import (`lib/importSleep.ts`) + tests on a real sample.
+2. Alternative: sync Huawei Health → Health Connect/Google Fit (if supported on your phone), then read from there through a small Android/PWA integration. **Unconfirmed** that the GT 6 Pro supports it.
+3. A small server (e.g. a free serverless function) that keeps the client secret and does OAuth, so the PWA reads sleep through the Health Kit REST API.

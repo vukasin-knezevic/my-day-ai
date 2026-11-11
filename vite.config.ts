@@ -43,12 +43,12 @@ export default defineConfig({
           { name: 'Today', url: base, icons: [{ src: 'icon-192.png', sizes: '192x192' }] },
           {
             name: 'University',
-            url: `${base}#/faks`,
+            url: `${base}#/study`,
             icons: [{ src: 'icon-192.png', sizes: '192x192' }],
           },
           {
             name: 'Workout',
-            url: `${base}#/trening`,
+            url: `${base}#/workout`,
             icons: [{ src: 'icon-192.png', sizes: '192x192' }],
           },
         ],
