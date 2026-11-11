@@ -2,6 +2,12 @@
 
 Verzija 0.1 (ranije „1.0“) završena 2026-11-06, verzija **0.2** (ranije „1.1“) 2026-11-07, verzija **0.3** 2026-11-07, verzija **0.4** 2026-11-10 (faze A–G; faza H nije urađena). Do zvanične objave sve verzije su 0.x; 1.0 je rezervisana za prvu zvaničnu objavu. Repozitorijum: https://github.com/vukasin-knezevic/my-day-ai · Živa aplikacija: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Verzija 0.4.2 (2026-11-11): na engleskom piše „streak.days“
+
+- Greška: kad je jezik telefona engleski, uvodni ekran i kartica niza dana pokazivali su sirov ključ „🔥 streak.days“ umesto „1 day“.
+- Uzrok: privremeni (prazan) jezik koji se vidi pre učitavanja imao je kod „en“, pa je `setLanguage('en')` mislio da je engleski već uključen i nikad ga nije zamenio pravim. Obični tekstovi su se spasavali rezervom na engleski, a množinski ključevi (`.one/.other`) ne, zato je pokvaren bio samo niz dana. Ostali jezici nisu bili pogođeni.
+- Ispravka: `setLanguage` poredi sam jezički modul, ne kod. Test: sveže pokretanje na engleskom daje „3 days“ / „1 day“.
+
 ## Verzija 0.4.1 (2026-11-10): štiklira se samo kvadratić, glatko paljenje
 
 - Primedba posle testa 0.4 na telefonu: u jutarnjoj rutini / „Spasi dan“ ceo red je reagovao na dodir, pa se korak štiklirao slučajno pri skrolovanju.
