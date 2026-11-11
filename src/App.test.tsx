@@ -21,5 +21,5 @@ test('prvo otvaranje prikazuje onboarding, pa glavnu aplikaciju', async () => {
 
 test('verzija iz package.json je 0.x do zvanične objave', () => {
   expect(__APP_VERSION__).toMatch(/^0\.\d+\.\d+$/)
-  expect(__APP_VERSION__).toBe('0.4.1')
+  expect(__APP_VERSION__).toBe('0.4.2')
 })

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { afterEach } from 'vitest'
 import {
   LANGUAGES,
@@ -321,5 +322,16 @@ describe('French, Spanish, German and Russian', () => {
     expect(LANGUAGES.find((l) => l.code === 'fr')!.messages['prompt.chat.instruction']).toContain(
       'français',
     )
+  })
+})
+
+describe('first language is English (regression 0.4.2)', () => {
+  it('replaces the placeholder, so plural keys are found ("streak.days" must not show raw)', async () => {
+    vi.resetModules()
+    const fresh = await import('./index') // fresh state: the placeholder (code "en") is current
+    await fresh.loadLanguage('en')
+    fresh.setLanguage('en')
+    expect(fresh.t('streak.days', { n: 3 })).toBe('3 days')
+    expect(fresh.t('streak.days', { n: 1 })).toBe('1 day')
   })
 })

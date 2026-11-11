@@ -120,7 +120,8 @@ export function getLocaleModule(): LocaleModule {
 }
 export function setLanguage(code: string) {
   const next = byCode(code)
-  if (!next || next.code === current.code) return
+  // compare the module, not the code: the placeholder also says 'en', and must be replaced by the real English
+  if (!next || next === current) return
   current = next
   if (typeof document !== 'undefined') document.documentElement.lang = next.code
   listeners.forEach((l) => l())
