@@ -13,7 +13,7 @@ test('A-10: a touch on a notification brings the open app to the front', async (
     scope,
     clients: async () => [
       { url: 'https://other.test/', postMessage: vi.fn() },
-      { url: `${scope}#/faks`, focus, postMessage },
+      { url: `${scope}#/study`, focus, postMessage },
     ],
     open,
   })

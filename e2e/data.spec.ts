@@ -11,11 +11,11 @@ test('A-01: prva instalacija ne prikazuje „Novi update“', async ({ page }) =
   await expect(page.getByText('Novi update')).toHaveCount(0)
 })
 
-test('R-01: predmet, termin, obaveza i poeni ostaju posle reload-a; izmena pa odmah restart', async ({
+test('R-01: course, slot, obligation and points stay after a reload; a change followed by an immediate restart', async ({
   page,
 }) => {
   await onboard(page)
-  await page.goto('/#/faks')
+  await page.goto('/#/study')
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
   await page.getByRole('button', { name: '+ Dodaj termin' }).click()

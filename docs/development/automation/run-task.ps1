@@ -13,7 +13,7 @@
   in the system code page, and letters with diacritics in the prompt would arrive damaged.
 
 .EXAMPLE
-  .\run-task.ps1 -RepoPath C:\src\my-app -TaskFile docs/razvoj/ZADATAK_0.4.md -Model <model-id> -Effort high
+  .\run-task.ps1 -RepoPath C:\src\my-app -TaskFile docs/development/TASK_0.4.md -Model <model-id> -Effort high
 #>
 param(
   # Root of the git repository to work in.
@@ -57,7 +57,7 @@ if (-not $claude) {
 
 git pull 2>&1 | Write-Log
 
-$prompt = "Procitaj $TaskFile i uradi ceo zadatak koji je u njemu opisan. Ne pitaj nista; kratki izlazi radi stednje limita."
+$prompt = "Read $TaskFile and do the whole task described in it. Do not ask anything; keep outputs short to save the limit."
 
 $claudeArgs = @('-p', $prompt, '--dangerously-skip-permissions')
 if ($Model) { $claudeArgs += @('--model', $Model) }

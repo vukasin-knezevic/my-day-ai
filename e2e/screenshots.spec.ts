@@ -5,13 +5,13 @@ import { choose } from './helpers'
 // Serbian (Latin) screenshots have no suffix, the others end in -en / -sr-cyrl.
 test.skip(!process.env.SCREENSHOTS, 'only when SCREENSHOTS=1')
 
-const SIZES = { telefon: { width: 390, height: 844 }, laptop: { width: 1440, height: 900 } }
+const SIZES = { phone: { width: 390, height: 844 }, laptop: { width: 1440, height: 900 } }
 const SCREENS: [string, string][] = [
-  ['danas', '/'],
-  ['faks', '/faks'],
-  ['planer', '/planer'],
-  ['trening', '/trening'],
-  ['pregled', '/pregled'],
+  ['today', '/'],
+  ['study', '/study'],
+  ['planner', '/planer'],
+  ['workout', '/workout'],
+  ['overview', '/pregled'],
 ]
 // Every language gets its own fresh start (the browser language decides the app language),
 // so the demo data and the entries are in that language too.
@@ -19,18 +19,18 @@ const LANGS: {
   locale: string
   suffix: string
   themes: ('light' | 'dark')[]
-  devices: ('telefon' | 'laptop')[]
+  devices: ('phone' | 'laptop')[]
 }[] = [
-  { locale: 'sr-RS', suffix: '', themes: ['light', 'dark'], devices: ['telefon', 'laptop'] },
-  { locale: 'en-US', suffix: '-en', themes: ['light', 'dark'], devices: ['telefon', 'laptop'] },
+  { locale: 'sr-RS', suffix: '', themes: ['light', 'dark'], devices: ['phone', 'laptop'] },
+  { locale: 'en-US', suffix: '-en', themes: ['light', 'dark'], devices: ['phone', 'laptop'] },
   // mostly a layout check for the longer Cyrillic texts
-  { locale: 'sr-Cyrl-RS', suffix: '-sr-cyrl', themes: ['light'], devices: ['telefon'] },
+  { locale: 'sr-Cyrl-RS', suffix: '-sr-cyrl', themes: ['light'], devices: ['phone'] },
 ]
 
 for (const lang of LANGS) {
   test(`screenshots ${lang.locale}`, async ({ browser }) => {
     test.setTimeout(180_000)
-    const ctx = await browser.newContext({ locale: lang.locale, viewport: SIZES.telefon })
+    const ctx = await browser.newContext({ locale: lang.locale, viewport: SIZES.phone })
     const page = await ctx.newPage()
     await page.goto('/')
     const next = page.getByRole('button', { name: /^(Dalje|Next|Даље)$/ })
@@ -52,8 +52,8 @@ for (const lang of LANGS) {
       .getByRole('button', { name: /^(Predloži plan|Suggest a plan|Предложи план)$/ })
       .click()
     for (const theme of lang.themes) {
-      await page.setViewportSize(SIZES.telefon)
-      await page.goto('/#/podesavanja')
+      await page.setViewportSize(SIZES.phone)
+      await page.goto('/#/settings')
       await choose(page, /^(Tema|Theme|Тема)/, theme)
       for (const device of lang.devices) {
         await page.setViewportSize(SIZES[device])
@@ -62,7 +62,7 @@ for (const lang of LANGS) {
           await page.waitForTimeout(400)
           await page.screenshot({
             path: `docs/screenshots/${name}-${device}-${theme}${lang.suffix}.png`,
-            fullPage: device === 'telefon',
+            fullPage: device === 'phone',
           })
         }
       }

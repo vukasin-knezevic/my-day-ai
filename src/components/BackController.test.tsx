@@ -41,11 +41,11 @@ function Demo() {
           element={
             <>
               <p>ekran Danas</p>
-              <Link to="/faks">na Faks</Link>
+              <Link to="/study">na Study</Link>
             </>
           }
         />
-        <Route path="/faks" element={<Section />} />
+        <Route path="/study" element={<Section />} />
       </Routes>
     </HashRouter>
   )
@@ -64,7 +64,7 @@ beforeEach(async () => {
 test('A-13: Nazad zatvara panel, pa vraća na prvi tab, pa na Danas, pa pita za izlazak', async () => {
   const user = userEvent.setup()
   render(<Demo />)
-  await user.click(screen.getByRole('link', { name: 'na Faks' }))
+  await user.click(screen.getByRole('link', { name: 'na Study' }))
   await user.click(screen.getByRole('tab', { name: 'Drugi' }))
   await user.click(screen.getByRole('button', { name: 'otvori panel' }))
   expect(screen.getByRole('dialog', { name: 'Panel' })).toBeInTheDocument()

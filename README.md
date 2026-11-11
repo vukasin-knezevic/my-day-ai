@@ -3,17 +3,141 @@
 [![CI](https://github.com/vukasin-knezevic/my-day-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/vukasin-knezevic/my-day-ai/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/Live%20demo-open%20the%20app-2563eb?style=for-the-badge)](https://vukasin-knezevic.github.io/my-day-ai/)
 
-**[👉 Live demo: vukasin-knezevic.github.io/my-day-ai](https://vukasin-knezevic.github.io/my-day-ai/)** · **[Srpski](#srpski) · [English](#english)**
+**[👉 Live demo: vukasin-knezevic.github.io/my-day-ai](https://vukasin-knezevic.github.io/my-day-ai/)** · **[English](#english) · [Srpski](#srpski)**
 
 <p align="center">
-  <img src="docs/screenshots/danas-telefon-light.png" alt="Ekran Danas (telefon, svetla tema)" width="240">
-  <img src="docs/screenshots/danas-telefon-dark-en.png" alt="Today screen (phone, dark theme, English)" width="240">
-  <img src="docs/screenshots/danas-telefon-light-sr-cyrl.png" alt="Екран Данас (телефон, ћирилица)" width="240">
+  <img src="docs/screenshots/today-phone-light-en.png" alt="Today screen (phone, light theme)" width="240">
+  <img src="docs/screenshots/today-phone-dark-en.png" alt="Today screen (phone, dark theme)" width="240">
+  <img src="docs/screenshots/workout-phone-light-en.png" alt="Workout screen (phone, light theme)" width="240">
 </p>
 
 ---
 
+## English
+
+> I conceived and designed this app; I wrote the code with Claude Code.
+
+I started building it as a student, for my own day: so that classes, exams, workouts and sleep would stop being scattered across calendars, chats and my head. Then I turned it into a general app that **any student** can use: you set your own daily rhythm, goals, reward and language.
+
+**My Day AI** is a day planner for students: classes, exams, workouts, nutrition, sleep, money and habits in one place. It is a mobile-first PWA that installs on a phone or laptop and works offline (except the AI part). It is available in Serbian (Latin and Cyrillic), English, French, Spanish, German and Russian.
+
+### Versions
+
+Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_). **1.0** is reserved for the first official release (colleagues + Google Play).
+
+### User testing
+
+The app was tested by **two testers** on two different phones. A tester tests and reports, and writes no code; every remark went into the task file for the next version.
+
+- **Vukašin (Android)**: after version 0.3 the remarks from a real phone were written down. Because of them: a tap on a notification opens the app, with no duplicate notifications and with the logo in the status bar; the Back button and gesture work through the whole flow; a day picker on the Today screen; one shared “Deleted · Undo” for every delete.
+- **Andrea Jovović (iPhone)**, a student at the Faculty of Media and Communications (named with her permission): because of her, content no longer runs under the clock and battery, “Add to calendar” is on the Study and Today screens and opens Safari’s “Add all”, slots and obligations look saved, a workout is one thing (day, time, reminder), “Back” works by swiping from the left edge, and an **interactive tutorial** was made, because it was not clear to her what the app is for.
+
+### The problem
+
+A student juggles lectures, exams with registration deadlines, workouts, fun and sleep, all scattered. The most common and costly mistake is simple: **forgetting to register for an exam**. The app puts that in red on the first screen and builds the rest of the day around the obligations.
+
+### Features
+
+- 🌅 **Today**: day timeline from wake-up to bedtime, one-click done/skip, **add and edit activities** (also repeating ones: daily, weekdays, weekly), alerts (unregistered exam, deadline tomorrow, low sleep) and a **one-line quick entry** ("tomorrow study math 2h", "coffee 200", "slept 1:30"), works without AI.
+- 📚 **Study**: subjects, weekly timetable with a **going / skipping / sometimes** question per slot (skipped slots become free time), exams with colored countdown, a **registration checklist** for the current month, points and grade estimate.
+- 🧠 **Rule-based planner** (`planWeek`): study blocks before exams (harder and closer = earlier and more), breaks, nothing before wake-up or after bedtime, at least one easy day, a shortened workout on the exam eve (with an explanation), your reward after studying. Suggestions have a dashed border until accepted.
+- 🤖 **AI (Claude)**: day/week plan, chat, weekly summary, smart entry, exam schedule import from pasted text, workout plan. Every answer is **validated with `zod`** before it is shown; the assistant's tone adapts (friendly / strict / supportive). Prompts and answers use the selected language.
+- 🏋️ **Workouts & nutrition**: sets × reps × weight, progress chart, automatic **personal records**, ready-made splits and **your own workout templates**, daily protein goal.
+- 😴💰✅ **Sleep, money, habits**: bed/wake with two clicks, 7-day average, bedtime suggestion; budget per category with an 80% warning (your currency); habits with day streaks.
+- ☀️ **Morning routine, daily challenge, “Close the day”**: 3–5 small steps in the morning (with a notification and, on Android, a “Done” button), one small challenge a day chosen from your own data, and three short steps in the evening that close the day (review, mood, the main thing for tomorrow). No blame: a missed day offers a short version, and the streak has saves ❄️.
+- 🧭 **Guided tour**: a walk through the real screens (about a minute), the sample things are deleted at the end; again under Settings → “How the app works”.
+- 🏆 **Achievements**: badges, personal records, the week ring and surprises 🎁 (at most two a day; sound, vibration and animations can be switched off).
+- 🎁 **Motivation**: XP, levels, streaks 🔥 and **a reward you name yourself** (gaming time, an episode of a series, a night out…) earned by studying. The app only counts it, no judging.
+- 🔔 **Reminders + “Add to calendar”**, 📊 **week/month overview**, 💾 **JSON export/import** (without the API key), dark theme, keyboard shortcuts (`N`, `T`, `W`, `/`, `?`; `Enter` confirms, `Esc` cancels).
+
+### Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/workout-phone-light-en.png" alt="Workout, phone, light theme" width="200">
+  <img src="docs/screenshots/planner-phone-dark-en.png" alt="Planner, phone, dark theme" width="200">
+  <img src="docs/screenshots/study-laptop-dark-en.png" alt="Study, laptop, dark theme" width="440">
+</p>
+
+### Languages
+
+Serbian (Latin), Serbian (Cyrillic), English, French, Spanish, German and Russian (the last four were not reviewed by native speakers). Pick the language in the first onboarding step and change it any time under **Settings → Appearance → Language**. By default the browser language is used. Dates, weekday and month names and number formats follow the language, and so do the AI prompts and answers. The quick entry understands Serbian and English.
+
+### How to add a language
+
+One new file, no code changes:
+
+1. Copy `src/i18n/locales/en.ts` to `src/i18n/locales/<code>.ts` (e.g. `de.ts`).
+2. Translate the texts (right-hand side), then set `code`, `name` (the language's name in that language) and `dateLocale` (from `date-fns/locale`). Keep the `{placeholders}`; plural forms are keys ending in `.one`, `.few` and `.other`.
+3. Add a line with the same `code` and `name` to `src/i18n/languageList.ts` (languages are loaded only when needed, so the picker must not download them all).
+4. Run `npm test`: the failing test names the missing key or `{placeholder}`, or tells you that the list does not match the files. Once it passes, the language is in the picker.
+
+### Two AI modes
+
+**Manual (free):** "Copy for Claude" builds a prompt with your week's data → paste it into claude.ai → answer 3–5 questions → paste the JSON reply back. **API (pay per use):** one click, called directly from the browser. You choose the mode during onboarding and can change it in the settings. Both modes use the **same** prompt builder, **same** `zod` validation and **same** preview. The API key is stored **only on your device** (visible in the browser's developer tools; never share it and set a spending limit in the Anthropic console).
+
+### How to get an Anthropic API key (API mode only)
+
+Manual mode needs no key. For API mode:
+
+1. Create an account at [console.anthropic.com](https://console.anthropic.com) and sign in.
+2. Under **Billing** add a payment method and set a monthly spending limit.
+3. Open **API Keys** → **Create Key**, name it (e.g. "My Day AI") and **copy the key** (it starts with `sk-ant-`). It is shown only once.
+4. In the app: **Settings → AI**: choose API mode and paste the key into **API key**. The key stays on that device only.
+
+### Reminders: honest limits
+
+No server means browser notifications on a phone only work reliably while the app is open or recently used. Use **Add to calendar**: the phone offers its Calendar app straight away, and the calendar then reminds you by itself.
+
+### Tech stack
+
+Vite, React 18, TypeScript (strict), Tailwind CSS, Zustand + IndexedDB, React Router (hash), an i18n layer with date-fns locales and `Intl`, Recharts, zod, Vitest + Testing Library, Playwright + axe, vite-plugin-pwa.
+
+### Run & test
+
+```bash
+npm install && npm run dev
+npm run lint && npm run typecheck && npm test
+npx playwright install chromium && npm run e2e
+```
+
+### Project structure
+
+```
+src/
+  types.ts            all data types
+  store.ts            Zustand + IndexedDB
+  i18n/               translations (locales/*.ts), t(), language choice
+  lib/                pure logic without React (tested)
+    quickParse.ts     one-line quick entry (Serbian and English)
+    planner.ts        planWeek()
+    schedule.ts       what is on the schedule, warnings
+    grades.ts exams.ts workout.ts life.ts xp.ts overview.ts ...
+    ai/               prompt, client, JSON extraction, zod schemas (API and manual mode)
+  pages/              screens
+  components/         shared UI (NumberInput, KeyScope, ...)
+e2e/                  Playwright tests
+docs/                 ARCHITECTURE.md, SMARTWATCH.md, development/, screenshots/
+```
+
+Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Notes on sleep data from smartwatches: [docs/SMARTWATCH.md](docs/SMARTWATCH.md). How the project came to be: [docs/development/](docs/development/README.md).
+
+### Deployment
+
+Published automatically to GitHub Pages on every push to `main`.
+
+### License
+
+MIT, see [LICENSE](LICENSE).
+
+---
+
 ## Srpski
+
+<p align="center">
+  <img src="docs/screenshots/today-phone-light.png" alt="Ekran Danas (telefon, svetla tema)" width="240">
+  <img src="docs/screenshots/today-phone-dark.png" alt="Ekran Danas (telefon, tamna tema)" width="240">
+  <img src="docs/screenshots/today-phone-light-sr-cyrl.png" alt="Екран Данас (телефон, ћирилица)" width="240">
+</p>
 
 > Aplikaciju sam osmislio i dizajnirao ja, a kod sam pisao uz Claude Code.
 
@@ -54,13 +178,13 @@ Student ima predavanja, kolokvijume sa rokovima za prijavu, trening, zabavu i sa
 ### Izgled
 
 <p align="center">
-  <img src="docs/screenshots/faks-telefon-light.png" alt="Faks, telefon, svetla tema" width="200">
-  <img src="docs/screenshots/planer-telefon-dark.png" alt="Planer, telefon, tamna tema" width="200">
-  <img src="docs/screenshots/trening-telefon-light-en.png" alt="Workout, phone, light theme, English" width="200">
+  <img src="docs/screenshots/study-phone-light.png" alt="Faks, telefon, svetla tema" width="200">
+  <img src="docs/screenshots/planner-phone-dark.png" alt="Planer, telefon, tamna tema" width="200">
+  <img src="docs/screenshots/workout-phone-light.png" alt="Trening, telefon, svetla tema" width="200">
 </p>
 <p align="center">
-  <img src="docs/screenshots/pregled-laptop-light.png" alt="Pregled, laptop, svetla tema" width="440">
-  <img src="docs/screenshots/faks-laptop-dark-en.png" alt="Study, laptop, dark theme, English" width="440">
+  <img src="docs/screenshots/overview-laptop-light.png" alt="Pregled, laptop, svetla tema" width="440">
+  <img src="docs/screenshots/study-laptop-dark.png" alt="Faks, laptop, tamna tema" width="440">
 </p>
 
 Sve slike su u [`docs/screenshots/`](docs/screenshots/): telefon i laptop, svetla i tamna tema, srpski i engleski (i ćirilica).
@@ -149,10 +273,10 @@ src/
   pages/              ekrani
   components/         zajednički UI (NumberInput, KeyScope, ...)
 e2e/                  Playwright testovi
-docs/                 ARHITEKTURA.md, SMARTWATCH.md, screenshots/
+docs/                 ARCHITECTURE.md, SMARTWATCH.md, screenshots/
 ```
 
-Detalji: [docs/ARHITEKTURA.md](docs/ARHITEKTURA.md). Beleške o podacima o snu sa pametnih satova: [docs/SMARTWATCH.md](docs/SMARTWATCH.md).
+Detalji: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Beleške o podacima o snu sa pametnih satova: [docs/SMARTWATCH.md](docs/SMARTWATCH.md).
 
 ### Objava
 
@@ -161,100 +285,3 @@ Automatski se objavljuje na GitHub Pages pri svakom push-u na `main`.
 ### Licenca
 
 MIT, vidi [LICENSE](LICENSE).
-
----
-
-## English
-
-> I conceived and designed this app; I wrote the code with Claude Code.
-
-I started building it as a student, for my own day: so that classes, exams, workouts and sleep would stop being scattered across calendars, chats and my head. Then I turned it into a general app that **any student** can use: you set your own daily rhythm, goals, reward and language.
-
-**My Day AI** is a day planner for students: classes, exams, workouts, nutrition, sleep, money and habits in one place. It is a mobile-first PWA that installs on a phone or laptop and works offline (except the AI part). It is available in Serbian (Latin and Cyrillic), English, French, Spanish, German and Russian.
-
-### Versions
-
-Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_). **1.0** is reserved for the first official release (colleagues + Google Play).
-
-### User testing
-
-The app was tested by **two testers** on two different phones. A tester tests and reports, and writes no code; every remark went into the task file for the next version.
-
-- **Vukašin (Android)**: after version 0.3 the remarks from a real phone were written down. Because of them: a tap on a notification opens the app, with no duplicate notifications and with the logo in the status bar; the Back button and gesture work through the whole flow; a day picker on the Today screen; one shared “Deleted · Undo” for every delete.
-- **Andrea Jovović (iPhone)**, a student at the Faculty of Media and Communications (named with her permission): because of her, content no longer runs under the clock and battery, “Add to calendar” is on the Study and Today screens and opens Safari’s “Add all”, slots and obligations look saved, a workout is one thing (day, time, reminder), “Back” works by swiping from the left edge, and an **interactive tutorial** was made, because it was not clear to her what the app is for.
-
-### The problem
-
-A student juggles lectures, exams with registration deadlines, workouts, fun and sleep, all scattered. The most common and costly mistake is simple: **forgetting to register for an exam**. The app puts that in red on the first screen and builds the rest of the day around the obligations.
-
-### Features
-
-- 🌅 **Today**: day timeline from wake-up to bedtime, one-click done/skip, **add and edit activities** (also repeating ones: daily, weekdays, weekly), alerts (unregistered exam, deadline tomorrow, low sleep) and a **one-line quick entry** ("tomorrow study math 2h", "coffee 200", "slept 1:30"), works without AI.
-- 📚 **Study**: subjects, weekly timetable with a **going / skipping / sometimes** question per slot (skipped slots become free time), exams with colored countdown, a **registration checklist** for the current month, points and grade estimate.
-- 🧠 **Rule-based planner** (`planWeek`): study blocks before exams (harder and closer = earlier and more), breaks, nothing before wake-up or after bedtime, at least one easy day, a shortened workout on the exam eve (with an explanation), your reward after studying. Suggestions have a dashed border until accepted.
-- 🤖 **AI (Claude)**: day/week plan, chat, weekly summary, smart entry, exam schedule import from pasted text, workout plan. Every answer is **validated with `zod`** before it is shown; the assistant's tone adapts (friendly / strict / supportive). Prompts and answers use the selected language.
-- 🏋️ **Workouts & nutrition**: sets × reps × weight, progress chart, automatic **personal records**, ready-made splits and **your own workout templates**, daily protein goal.
-- 😴💰✅ **Sleep, money, habits**: bed/wake with two clicks, 7-day average, bedtime suggestion; budget per category with an 80% warning (your currency); habits with day streaks.
-- ☀️ **Morning routine, daily challenge, “Close the day”**: 3–5 small steps in the morning (with a notification and, on Android, a “Done” button), one small challenge a day chosen from your own data, and three short steps in the evening that close the day (review, mood, the main thing for tomorrow). No blame: a missed day offers a short version, and the streak has saves ❄️.
-- 🧭 **Guided tour**: a walk through the real screens (about a minute), the sample things are deleted at the end; again under Settings → “How the app works”.
-- 🏆 **Achievements**: badges, personal records, the week ring and surprises 🎁 (at most two a day; sound, vibration and animations can be switched off).
-- 🎁 **Motivation**: XP, levels, streaks 🔥 and **a reward you name yourself** (gaming time, an episode of a series, a night out…) earned by studying. The app only counts it, no judging.
-- 🔔 **Reminders + “Add to calendar”**, 📊 **week/month overview**, 💾 **JSON export/import** (without the API key), dark theme, keyboard shortcuts (`N`, `T`, `W`, `/`, `?`; `Enter` confirms, `Esc` cancels).
-
-### Screenshots
-
-<p align="center">
-  <img src="docs/screenshots/trening-telefon-light-en.png" alt="Workout, phone, light theme" width="200">
-  <img src="docs/screenshots/planer-telefon-dark-en.png" alt="Planner, phone, dark theme" width="200">
-  <img src="docs/screenshots/faks-laptop-dark-en.png" alt="Study, laptop, dark theme" width="440">
-</p>
-
-### Languages
-
-Serbian (Latin), Serbian (Cyrillic), English, French, Spanish, German and Russian (the last four were not reviewed by native speakers). Pick the language in the first onboarding step and change it any time under **Settings → Appearance → Language**. By default the browser language is used. Dates, weekday and month names and number formats follow the language, and so do the AI prompts and answers. The quick entry understands Serbian and English.
-
-### How to add a language
-
-One new file, no code changes:
-
-1. Copy `src/i18n/locales/en.ts` to `src/i18n/locales/<code>.ts` (e.g. `de.ts`).
-2. Translate the texts (right-hand side), then set `code`, `name` (the language's name in that language) and `dateLocale` (from `date-fns/locale`). Keep the `{placeholders}`; plural forms are keys ending in `.one`, `.few` and `.other`.
-3. Add a line with the same `code` and `name` to `src/i18n/languageList.ts` (languages are loaded only when needed, so the picker must not download them all).
-4. Run `npm test`: the failing test names the missing key or `{placeholder}`, or tells you that the list does not match the files. Once it passes, the language is in the picker.
-
-### Two AI modes
-
-**Manual (free):** "Copy for Claude" builds a prompt with your week's data → paste it into claude.ai → answer 3–5 questions → paste the JSON reply back. **API (pay per use):** one click, called directly from the browser. You choose the mode during onboarding and can change it in the settings. Both modes use the **same** prompt builder, **same** `zod` validation and **same** preview. The API key is stored **only on your device** (visible in the browser's developer tools; never share it and set a spending limit in the Anthropic console).
-
-### How to get an Anthropic API key (API mode only)
-
-Manual mode needs no key. For API mode:
-
-1. Create an account at [console.anthropic.com](https://console.anthropic.com) and sign in.
-2. Under **Billing** add a payment method and set a monthly spending limit.
-3. Open **API Keys** → **Create Key**, name it (e.g. "My Day AI") and **copy the key** (it starts with `sk-ant-`). It is shown only once.
-4. In the app: **Settings → AI**: choose API mode and paste the key into **API key**. The key stays on that device only.
-
-### Reminders: honest limits
-
-No server means browser notifications on a phone only work reliably while the app is open or recently used. Use **Add to calendar**: the phone offers its Calendar app straight away, and the calendar then reminds you by itself.
-
-### Tech stack
-
-Vite, React 18, TypeScript (strict), Tailwind CSS, Zustand + IndexedDB, React Router (hash), an i18n layer with date-fns locales and `Intl`, Recharts, zod, Vitest + Testing Library, Playwright + axe, vite-plugin-pwa.
-
-### Run & test
-
-```bash
-npm install && npm run dev
-npm run lint && npm run typecheck && npm test
-npx playwright install chromium && npm run e2e
-```
-
-### Deployment
-
-Published automatically to GitHub Pages on every push to `main`.
-
-### License
-
-MIT.

@@ -8,7 +8,7 @@ test('1. onboarding vodi do ekrana Danas', async ({ page }) => {
   await expect(page.getByLabel('Brzi unos')).toBeVisible()
 })
 
-test('2. brzi unos dodaje aktivnost i trošak', async ({ page }) => {
+test('2. quick entry adds an activity and an expense', async ({ page }) => {
   await onboard(page)
   await page.getByLabel('Brzi unos').fill('trening 18-19:30')
   await page.getByRole('button', { name: 'Dodaj', exact: true }).click()
@@ -19,9 +19,9 @@ test('2. brzi unos dodaje aktivnost i trošak', async ({ page }) => {
   await expect(page.getByText(/Trošak 200 RSD/)).toBeVisible()
 })
 
-test('3. idem / ne idem za termin predmeta', async ({ page }) => {
+test('3. going / not going for a course slot', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/faks')
+  await page.goto('/#/study')
   await page.getByLabel('Naziv predmeta').fill('Fizika')
   await page.getByRole('button', { name: 'Dodaj predmet' }).click()
   await page.getByRole('button', { name: '+ Dodaj termin' }).click()
@@ -35,14 +35,14 @@ test('3. idem / ne idem za termin predmeta', async ({ page }) => {
   await expect(page.getByText('slobodno vreme')).toBeVisible()
 })
 
-test('4. neprijavljen kolokvijum se vidi na ekranu Danas', async ({ page }) => {
+test('4. an unregistered midterm is visible on the Today screen', async ({ page }) => {
   await onboard(page, { demo: true })
   await expect(page.getByText(/Neprijavljen: Kolokvijum 1/)).toBeVisible()
 })
 
-test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => {
+test('5. registering a midterm removes the warning and gives XP', async ({ page }) => {
   await onboard(page, { demo: true })
-  await page.goto('/#/faks')
+  await page.goto('/#/study')
   await page.getByRole('tab', { name: 'Ispit/Kolokvijum' }).click()
   await page
     .getByLabel(/Da li si prijavio/)
@@ -55,7 +55,7 @@ test('5. prijava kolokvijuma sklanja upozorenje i daje XP', async ({ page }) => 
 
 test('6. trening sa rekordom', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/trening')
+  await page.goto('/#/workout')
   // a workout is scheduled (day and time), then marked done; the second one is heavier
   const log = async (kg: string) => {
     await page.getByRole('button', { name: '+ Dodaj trening' }).click()
@@ -72,7 +72,7 @@ test('6. trening sa rekordom', async ({ page }) => {
   await expect(page.getByText(/Novi rekord: Bench press 70 kg/)).toBeVisible()
 })
 
-test('7. trošak preko budžeta daje upozorenje', async ({ page }) => {
+test('7. an expense over the budget gives a warning', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/zivot')
   await page.getByRole('tab', { name: /Novac/ }).click()
@@ -82,7 +82,7 @@ test('7. trošak preko budžeta daje upozorenje', async ({ page }) => {
   await expect(page.getByRole('alert').filter({ hasText: '150%' })).toBeVisible()
 })
 
-test('8. "urađeno" daje XP', async ({ page }) => {
+test('8. "done" gives XP', async ({ page }) => {
   await onboard(page)
   await page.getByLabel('Brzi unos').fill('učenje 18-20')
   await page.getByRole('button', { name: 'Dodaj', exact: true }).click()
@@ -102,10 +102,10 @@ test('9. podaci ostaju posle reload-a', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Dobrodošao/ })).toHaveCount(0)
 })
 
-test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
+test('10. JSON export and import', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await onboard(page, { demo: true })
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   await page.getByRole('button', { name: 'Kopiraj JSON' }).click()
   await expect(page.getByText('JSON je kopiran')).toBeVisible()
   const json = await page.evaluate(() => navigator.clipboard.readText())
@@ -132,7 +132,7 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
     )
     .toBe(false)
   await onboard(page)
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   // A-14: the backup comes back from a file, the way it does on a phone
   await page.getByLabel('Izaberi fajl').setInputFiles({
     name: 'my-day-ai-backup.json',
@@ -141,22 +141,22 @@ test('10. izvoz i uvoz JSON-a', async ({ page, context }) => {
   })
   await page.getByRole('button', { name: 'Da, uvezi' }).click()
   await expect(page.getByText('Podaci su uvezeni')).toBeVisible()
-  await page.goto('/#/faks')
+  await page.goto('/#/study')
   await expect(page.getByText('Predmet 1 (primer)').first()).toBeVisible()
 })
 
 test('11. tamna tema', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   await choose(page, 'Tema', 'dark')
   await expect(page.locator('html')).toHaveClass(/dark/)
   await choose(page, 'Tema', 'light')
   await expect(page.locator('html')).not.toHaveClass(/dark/)
 })
 
-test('12. prečice na tastaturi', async ({ page }) => {
+test('12. keyboard shortcuts', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   await page.locator('body').press('?')
   await expect(page.getByRole('dialog', { name: 'Prečice na tastaturi' })).toBeVisible()
   await page.keyboard.press('Escape')
@@ -166,7 +166,7 @@ test('12. prečice na tastaturi', async ({ page }) => {
   await expect(page.getByLabel('Brzi unos')).toBeFocused()
 })
 
-test('13. ručni AI režim: nalepljen odgovor postaje predlog', async ({ page }) => {
+test('13. manual AI mode: a pasted answer becomes a suggestion', async ({ page }) => {
   await onboard(page)
   await page.goto('/#/ai')
   const json = JSON.stringify({
@@ -182,19 +182,19 @@ test('13. ručni AI režim: nalepljen odgovor postaje predlog', async ({ page })
   await expect(page.getByText('predlog', { exact: true })).toBeVisible()
 })
 
-test('14. nema horizontalnog skrola na 390 / 800 / 1920 px', async ({ page }) => {
+test('14. no horizontal scroll at 390 / 800 / 1920 px', async ({ page }) => {
   await onboard(page, { demo: true })
   for (const w of [390, 800, 1920]) {
     await page.setViewportSize({ width: w, height: 900 })
     for (const route of [
       '/',
-      '/faks',
-      '/trening',
+      '/study',
+      '/workout',
       '/zivot',
       '/planer',
       '/pregled',
       '/ai',
-      '/podesavanja',
+      '/settings',
     ]) {
       await page.goto(`/#${route}`)
       await page.waitForTimeout(100)
@@ -221,7 +221,7 @@ test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ pag
   await expect(page.getByLabel('Brzi unos')).toBeVisible()
 })
 
-test('23. obilazak: vodi kroz ekrane, probne stvari se brišu, rutina i izazov dana su na ekranu Danas', async ({
+test('23. tour: walks through the screens, trial things are deleted, the routine and the daily challenge are on the Today screen', async ({
   page,
 }) => {
   await page.goto('/')
@@ -241,7 +241,7 @@ test('23. obilazak: vodi kroz ekrane, probne stvari se brišu, rutina i izazov d
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dodaj probni predmet' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click() // workout
-  await expect(page).toHaveURL(/trening/)
+  await expect(page).toHaveURL(/workout/)
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
@@ -253,9 +253,9 @@ test('23. obilazak: vodi kroz ekrane, probne stvari se brišu, rutina i izazov d
   await expect(page.getByTestId('challenge')).toBeVisible()
 })
 
-test('18. polje za broj: brisanje pa kucanje nema nulu ispred', async ({ page }) => {
+test('18. number field: deleting and then typing has no leading zero', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   const field = page.getByLabel('Učenje (h/dan)')
   await field.fill('')
   await expect(field).toHaveValue('')
@@ -263,7 +263,7 @@ test('18. polje za broj: brisanje pa kucanje nema nulu ispred', async ({ page })
   await expect(field).toHaveValue('3')
 })
 
-test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
+test('19. editing and repeating an activity', async ({ page }) => {
   await onboard(page)
   await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
   await page.getByLabel('Naziv').fill('Šetnja')
@@ -277,22 +277,22 @@ test('19. izmena i ponavljanje aktivnosti', async ({ page }) => {
   await expect(page.getByText('Duga šetnja').first()).toBeVisible()
 })
 
-test.describe('pristupačnost (axe, WCAG A/AA)', () => {
+test.describe('accessibility (axe, WCAG A/AA)', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`15. bez povreda na svim ekranima, ${theme} tema`, async ({ page }) => {
       await onboard(page, { demo: true })
-      await page.goto('/#/podesavanja')
+      await page.goto('/#/settings')
       await choose(page, 'Tema', theme)
       for (const route of [
         '/',
-        '/faks',
-        '/trening',
+        '/study',
+        '/workout',
         '/zivot',
         '/planer',
         '/pregled',
         '/ai',
         '/vise',
-        '/podesavanja',
+        '/settings',
       ]) {
         await page.goto(`/#${route}`)
         await page.waitForTimeout(150)
@@ -307,7 +307,7 @@ test.describe('pristupačnost (axe, WCAG A/AA)', () => {
 })
 
 test.describe('jezici', () => {
-  test('20. engleski u onboardingu i podešavanjima, izbor se pamti', async ({ page }) => {
+  test('20. English in onboarding and settings, the choice is remembered', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
     await choose(page, 'Jezik', 'en')
@@ -326,7 +326,7 @@ test.describe('jezici', () => {
     await expect(page.getByText(/Expense 200 USD/)).toBeVisible()
     await page.reload()
     await expect(page.getByLabel('Quick entry')).toBeVisible()
-    await page.goto('/#/podesavanja')
+    await page.goto('/#/settings')
     await expect(page.getByRole('heading', { name: /Settings/ })).toBeVisible()
     await choose(page, 'Language', 'sr-Cyrl')
     await expect(page.getByRole('heading', { name: /Подешавања/ })).toBeVisible()
@@ -334,21 +334,23 @@ test.describe('jezici', () => {
     await expect(page.getByRole('heading', { name: /Podešavanja/ })).toBeVisible()
   })
 
-  test('21. svi jezici bez horizontalnog skrola i bez axe povreda', async ({ page }) => {
+  test('21. all languages without horizontal scroll and without axe violations', async ({
+    page,
+  }) => {
     test.setTimeout(150_000) // 6 languages x 8 screens, each with an axe scan
     await onboard(page, { demo: true })
     for (const lang of ['en', 'sr-Cyrl', 'de', 'ru', 'fr', 'es']) {
-      await page.goto('/#/podesavanja')
+      await page.goto('/#/settings')
       await choose(page, /Jezik|Language|Језик|Sprache|Язык|Langue|Idioma/, lang)
       for (const route of [
         '/',
-        '/faks',
-        '/trening',
+        '/study',
+        '/workout',
         '/zivot',
         '/planer',
         '/pregled',
         '/ai',
-        '/podesavanja',
+        '/settings',
       ]) {
         await page.goto(`/#${route}`)
         await page.waitForTimeout(120)
@@ -363,9 +365,7 @@ test.describe('jezici', () => {
   })
 })
 
-test('22. A-13 pametno „Nazad“: panel → prvi tab → vrh → Danas → pitanje za izlazak', async ({
-  page,
-}) => {
+test('22. A-13 smart "Back": panel → first tab → top → Today → exit question', async ({ page }) => {
   await onboard(page)
   await page.getByRole('link', { name: 'Život' }).click()
   await page.getByRole('tab', { name: /Navike/ }).click()
@@ -400,4 +400,16 @@ test('22. A-13 pametno „Nazad“: panel → prvi tab → vrh → Danas → pit
   await page.getByRole('button', { name: 'Ostani' }).click()
   await expect(page.getByRole('alertdialog')).toBeHidden()
   await expect(page).toHaveURL(/#\/$/)
+})
+
+test('24. legacy Serbian addresses redirect to the English routes', async ({ page }) => {
+  await onboard(page)
+  for (const [old, now] of [
+    ['faks', 'study'],
+    ['trening', 'workout'],
+    ['podesavanja', 'settings'],
+  ]) {
+    await page.goto(`/#/${old}`)
+    await expect(page).toHaveURL(new RegExp(`#/${now}$`))
+  }
 })

@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 import { choose, onboard } from './helpers'
 
 // Runs in WebKit with an iPhone profile (see playwright.config.ts): main screens, the app's own
-// panels and the iPhone-only cards. What this cannot show is listed in IZVESTAJ.md.
+// panels and the iPhone-only cards. What this cannot show is listed in REPORT.md.
 
-test('0. A-03: u Safariju se pre uvoda vidi instalacija i upozorenje da se podaci ne prenose', async ({
+test('0. A-03: in Safari the installation and the warning that the data is not carried over are shown before the intro', async ({
   page,
 }) => {
   await page.goto('/')
@@ -16,7 +16,7 @@ test('0. A-03: u Safariju se pre uvoda vidi instalacija i upozorenje da se podac
   await expect(page.getByRole('heading', { name: /Dobrodošao/ })).toBeVisible()
 })
 
-test('1. onboarding i ekran Danas na iPhone profilu; kartica za instalaciju se zatvara za stalno', async ({
+test('1. onboarding and the Today screen on the iPhone profile; the install card closes for good', async ({
   page,
 }) => {
   await onboard(page, { demo: true })
@@ -30,19 +30,19 @@ test('1. onboarding i ekran Danas na iPhone profilu; kartica za instalaciju se z
   await expect(page.getByRole('region', { name: 'Instaliraj na iPhone' })).toBeHidden()
 })
 
-test('2. glavni ekrani se otvaraju bez grešaka i bez horizontalnog skrola', async ({ page }) => {
+test('2. the main screens open without errors and without horizontal scroll', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await onboard(page, { demo: true })
   for (const route of [
     '/',
-    '/faks',
+    '/study',
     '/planer',
-    '/trening',
+    '/workout',
     '/zivot',
     '/pregled',
     '/ai',
-    '/podesavanja',
+    '/settings',
   ]) {
     await page.goto(`/#${route}`)
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
@@ -60,7 +60,7 @@ test('2. glavni ekrani se otvaraju bez grešaka i bez horizontalnog skrola', asy
   expect(errors).toEqual([])
 })
 
-test('3. donji panel za izbor i birač vremena rade u WebKit-u', async ({ page }) => {
+test('3. the bottom selection panel and the time picker work in WebKit', async ({ page }) => {
   await onboard(page)
   await page.getByRole('button', { name: '+ Nova aktivnost' }).click()
   await page.getByLabel('Naziv').fill('Šetnja')
@@ -77,16 +77,16 @@ test('3. donji panel za izbor i birač vremena rade u WebKit-u', async ({ page }
   await expect(page.getByText('Šetnja').first()).toBeVisible()
 })
 
-test('4. u podešavanjima piše da notifikacije na iPhone-u traže početni ekran', async ({
+test('4. the settings say that notifications on an iPhone require the home screen', async ({
   page,
 }) => {
   await onboard(page)
-  await page.goto('/#/podesavanja')
+  await page.goto('/#/settings')
   await expect(page.getByRole('note').filter({ hasText: 'početni ekran' })).toBeVisible()
   await expect(page.getByLabel(/Notifikacije pregledača/)).toHaveCount(0)
 })
 
-test('5. donji panel prati prevlačenje: preko praga se zatvara, ispod se vraća', async ({
+test('5. the bottom panel follows the drag: past the threshold it closes, below it returns', async ({
   page,
 }) => {
   await onboard(page)

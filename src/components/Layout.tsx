@@ -13,8 +13,8 @@ import type { BaseKey } from '../i18n'
 
 const MAIN: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/', label: 'nav.today', icon: '🌅' },
-  { to: '/faks', label: 'nav.study', icon: '📚' },
-  { to: '/trening', label: 'nav.workout', icon: '🏋️' },
+  { to: '/study', label: 'nav.study', icon: '📚' },
+  { to: '/workout', label: 'nav.workout', icon: '🏋️' },
   { to: '/zivot', label: 'nav.life', icon: '💰' },
   { to: '/vise', label: 'nav.more', icon: '☰' },
 ]
@@ -23,7 +23,7 @@ const EXTRA: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/pregled', label: 'nav.overview', icon: '📊' },
   { to: '/dostignuca', label: 'nav.achievements', icon: '🏆' },
   { to: '/ai', label: 'nav.ai', icon: '🤖' },
-  { to: '/podesavanja', label: 'nav.settings', icon: '⚙️' },
+  { to: '/settings', label: 'nav.settings', icon: '⚙️' },
 ]
 
 function linkCls({ isActive }: { isActive: boolean }) {

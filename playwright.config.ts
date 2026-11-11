@@ -22,7 +22,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
     },
     {
-      // iPhone: WebKit (Safari's engine) with an iPhone profile. It cannot replace a real iPhone, see IZVESTAJ.md
+      // iPhone: WebKit (Safari's engine) with an iPhone profile. It cannot replace a real iPhone, see REPORT.md
       name: 'iphone',
       testMatch: /iphone\.spec\.ts/,
       use: { ...devices['iPhone 14'] },
