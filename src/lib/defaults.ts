@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: Settings = {
   backupNudgeAt: '',
   stepGoal: 10000,
   stepReminders: false,
+  wakeAlarm: false,
   watchConnected: false,
   watchSource: '',
   watchLastSync: '',

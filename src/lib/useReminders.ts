@@ -2,11 +2,14 @@ import { useEffect } from 'react'
 import { selectData, useStore } from '../store'
 import { dueReminders } from './reminders'
 import { addDaysStr, todayStr } from './dates'
+import { isNative } from './platform'
+import { notificationsGranted, requestNativePermission, showNow } from './nativeNotify'
 
-export const notificationsSupported = () => typeof Notification !== 'undefined'
+export const notificationsSupported = () => isNative() || typeof Notification !== 'undefined'
 
 /** Asks the browser for permission. Returns true if granted. */
 export async function requestNotifications(): Promise<boolean> {
+  if (isNative()) return (await notificationsGranted()) || (await requestNativePermission())
   if (!notificationsSupported()) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
@@ -31,6 +34,7 @@ export async function showNotification(
   body: string,
   opts: NotifyOptions = {},
 ): Promise<boolean> {
+  if (isNative()) return showNow(title, body, opts)
   if (!notificationsSupported() || Notification.permission !== 'granted') return false
   const base = import.meta.env.BASE_URL
   const options = {
@@ -95,7 +99,14 @@ export function saveSent(
 export function useReminders() {
   const enabled = useStore((s) => s.settings.reminders)
   useEffect(() => {
-    if (!enabled || !notificationsSupported() || Notification.permission !== 'granted') return
+    // the Android app schedules ahead instead (components/NativeNotifications.tsx)
+    if (
+      isNative() ||
+      !enabled ||
+      !notificationsSupported() ||
+      Notification.permission !== 'granted'
+    )
+      return
     const tick = () => {
       const now = new Date()
       const today = todayStr(now)

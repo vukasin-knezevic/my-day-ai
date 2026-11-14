@@ -909,6 +909,23 @@ const messages = fromEnglish({
   'privacy.local': `Elles restent sur ce téléphone, dans le stockage de l’appli. Rien n’est envoyé nulle part.`,
   'privacy.revoke': `Tu peux retirer l’autorisation à tout moment : Health Connect → Autorisations des applis → My Day AI.`,
   'privacy.link': `Confidentialité`,
+  'alarm.title': `Réveille-toi ⏰`,
+  'alarm.body': `Ouvre l’appli et maintiens le bouton pour arrêter l’alarme.`,
+  'alarm.hold': `Maintenir pour arrêter`,
+  'alarm.holding': `Continue à maintenir…`,
+  'alarm.done': `Alarme arrêtée. Bonjour !`,
+  'steps.remTitle': `👟 Une petite marche ?`,
+  'steps.remBody': `Ton objectif est de {goal} pas. Une courte marche aide, sans pression.`,
+  'set.wakeAlarm': `Alarme à l’heure du réveil`,
+  'set.wakeAlarmHint': `Une notification sonore. Tu l’arrêtes en maintenant un bouton. Nécessite l’autorisation des alarmes.`,
+  'notif.explain': `Pour te rappeler les cours, les échéances et l’heure du coucher même quand l’appli est fermée, le téléphone va maintenant demander d’autoriser les notifications. Il y a peu de rappels (6 par jour au maximum) et tu peux les désactiver quand tu veux.`,
+  'notif.allow': `Continuer`,
+  'notif.exactNote': `Pour des rappels à la minute près, autorise « Alarmes et rappels » pour cette appli.`,
+  'notif.exactOpen': `Ouvrir les réglages des alarmes`,
+  'notif.deniedNative': `Les notifications sont bloquées pour cette appli. Active-les dans les réglages du téléphone.`,
+  'notif.channel.reminders': `Rappels`,
+  'notif.channel.routine': `Routine du matin`,
+  'notif.channel.alarm': `Alarme`,
 })
 
 const locale: LocaleModule = {

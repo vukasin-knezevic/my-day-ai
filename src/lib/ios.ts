@@ -30,6 +30,7 @@ export type NotificationSupport = 'ok' | 'ios-install' | 'unsupported'
 
 /** Can this device show notifications, and if not, why (so the settings can say it clearly). */
 export function notificationSupport(env: Env): NotificationSupport {
+  if (isNative()) return 'ok'
   if (isIos(env) && !env.standalone) return 'ios-install'
   return env.hasNotifications ? 'ok' : 'unsupported'
 }

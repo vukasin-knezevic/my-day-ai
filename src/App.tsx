@@ -16,6 +16,7 @@ import Splash from './components/Splash'
 import { BootScreen } from './components/SunLogo'
 import { useNotificationActions } from './lib/routineNotify'
 import { useWatchSync } from './lib/health/useWatchSync'
+import NativeNotifications from './components/NativeNotifications'
 import { hideSplash, syncStatusBar } from './lib/nativeChrome'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
@@ -25,6 +26,7 @@ const Ai = lazy(() => import('./pages/Ai'))
 const Study = lazy(() => import('./pages/Study'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Health = lazy(() => import('./pages/Health'))
+const Alarm = lazy(() => import('./pages/Alarm'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
@@ -82,6 +84,7 @@ export default function App() {
       <Shortcuts />
       <Splash />
       <BackController />
+      <NativeNotifications />
       <Suspense fallback={null}>
         <Routes>
           <Route element={<Layout />}>
@@ -93,6 +96,7 @@ export default function App() {
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
+            <Route path="alarm" element={<Alarm />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="settings" element={<Settings />} />
             {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}

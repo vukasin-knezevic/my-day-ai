@@ -994,6 +994,26 @@ const messages = {
   'privacy.revoke':
     'Dozvolu možeš da povučeš u svakom trenutku: Health Connect → Dozvole aplikacija → My Day AI.',
   'privacy.link': 'Privatnost',
+  'alarm.title': 'Ustani ⏰',
+  'alarm.body': 'Otvori aplikaciju i drži dugme da zaustaviš alarm.',
+  'alarm.hold': 'Drži za zaustavljanje',
+  'alarm.holding': 'Nastavi da držiš…',
+  'alarm.done': 'Alarm zaustavljen. Dobro jutro!',
+  'steps.remTitle': '👟 Mala šetnja?',
+  'steps.remBody': 'Cilj je {goal} koraka. Kratka šetnja pomaže, bez pritiska.',
+  'set.wakeAlarm': 'Alarm za buđenje u vreme buđenja',
+  'set.wakeAlarmHint':
+    'Glasno obaveštenje. Zaustavljaš ga držanjem dugmeta. Potrebna je dozvola za alarme.',
+  'notif.explain':
+    'Da bi te podsetila pre predavanja, rokova i spavanja i kad je aplikacija zatvorena, telefon će sada pitati da dozvoliš obaveštenja. Podsetnika je malo (najviše 6 dnevno) i možeš da ih isključiš kad god želiš.',
+  'notif.allow': 'Nastavi',
+  'notif.exactNote': 'Za podsetnike u tačan minut dozvoli „Alarmi i podsetnici“ za ovu aplikaciju.',
+  'notif.exactOpen': 'Otvori podešavanja alarma',
+  'notif.deniedNative':
+    'Obaveštenja su blokirana za ovu aplikaciju. Uključi ih u podešavanjima telefona.',
+  'notif.channel.reminders': 'Podsetnici',
+  'notif.channel.routine': 'Jutarnja rutina',
+  'notif.channel.alarm': 'Alarm',
 }
 
 export type MessageKey = keyof typeof messages

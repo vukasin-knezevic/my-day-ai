@@ -910,6 +910,23 @@ const messages = fromEnglish({
   'privacy.local': `Sie bleiben auf diesem Handy, im Speicher der App. Nichts wird irgendwohin gesendet.`,
   'privacy.revoke': `Du kannst die Berechtigung jederzeit entziehen: Health Connect → App-Berechtigungen → My Day AI.`,
   'privacy.link': `Datenschutz`,
+  'alarm.title': `Aufwachen ⏰`,
+  'alarm.body': `Öffne die App und halte die Taste gedrückt, um den Wecker zu stoppen.`,
+  'alarm.hold': `Zum Stoppen halten`,
+  'alarm.holding': `Weiter halten…`,
+  'alarm.done': `Wecker gestoppt. Guten Morgen!`,
+  'steps.remTitle': `👟 Ein kleiner Spaziergang?`,
+  'steps.remBody': `Dein Ziel sind {goal} Schritte. Ein kurzer Spaziergang hilft, ohne Druck.`,
+  'set.wakeAlarm': `Wecker zur Aufstehzeit`,
+  'set.wakeAlarmHint': `Eine laute Benachrichtigung. Du stoppst sie, indem du eine Taste hältst. Braucht die Berechtigung für Wecker.`,
+  'notif.explain': `Damit dich die App vor Vorlesungen, Fristen und der Schlafenszeit erinnert, auch wenn sie geschlossen ist, fragt das Handy jetzt nach der Erlaubnis für Benachrichtigungen. Es gibt wenige Erinnerungen (höchstens 6 am Tag) und du kannst sie jederzeit ausschalten.`,
+  'notif.allow': `Weiter`,
+  'notif.exactNote': `Für Erinnerungen auf die Minute erlaube „Wecker & Erinnerungen“ für diese App.`,
+  'notif.exactOpen': `Wecker-Einstellungen öffnen`,
+  'notif.deniedNative': `Benachrichtigungen sind für diese App blockiert. Schalte sie in den Handy-Einstellungen ein.`,
+  'notif.channel.reminders': `Erinnerungen`,
+  'notif.channel.routine': `Morgenroutine`,
+  'notif.channel.alarm': `Wecker`,
 })
 
 const locale: LocaleModule = {

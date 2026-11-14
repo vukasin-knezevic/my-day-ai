@@ -311,6 +311,8 @@ export interface Settings {
   backupNudgeAt: string
   /** Daily steps goal (1 000 - 50 000) */
   stepGoal: number
+  /** Wake-up alarm at the wake-up time (Android app; a loud notification you stop on purpose) */
+  wakeAlarm: boolean
   /** Steps reminders at 12:00, 16:00 and 20:00 (only while the goal is not reached) */
   stepReminders: boolean
   /** The watch is connected (Health Connect permissions were asked for) */

@@ -907,6 +907,23 @@ const messages = fromEnglish({
   'privacy.local': `Se quedan en este teléfono, en el almacenamiento de la app. No se envía nada a ningún sitio.`,
   'privacy.revoke': `Puedes quitar el permiso en cualquier momento: Health Connect → Permisos de apps → My Day AI.`,
   'privacy.link': `Privacidad`,
+  'alarm.title': `Despierta ⏰`,
+  'alarm.body': `Abre la app y mantén pulsado el botón para detener la alarma.`,
+  'alarm.hold': `Mantén para detener`,
+  'alarm.holding': `Sigue manteniendo…`,
+  'alarm.done': `Alarma detenida. ¡Buenos días!`,
+  'steps.remTitle': `👟 ¿Un pequeño paseo?`,
+  'steps.remBody': `Tu meta son {goal} pasos. Un paseo corto ayuda, sin presión.`,
+  'set.wakeAlarm': `Alarma a la hora de despertar`,
+  'set.wakeAlarmHint': `Una notificación fuerte. La detienes manteniendo un botón. Necesita el permiso de alarmas.`,
+  'notif.explain': `Para recordarte antes de las clases, los plazos y la hora de dormir incluso con la app cerrada, el teléfono te pedirá ahora permiso para las notificaciones. Hay pocos recordatorios (como máximo 6 al día) y puedes desactivarlos cuando quieras.`,
+  'notif.allow': `Continuar`,
+  'notif.exactNote': `Para recordatorios al minuto exacto, permite «Alarmas y recordatorios» para esta app.`,
+  'notif.exactOpen': `Abrir ajustes de alarmas`,
+  'notif.deniedNative': `Las notificaciones están bloqueadas para esta app. Actívalas en los ajustes del teléfono.`,
+  'notif.channel.reminders': `Recordatorios`,
+  'notif.channel.routine': `Rutina de la mañana`,
+  'notif.channel.alarm': `Alarma`,
 })
 
 const locale: LocaleModule = {

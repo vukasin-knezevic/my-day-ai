@@ -1001,6 +1001,26 @@ const messages: Record<MessageKey, string> = {
   'privacy.revoke':
     'You can take the permission away at any time: Health Connect → App permissions → My Day AI.',
   'privacy.link': 'Privacy',
+  'alarm.title': 'Wake up ⏰',
+  'alarm.body': 'Open the app and hold the button to stop the alarm.',
+  'alarm.hold': 'Hold to stop',
+  'alarm.holding': 'Keep holding…',
+  'alarm.done': 'Alarm stopped. Good morning!',
+  'steps.remTitle': '👟 A little walk?',
+  'steps.remBody': 'Your goal is {goal} steps. A short walk helps, no pressure.',
+  'set.wakeAlarm': 'Wake-up alarm at the wake-up time',
+  'set.wakeAlarmHint':
+    'A loud notification. You stop it by holding a button. Needs the alarms permission.',
+  'notif.explain':
+    'To remind you before classes, deadlines and bedtime even when the app is closed, the phone will now ask to allow notifications. There are few reminders (at most 6 a day) and you can turn them off any time.',
+  'notif.allow': 'Continue',
+  'notif.exactNote': 'For reminders at the exact minute, allow “Alarms & reminders” for this app.',
+  'notif.exactOpen': 'Open alarm settings',
+  'notif.deniedNative':
+    'Notifications are blocked for this app. Turn them on in the phone settings.',
+  'notif.channel.reminders': 'Reminders',
+  'notif.channel.routine': 'Morning routine',
+  'notif.channel.alarm': 'Alarm',
 }
 
 const locale: LocaleModule = {
