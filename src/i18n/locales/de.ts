@@ -910,6 +910,7 @@ const messages = fromEnglish({
   'privacy.local': `Sie bleiben auf diesem Handy, im Speicher der App. Nichts wird irgendwohin gesendet.`,
   'privacy.revoke': `Du kannst die Berechtigung jederzeit entziehen: Health Connect → App-Berechtigungen → My Day AI.`,
   'privacy.link': `Datenschutz`,
+  'privacy.web': `Vollständige Datenschutzerklärung (Web)`,
   'alarm.title': `Aufwachen ⏰`,
   'alarm.body': `Öffne die App und halte die Taste gedrückt, um den Wecker zu stoppen.`,
   'alarm.hold': `Zum Stoppen halten`,

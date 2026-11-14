@@ -909,6 +909,7 @@ const messages = fromEnglish({
   'privacy.local': `Elles restent sur ce téléphone, dans le stockage de l’appli. Rien n’est envoyé nulle part.`,
   'privacy.revoke': `Tu peux retirer l’autorisation à tout moment : Health Connect → Autorisations des applis → My Day AI.`,
   'privacy.link': `Confidentialité`,
+  'privacy.web': `Politique de confidentialité complète (web)`,
   'alarm.title': `Réveille-toi ⏰`,
   'alarm.body': `Ouvre l’appli et maintiens le bouton pour arrêter l’alarme.`,
   'alarm.hold': `Maintenir pour arrêter`,

@@ -16,7 +16,7 @@ import {
 export interface HealthConnectNative {
   isAvailable(): Promise<{ status: Availability }>
   getPermissions(): Promise<PermissionState>
-  requestPermissions(): Promise<PermissionState>
+  requestHealthPermissions(): Promise<PermissionState>
   getDailySteps(o: { date: string; origin?: string }): Promise<{ count: number }>
   getSleepSessions(o: {
     from: number
@@ -71,7 +71,7 @@ const map = <T, U>(r: HealthResult<T>, f: (v: T) => U): HealthResult<U> =>
 export const healthConnectSource: HealthSource = {
   kind: 'health-connect',
   isAvailable: async () => map(await call(() => native.isAvailable()), (r) => r.status),
-  requestPermissions: () => call(() => native.requestPermissions()),
+  requestPermissions: () => call(() => native.requestHealthPermissions()),
   getPermissionState: () => call(() => native.getPermissions()),
   getDailySteps: async (date, origin) =>
     map(await call(() => native.getDailySteps({ date, origin })), (r) => r.count),

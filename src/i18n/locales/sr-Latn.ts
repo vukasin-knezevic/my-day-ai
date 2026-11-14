@@ -994,6 +994,7 @@ const messages = {
   'privacy.revoke':
     'Dozvolu možeš da povučeš u svakom trenutku: Health Connect → Dozvole aplikacija → My Day AI.',
   'privacy.link': 'Privatnost',
+  'privacy.web': 'Cela politika privatnosti (na internetu)',
   'alarm.title': 'Ustani ⏰',
   'alarm.body': 'Otvori aplikaciju i drži dugme da zaustaviš alarm.',
   'alarm.hold': 'Drži za zaustavljanje',
