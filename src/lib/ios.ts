@@ -1,5 +1,6 @@
 // iPhone / iPad specifics: there is no "Install" button there, and notifications only work for an
 // app that was added to the home screen (iOS 16.4+). Pure functions, so they are easy to test.
+import { isNative } from './platform'
 
 export interface Env {
   userAgent: string
@@ -22,7 +23,7 @@ export function isIos(env: Pick<Env, 'userAgent' | 'platform' | 'maxTouchPoints'
 
 /** Show the "Add to Home Screen" card: on iOS, not installed yet, and not closed before. */
 export function shouldShowIosInstallHint(env: Env, dismissed: boolean): boolean {
-  return isIos(env) && !env.standalone && !dismissed
+  return !isNative() && isIos(env) && !env.standalone && !dismissed
 }
 
 export type NotificationSupport = 'ok' | 'ios-install' | 'unsupported'

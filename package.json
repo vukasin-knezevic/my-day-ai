@@ -13,9 +13,19 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "build:android": "cross-env VITE_TARGET=android tsc -b && cross-env VITE_TARGET=android vite build",
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android",
+    "cap:run": "npm run build:android && cap sync android && cap run android"
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "date-fns": "^4.4.0",
     "idb-keyval": "^6.3.0",
     "react": "^18.3.1",
@@ -27,6 +37,9 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/vite": "^4.3.5",
@@ -38,6 +51,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitest/coverage-v8": "^5.1.0",
+    "cross-env": "^10.1.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.7",

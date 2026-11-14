@@ -15,6 +15,7 @@ import Today from './pages/Today'
 import Splash from './components/Splash'
 import { BootScreen } from './components/SunLogo'
 import { useNotificationActions } from './lib/routineNotify'
+import { hideSplash, syncStatusBar } from './lib/nativeChrome'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -46,10 +47,18 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    applyTheme(theme)
+    const apply = () => {
+      applyTheme(theme)
+      void syncStatusBar(document.documentElement.classList.contains('dark'))
+    }
+    apply()
     if (theme !== 'system') return
-    return watchSystemTheme(() => applyTheme('system'))
+    return watchSystemTheme(apply)
   }, [theme])
+
+  useEffect(() => {
+    if (hydrated) void hideSplash()
+  }, [hydrated])
 
   if (hydrationError) return <LoadError />
   if (!hydrated) return <BootScreen />
