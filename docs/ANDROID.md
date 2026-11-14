@@ -78,3 +78,37 @@ The web app and the Android app store data separately.
 | No steps / no sleep                                            | The watch app must write to Health Connect; check the **Source**; tap **Sync now**; check permissions (section 4).  |
 | Notifications do not come                                      | Section 5 (Autostart, No restrictions, lock in recents, Alarms & reminders allowed).                                |
 | Blank screen                                                   | Run `npm run build:android` and `npx cap sync android` again.                                                       |
+
+## 8. Exactly what to tap on the phone (first install, checked on Redmi Note 13 Pro 5G)
+
+1. **Before the install**: unlock the phone, keep the screen on. In **Developer options** turn on **USB debugging**,
+   **Install via USB** and **USB debugging (Security settings)**. If a dialog "Install via USB" appears during
+   the install, tap **Install**. (Without this `adb install` fails with `INSTALL_FAILED_USER_RESTRICTED`.)
+2. **First start**: the app opens on the first-run screen. Choose the language and finish the questions.
+3. **Notifications**: when Android asks "Allow My Day AI to send you notifications?" tap **Allow**.
+4. **Alarms & reminders**: **Settings → Apps → Manage apps → My Day AI → Other permissions** (or the screen the app
+   opens) → allow **Alarms & reminders** / exact alarms.
+5. **Health Connect**: in the app **Settings → Watch → Connect watch → Connect**; in the system screen switch on
+   **Steps** and **Sleep** → **Allow**. If Health Connect is missing, install it from Google Play (on Android 14+ it is
+   already part of the system: **Settings → Health Connect**).
+6. **Xiaomi battery and autostart** (without these reminders and the alarm may not fire with the app closed):
+   - **Settings → Apps → Manage apps → My Day AI → Autostart: ON**;
+   - same screen → **Battery saver → No restrictions**;
+   - recent apps → long press the My Day AI card → **lock** icon.
+
+## 9. Short test list (step by step)
+
+1. Start the app → the first-run screen shows, no crash, no blank screen.
+2. Finish setup → **Today** opens.
+3. **Settings → Privacy**: the three lines and the link "Full privacy policy" open the web page (6 languages).
+4. **Settings → Watch → Connect watch** → Allow Steps and Sleep → status says connected.
+5. **Sync now** → steps show on **Today**; **Health → Sleep** shows nights marked with the small watch icon.
+6. Add a reminder for 2 minutes ahead → press Home and lock the phone → a notification arrives on time.
+7. Set a wake-up alarm for 2 minutes ahead → lock the phone → it rings; hold the stop button to stop it.
+8. Press the Back button on a sub-page → it goes one page back; on **Today** it leaves the app.
+9. Close the app from recent apps, open it again → the data is still there.
+10. If something fails, run `adb logcat -d | findstr /i "mydayai AndroidRuntime"` and send me the lines.
+
+Building without a system-wide JDK 21: unzip Temurin 21 somewhere (for example `C:\Projects\tools\jdk21`) and run
+`$env:JAVA_HOME="C:\Projects\tools\jdk21"; .\gradlew.bat assembleDebug` inside `android` (this does not change your
+system Java).
