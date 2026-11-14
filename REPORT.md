@@ -2,6 +2,13 @@
 
 Version 0.1 (formerly "1.0") finished on 2026-11-06, version **0.2** (formerly "1.1") on 2026-11-07, version **0.3** on 2026-11-07, version **0.4** on 2026-11-10 (phases A–G; phase H was not done). All versions are 0.x until the official release; 1.0 is reserved for the first official release. Repository: https://github.com/vukasin-knezevic/my-day-ai · Live app: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Version 0.4.3 (2026-11-14): scrollable bottom navigation, automatic name grammar
+
+- Bottom bar: one horizontal strip with all sections (Today, Study, Workout, Life, Planner, Overview, Achievements, AI), 4 visible at once, smooth CSS swipe with snap and edge fades. Settings is a static button in the right corner, outside the strip. The old "More" screen is gone (`/vise` redirects to Today).
+- Name: the app asks only for the name, as the person writes it. Serbian vocative is worked out by rules (`lib/vocative.ts`), every other language, English included, uses the name unchanged (`lib/greetingName.ts`). The separate vocative field is removed everywhere.
+- Data: `DATA_VERSION` 5; `migrateData` drops the old `addressName` and never touches the name; old exports still import.
+- Tests: 50+ Serbian name table, `greetingName` per language, migration, bottom bar component test, e2e swipe test.
+
 ## Version 0.4.2 (2026-11-11): "streak.days" is shown in English
 
 - Bug: when the phone language was English, the intro screen and the streak card showed the raw key "🔥 streak.days" instead of "1 day".

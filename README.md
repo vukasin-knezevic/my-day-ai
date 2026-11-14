@@ -23,7 +23,7 @@ I started building it as a student, for my own day: so that classes, exams, work
 
 ### Versions
 
-Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_). **1.0** is reserved for the first official release (colleagues + Google Play).
+Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_), **0.4.3** (a swipeable bottom bar with Settings pinned on the right; the app asks only for your name and works out Serbian grammar by itself). **1.0** is reserved for the first official release (colleagues + Google Play).
 
 ### User testing
 

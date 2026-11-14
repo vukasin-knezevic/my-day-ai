@@ -59,6 +59,13 @@ flowchart LR
 
 Saved data has a version (`DATA_VERSION`). `migrateData()` in `lib/defaults.ts` turns the old shape into the new one (e.g. `ps5EarnedMin` → `rewardEarnedMin`). It runs when loading from IndexedDB and when importing JSON, it is a pure function and is safe to run more than once.
 
+Version 5 (0.4.3) dropped the separate vocative field (`addressName`): `migrateData()` deletes it and never touches `name`.
+
+## Addressing the user and the bottom bar
+
+- `lib/greetingName.ts` is the one place that decides how the user is addressed: only `settings.name` is stored (nominative). `greetingName(name, locale)` returns the Serbian vocative (`lib/vocative.ts`, rules + small exception lists, Latin and Cyrillic) for `sr*` and the name unchanged for every other language. Greetings, the splash, notifications and the subtitle on Today all call it.
+- The phone's bottom bar (`BottomNav` in `components/Layout.tsx`) is one CSS scroll strip (`overflow-x: auto`, scroll snap, each item 25% wide so four fit) plus a pinned Settings button outside it. JavaScript only scrolls the active tab into view and toggles the edge fades; the swipe itself is pure CSS.
+
 ## Why it is built this way
 
 - **Two AI modes, one code path.** The manual and the API mode share `buildPrompt`, `parseAiResponse` and the display. The only difference is who sends the prompt (me by copying, or `fetch`).
