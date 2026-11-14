@@ -65,7 +65,8 @@ Xiaomi closes background apps aggressively. For reminders and the alarm to arriv
 The web app and the Android app store data separately.
 
 1. In the web app: **Settings → Export** (saves a JSON file; send it to the phone, for example by Drive or cable).
-2. In the Android app, on the first screen: **Move from the web version** → choose that file.
+2. Install the Android app. The first screen is the normal setup, the same as in the browser.
+3. When the setup is done: **Settings → Data → Import a backup** → **Choose file** (or paste the JSON into the field and tap **Check import**).
 
 ## 7. Troubleshooting
 

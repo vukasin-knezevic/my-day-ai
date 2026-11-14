@@ -283,7 +283,7 @@ const messages = fromEnglish({
   'demo.upper': `Haut du corps (exemple)`,
   'demo.meal': `Poulet et riz (exemple)`,
   'demo.habit': `Eau (exemple)`,
-  'ob.title': `🌅 Bienvenue dans My Day AI`,
+  'ob.title': `Bienvenue dans My Day AI`,
   'ob.step': `Étape {n} sur {total} : {name}`,
   'ob.s.language': `Langue`,
   'ob.s.name': `Nom`,
@@ -927,8 +927,6 @@ const messages = fromEnglish({
   'notif.channel.reminders': `Rappels`,
   'notif.channel.routine': `Routine du matin`,
   'notif.channel.alarm': `Alarme`,
-  'move.title': `Reprendre depuis la version web`,
-  'move.body': `Tu utilisais My Day AI dans le navigateur ? Les données ne passent pas toutes seules. 1) Dans l’appli web : Réglages → Exporter. 2) Ici : choisis ce fichier ci-dessous.`,
 })
 
 const locale: LocaleModule = {

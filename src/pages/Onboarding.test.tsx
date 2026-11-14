@@ -92,3 +92,10 @@ test('uvod: pita se samo za ime (bez vokativa), rod menja rečenice', async () =
   await user.click(screen.getByRole('button', { name: 'Završi' }))
   expect(useStore.getState().settings).toMatchObject({ name: 'Petar', gender: 'f' })
 })
+
+test('prvi ekran je običan onboarding: nema kartice za uvoz, a logo je dekorativan', () => {
+  render(<Onboarding />)
+  expect(screen.queryByTestId('move-from-web')).not.toBeInTheDocument()
+  expect(screen.queryByText(/Choose file|Izaberi fajl/)).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1 }).querySelector('svg[aria-hidden]')).not.toBeNull()
+})

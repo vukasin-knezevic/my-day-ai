@@ -7,8 +7,8 @@ import { isNative } from './platform'
 export async function syncStatusBar(dark: boolean): Promise<void> {
   if (!isNative()) return
   try {
+    await StatusBar.setOverlaysWebView({ overlay: true })
     await StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light })
-    await StatusBar.setBackgroundColor({ color: dark ? '#0f172a' : '#f8fafc' })
   } catch {
     // an old WebView without the plugin: the default bar is fine
   }

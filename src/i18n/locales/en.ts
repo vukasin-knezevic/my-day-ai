@@ -296,7 +296,7 @@ const messages: Record<MessageKey, string> = {
   'demo.upper': 'Upper body (example)',
   'demo.meal': 'Chicken and rice (example)',
   'demo.habit': 'Water (example)',
-  'ob.title': '🌅 Welcome to My Day AI',
+  'ob.title': 'Welcome to My Day AI',
   'ob.step': 'Step {n} of {total}: {name}',
   'ob.s.language': 'Language',
   'ob.s.name': 'Name',
@@ -1022,9 +1022,6 @@ const messages: Record<MessageKey, string> = {
   'notif.channel.reminders': 'Reminders',
   'notif.channel.routine': 'Morning routine',
   'notif.channel.alarm': 'Alarm',
-  'move.title': 'Move from the web version',
-  'move.body':
-    'Used My Day AI in the browser? The data does not carry over by itself. 1) In the web app: Settings → Export. 2) Here: choose that file below.',
 }
 
 const locale: LocaleModule = {

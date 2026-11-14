@@ -1,5 +1,4 @@
-import { isNative } from '../lib/platform'
-import DataCard from './DataCard'
+import SunLogo from '../components/SunLogo'
 import { isSerbian } from '../lib/greetingName'
 import { useState } from 'react'
 import { useStore } from '../store'
@@ -44,17 +43,13 @@ export default function Onboarding() {
 
   return (
     <div className="mx-auto max-w-md p-4 pt-10">
-      <h1 className="mb-1 text-2xl font-bold">{t('ob.title')}</h1>
+      <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
+        <SunLogo size={36} />
+        {t('ob.title')}
+      </h1>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         {t('ob.step', { n: step + 1, total: STEPS.length, name: t(STEPS[step]) })}
       </p>
-      {isNative() && step === 0 && (
-        <Card className="mb-4 space-y-2" data-testid="move-from-web">
-          <h2 className="font-semibold">{t('move.title')}</h2>
-          <p className="text-sm">{t('move.body')}</p>
-          <DataCard />
-        </Card>
-      )}
       <KeyScope onEnter={next} onEscape={back} focusKey={step}>
         <Card className="space-y-4">
           {step === 0 && (
