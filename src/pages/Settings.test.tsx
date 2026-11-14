@@ -17,15 +17,11 @@ const show = () =>
     </MemoryRouter>,
   )
 
-test('R-10: prazno „Kako ti se obraćam“ je unapred popunjeno predlogom vokativa', () => {
-  useStore.getState().setSettings({ name: 'Vukašin', addressName: '' })
+test('0.4.3: Podešavanja pitaju samo za ime, bez polja za vokativ', () => {
+  useStore.getState().setSettings({ name: 'Vukašin' })
   show()
-  expect(useStore.getState().settings.addressName).toBe('Vukašine')
-  expect(screen.getByDisplayValue('Vukašine')).toBeInTheDocument()
-})
-
-test('R-10: ono što je korisnik sam upisao se ne dira', () => {
-  useStore.getState().setSettings({ name: 'Vukašin', addressName: 'Vule' })
-  show()
-  expect(useStore.getState().settings.addressName).toBe('Vule')
+  // the name stays exactly as typed (nominative); there is no second "how do I address you" field
+  expect(screen.getByDisplayValue('Vukašin')).toBeInTheDocument()
+  expect(screen.queryByDisplayValue('Vukašine')).toBeNull()
+  expect(screen.queryByLabelText(/obraćam/i)).toBeNull()
 })

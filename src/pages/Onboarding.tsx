@@ -1,5 +1,4 @@
-import { isSerbian } from '../lib/address'
-import { vocative } from '../lib/vocative'
+import { isSerbian } from '../lib/greetingName'
 import { useState } from 'react'
 import { useStore } from '../store'
 import { Button, Card, Field, Input, Select } from '../components/ui'
@@ -27,7 +26,6 @@ export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState({ ...settings })
   const [demo, setDemo] = useState(true)
-  const [addressEdited, setAddressEdited] = useState(false)
   const serbian = isSerbian(lang)
 
   const set = <K extends keyof typeof draft>(k: K, v: (typeof draft)[K]) =>
@@ -81,28 +79,12 @@ export default function Onboarding() {
               <Field label={t('ob.name.label')} optional>
                 <Input
                   value={draft.name}
-                  onChange={(e) => {
-                    set('name', e.target.value)
-                    // the suggestion follows the name until the user corrects it by hand
-                    if (!addressEdited) set('addressName', vocative(e.target.value))
-                  }}
+                  onChange={(e) => set('name', e.target.value)}
                   placeholder={t('ob.name.placeholder')}
                 />
               </Field>
               {serbian && (
                 <>
-                  <Field label={t('ob.address.label')} optional>
-                    <Input
-                      value={draft.addressName}
-                      onChange={(e) => {
-                        setAddressEdited(true)
-                        set('addressName', e.target.value)
-                      }}
-                    />
-                  </Field>
-                  <p className="-mt-2 text-xs text-slate-600 dark:text-slate-400">
-                    {t('ob.address.hint')}
-                  </p>
                   <div role="radiogroup" aria-label={t('ob.gender.label')} className="space-y-1">
                     <p className="text-sm font-medium">{t('ob.gender.label')}</p>
                     {(['m', 'f'] as const).map((g) => (

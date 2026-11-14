@@ -1,7 +1,6 @@
 import { currentEnv, notificationSupport } from '../lib/ios'
-import { isSerbian } from '../lib/address'
-import { vocative } from '../lib/vocative'
-import { useEffect, useState } from 'react'
+import { isSerbian } from '../lib/greetingName'
+import { useState } from 'react'
 import DataCard from './DataCard'
 import { useStore } from '../store'
 import CalendarButton from '../components/CalendarButton'
@@ -23,12 +22,6 @@ export default function Settings() {
   const clearDemo = useStore((s) => s.clearDemo)
   const hasDemo = useStore((s) => s.hasDemo())
   const support = notificationSupport(currentEnv())
-  // R-10: an empty "how do I address you" starts with the suggested form of the name
-  useEffect(() => {
-    const s = useStore.getState().settings
-    if (isSerbian(getLanguage()) && !s.addressName.trim() && s.name.trim())
-      setSettings({ addressName: vocative(s.name) })
-  }, [setSettings])
   const [notifMsg, setNotifMsg] = useState('')
   const steps = routineSteps(settings)
   const setSteps = (list: SettingsT['routineSteps']) => setSettings({ routineSteps: list })
@@ -84,29 +77,10 @@ export default function Settings() {
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.rhythm')}</h2>
           <Field label={t('set.name')} optional>
-            <Input
-              value={settings.name}
-              onChange={(e) => {
-                // while the address is not corrected by hand it follows the name
-                const follows = settings.addressName === vocative(settings.name)
-                setSettings({
-                  name: e.target.value,
-                  ...(follows || !settings.addressName
-                    ? { addressName: vocative(e.target.value) }
-                    : {}),
-                })
-              }}
-            />
+            <Input value={settings.name} onChange={(e) => setSettings({ name: e.target.value })} />
           </Field>
           {isSerbian(lang) && (
             <>
-              <Field label={t('set.address')} optional>
-                <Input
-                  value={settings.addressName}
-                  placeholder={vocative(settings.name)}
-                  onChange={(e) => setSettings({ addressName: e.target.value })}
-                />
-              </Field>
               <Field label={t('set.gender')}>
                 <Select
                   value={settings.gender}

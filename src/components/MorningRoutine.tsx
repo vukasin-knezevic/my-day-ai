@@ -1,10 +1,10 @@
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
 import { Card } from './ui'
-import { addressName } from '../lib/address'
+import { greetingName } from '../lib/greetingName'
 import { routineStreak, routineView } from '../lib/routine'
 import { toggleRoutineStep } from '../lib/routineFlow'
-import { useT } from '../i18n'
+import { getLanguage, useT } from '../i18n'
 
 /** The morning routine card on the Today screen: ticks, a small animation and XP. No blame, ever. */
 export default function MorningRoutine({ now, today }: { now: Date; today: string }) {
@@ -13,7 +13,7 @@ export default function MorningRoutine({ now, today }: { now: Date; today: strin
   const view = routineView(data, now, today)
   if (view.mode === 'off') return null
   const streak = routineStreak(data, today)
-  const name = addressName(data.settings)
+  const name = greetingName(data.settings.name, getLanguage())
   const shown =
     view.mode === 'rescue'
       ? view.indexes.map((i) => ({ i, step: view.steps[i] }))

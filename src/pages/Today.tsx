@@ -1,4 +1,4 @@
-import { addressName } from '../lib/address'
+import { greetingName } from '../lib/greetingName'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
@@ -43,7 +43,7 @@ import CloseDay from '../components/CloseDay'
 import { useSwipe } from '../lib/useSwipe'
 import { useBackHandler } from '../lib/back'
 import { deleteWithUndo } from '../lib/undo'
-import { useT } from '../i18n'
+import { getLanguage, useT } from '../i18n'
 import type { Activity } from '../types'
 
 const PX_PER_HOUR = 44
@@ -197,7 +197,7 @@ export default function Today() {
   }
 
   const summary = daySummary(occ)
-  const callName = addressName(data.settings)
+  const callName = greetingName(data.settings.name, getLanguage())
   const subtitle = callName
     ? `${callName}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
     : summary

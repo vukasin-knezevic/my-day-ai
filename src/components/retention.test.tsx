@@ -30,7 +30,6 @@ beforeEach(() => {
       onboarded: true,
       tutorialDone: true,
       name: 'Vukašin',
-      addressName: 'Vukašine',
       wakeTime: '08:00',
       bedTime: '00:30',
     },
@@ -40,7 +39,7 @@ beforeEach(() => {
 })
 
 describe('morning routine card', () => {
-  test('ticks a step (XP once), shows the progress, and the greeting uses the vocative', async () => {
+  test('ticks a step (XP once), shows the progress, and the greeting uses the Serbian vocative worked out from the name', async () => {
     const user = userEvent.setup()
     render(<MorningRoutine now={at(8, 30)} today={TODAY} />)
     expect(screen.getByText(/Dobro jutro, Vukašine!/)).toBeInTheDocument()
@@ -148,7 +147,7 @@ describe('daily challenge, ring and closing the day', () => {
 })
 
 describe('splash', () => {
-  test('greets by the vocative name and shows the streak; a tap skips it', async () => {
+  test('greets by the vocative of the name and shows the streak; a tap skips it', async () => {
     const user = userEvent.setup()
     const d = new Date()
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`

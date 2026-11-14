@@ -3,7 +3,6 @@ import { messageIn, resolveLanguage } from '../i18n'
 
 export const DEFAULT_SETTINGS: Settings = {
   name: '',
-  addressName: '',
   gender: 'm',
   wakeTime: '09:00',
   bedTime: '01:00',
@@ -64,14 +63,16 @@ export function emptyData(): AppData {
 
 /**
  * Version of the saved data format. 2 = the reward replaced the fixed "PS5 time", 3 = homework and
- * lab became kinds the user names, 4 = update 0.4 (new fields only; all of them have defaults).
+ * lab became kinds the user names, 4 = update 0.4 (new fields only; all of them have defaults),
+ * 5 = update 0.4.3 (the separate vocative field `addressName` is gone; it is worked out from the name).
  */
-export const DATA_VERSION = 4
+export const DATA_VERSION = 5
 
 /**
  * Migration of older saved data / backups to the current format (pure, safe to run twice).
  * v1 -> v2: `ps5EarnedMin`, `ps5SpentMin` (progress) and `ps5MinPerStudyHour` (settings)
  * became `rewardEarnedMin`, `rewardSpentMin` and `rewardMinPerStudyHour`.
+ * v4 -> v5: the old `addressName` (vocative) in settings is dropped; `name` is never touched.
  */
 export function migrateData(raw: unknown): Partial<AppData> {
   if (!raw || typeof raw !== 'object') return {}
@@ -87,6 +88,7 @@ export function migrateData(raw: unknown): Partial<AppData> {
   move(progress, 'ps5EarnedMin', 'rewardEarnedMin')
   move(progress, 'ps5SpentMin', 'rewardSpentMin')
   move(settings, 'ps5MinPerStudyHour', 'rewardMinPerStudyHour')
+  delete settings.addressName
   if ('progress' in r || Object.keys(progress).length) r.progress = progress
   if ('settings' in r || Object.keys(settings).length) r.settings = settings
   return r as Partial<AppData>
