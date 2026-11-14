@@ -1,3 +1,4 @@
+import SunLogo from './SunLogo'
 import IosInstallHint from './IosInstallHint'
 import UpdateBanner from './UpdateBanner'
 import BackupNudge from './BackupNudge'
@@ -146,7 +147,10 @@ export default function Layout() {
       <Toasts />
       <UndoBar />
       <aside className="hidden w-56 shrink-0 border-r border-slate-200 p-3 md:block dark:border-slate-800">
-        <div className="mb-4 px-3 text-lg font-bold">🌅 My Day AI</div>
+        <div className="mb-4 flex items-center gap-2 px-3 text-lg font-bold">
+          <SunLogo size={28} />
+          My Day AI
+        </div>
         <nav aria-label={t('nav.main')} className="space-y-1">
           {[...SECTIONS, SETTINGS].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'} className={linkCls}>

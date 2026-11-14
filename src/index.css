@@ -37,7 +37,10 @@ body::before {
   height: env(safe-area-inset-top);
   z-index: 15;
   pointer-events: none;
-  @apply bg-slate-50 dark:bg-slate-950;
+  background: #f8fafc;
+}
+.dark body::before {
+  background: #020617;
 }
 
 /* AA contrast for secondary text on dark backgrounds */

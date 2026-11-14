@@ -1,4 +1,4 @@
-# 🌅 My Day AI
+# <img src="public/icon-192.png" alt="" width="32" height="32" align="absmiddle"> My Day AI
 
 [![CI](https://github.com/vukasin-knezevic/my-day-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/vukasin-knezevic/my-day-ai/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/Live%20demo-open%20the%20app-2563eb?style=for-the-badge)](https://vukasin-knezevic.github.io/my-day-ai/)

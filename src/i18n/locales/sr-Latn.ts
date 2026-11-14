@@ -295,7 +295,7 @@ const messages = {
   'demo.upper': 'Gornji deo (primer)',
   'demo.meal': 'Piletina i pirinač (primer)',
   'demo.habit': 'Voda (primer)',
-  'ob.title': '🌅 Dobrodošao u My Day AI',
+  'ob.title': 'Dobrodošao u My Day AI',
   'ob.step': 'Korak {n} od {total}: {name}',
   'ob.s.language': 'Jezik',
   'ob.s.name': 'Ime',
@@ -1015,16 +1015,13 @@ const messages = {
   'notif.channel.reminders': 'Podsetnici',
   'notif.channel.routine': 'Jutarnja rutina',
   'notif.channel.alarm': 'Alarm',
-  'move.title': 'Prenesi iz veb verzije',
-  'move.body':
-    'Koristio/la si My Day AI u pregledaču? Podaci se ne prenose sami. 1) U veb aplikaciji: Podešavanja → Izvoz. 2) Ovde: izaberi taj fajl ispod.',
 }
 
 export type MessageKey = keyof typeof messages
 
 /** Feminine forms (the default texts above are masculine). */
 const feminine: Partial<Record<MessageKey, string>> = {
-  'ob.title': '🌅 Dobrodošla u My Day AI',
+  'ob.title': 'Dobrodošla u My Day AI',
   'alert.regLate': '🚨 Rok za prijavu prošao, a nisi prijavljena: {title}',
   'wo.needsExercise': 'Dodaj bar jednu vežbu da bi sačuvala trening.',
   'wo.tplNeedsExercise': 'Dodaj bar jednu vežbu da bi sačuvala šablon.',

@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   android: { allowMixedContent: false },
   plugins: {
-    SplashScreen: { launchShowDuration: 0, backgroundColor: '#f8fafc' },
+    SplashScreen: { launchShowDuration: 0, backgroundColor: '#020617' },
+    StatusBar: { overlaysWebView: true, backgroundColor: '#00000000' },
     Keyboard: { resize: 'body' },
   },
 }
