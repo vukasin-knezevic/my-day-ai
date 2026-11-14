@@ -98,8 +98,8 @@ describe('normalizeData repairs damaged saved data (A-15)', () => {
     expect(normalizeData(d)).toEqual(d)
   })
 
-  it('the data version of update 0.4.3 is 5', () => {
-    expect(DATA_VERSION).toBe(5)
+  it('the data version of update 0.5 is 6', () => {
+    expect(DATA_VERSION).toBe(6)
   })
 
   it('0.4.3: the old vocative field is dropped, the name is kept, and running it twice changes nothing', () => {

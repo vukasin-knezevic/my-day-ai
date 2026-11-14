@@ -11,6 +11,7 @@ import { applyParsed } from '../lib/apply'
 import { occurrencesOn } from '../lib/schedule'
 import { deleteWithUndo } from '../lib/undo'
 import { useT } from '../i18n'
+import { removeSleepLog } from '../lib/health/sync'
 import { useToday } from '../lib/useToday'
 import Rich from '../i18n/Rich'
 import { avgSleep, openSleep, sleepHours, suggestBedtime } from '../lib/life'
@@ -89,7 +90,19 @@ export default function SleepSection() {
               const date = formatShort(s.date)
               return (
                 <li key={s.id} className="flex items-center gap-2">
-                  <span className="w-20 shrink-0 text-slate-600 dark:text-slate-400">{date}</span>
+                  <span className="w-20 shrink-0 text-slate-600 dark:text-slate-400">
+                    {date}
+                    {s.source === 'watch' && (
+                      <span
+                        role="img"
+                        aria-label={t('watch.fromWatch')}
+                        title={t('watch.fromWatch')}
+                      >
+                        {' '}
+                        ⌚
+                      </span>
+                    )}
+                  </span>
                   <span className="min-w-0 flex-1 tabular-nums">
                     {formatTimeOfDay(s.bedtime.slice(11, 16))} →{' '}
                     {s.wakeTime ? formatTimeOfDay(s.wakeTime.slice(11, 16)) : '…'}
@@ -108,7 +121,7 @@ export default function SleepSection() {
                   <Button
                     variant="ghost"
                     aria-label={t('life.sleepDelete', { date })}
-                    onClick={() => deleteWithUndo(() => store.remove('sleep', s.id))}
+                    onClick={() => deleteWithUndo(() => removeSleepLog(s.id))}
                   >
                     ✕
                   </Button>

@@ -58,6 +58,17 @@ export default function BackController() {
     }
   }, [back])
 
+  // mydayai://privacy: Health Connect asks to see the privacy text
+  useEffect(() => {
+    if (!isNative()) return
+    const handle = CapApp.addListener('appUrlOpen', (e) => {
+      if (e.url.includes('privacy')) navigate('/privacy')
+    })
+    return () => {
+      void handle.then((h) => h.remove())
+    }
+  }, [navigate])
+
   useEffect(() => {
     if (isNative()) return
     // the spare step: the same address once more

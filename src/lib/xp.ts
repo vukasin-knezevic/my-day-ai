@@ -51,6 +51,7 @@ export const XP = {
   habit: 5,
   personalRecord: 15,
   otherActivity: 5,
+  stepsGoal: 10,
 } as const
 
 /** Study: 10 XP per 30 min. Workout 30. Habits/food/sleep 5. Games/money 0. */

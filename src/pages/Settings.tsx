@@ -13,6 +13,9 @@ import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
 import { routineGoal, routineSteps } from '../lib/routine'
 import { useTour } from '../lib/tour'
+import WatchCard from '../components/WatchCard'
+import { isNative } from '../lib/platform'
+import { clampGoal } from '../lib/health/steps'
 
 export default function Settings() {
   const { t, lang } = useT()
@@ -274,6 +277,14 @@ export default function Settings() {
           ))}
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.effects.note')}</p>
         </Card>
+        <Card>
+          <a
+            href="#/privacy"
+            className="inline-flex min-h-11 items-center font-medium text-blue-700 underline dark:text-blue-300"
+          >
+            {t('privacy.link')}
+          </a>
+        </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.tour.title')}</h2>
           <Button
@@ -299,6 +310,35 @@ export default function Settings() {
           </label>
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.autoUpdateNote')}</p>
         </Card>
+        {isNative() && <WatchCard />}
+        {isNative() && (
+          <Card className="space-y-3">
+            <h2 className="font-semibold">{t('steps.title')}</h2>
+            <Field label={`${t('steps.goal')} (${t('steps.goalHint')})`}>
+              <NumberInput
+                value={settings.stepGoal}
+                min={1000}
+                max={50000}
+                step={500}
+                onChange={(n) => setSettings({ stepGoal: clampGoal(n) })}
+              />
+            </Field>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-5 shrink-0"
+                checked={settings.stepReminders}
+                onChange={(e) => setSettings({ stepReminders: e.target.checked })}
+              />
+              <span>
+                {t('steps.reminders')}
+                <span className="block text-xs text-slate-600 dark:text-slate-400">
+                  {t('steps.remindersHint')}
+                </span>
+              </span>
+            </label>
+          </Card>
+        )}
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.reminders')}</h2>
           {support === 'ok' ? (

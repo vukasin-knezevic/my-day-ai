@@ -15,6 +15,7 @@ import Today from './pages/Today'
 import Splash from './components/Splash'
 import { BootScreen } from './components/SunLogo'
 import { useNotificationActions } from './lib/routineNotify'
+import { useWatchSync } from './lib/health/useWatchSync'
 import { hideSplash, syncStatusBar } from './lib/nativeChrome'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
@@ -24,6 +25,7 @@ const Ai = lazy(() => import('./pages/Ai'))
 const Study = lazy(() => import('./pages/Study'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Health = lazy(() => import('./pages/Health'))
+const Privacy = lazy(() => import('./pages/Privacy'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
 const Achievements = lazy(() => import('./pages/Achievements'))
@@ -42,6 +44,7 @@ export default function App() {
 
   useReminders()
   useNotificationActions()
+  useWatchSync()
   useEffect(() => {
     if (import.meta.env.PROD) initUpdates(() => useStore.getState().settings.autoUpdate)
   }, [])
@@ -90,6 +93,7 @@ export default function App() {
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
+            <Route path="privacy" element={<Privacy />} />
             <Route path="settings" element={<Settings />} />
             {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}
             <Route path="faks" element={<Navigate to="/study" replace />} />

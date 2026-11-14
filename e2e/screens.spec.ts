@@ -7,6 +7,7 @@ const ROUTES = [
   '/',
   '/study',
   '/health',
+  '/privacy',
   '/zivot',
   '/pregled',
   '/planer',
