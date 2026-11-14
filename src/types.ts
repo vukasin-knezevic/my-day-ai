@@ -309,6 +309,20 @@ export interface Settings {
   backupReminder: boolean
   /** The day ('yyyy-MM-dd') the weekly reminder counts from (set at first use and by "Later") */
   backupNudgeAt: string
+  /** Daily steps goal (1 000 - 50 000) */
+  stepGoal: number
+  /** Wake-up alarm at the wake-up time (Android app; a loud notification you stop on purpose) */
+  wakeAlarm: boolean
+  /** Steps reminders at 12:00, 16:00 and 20:00 (only while the goal is not reached) */
+  stepReminders: boolean
+  /** The watch is connected (Health Connect permissions were asked for) */
+  watchConnected: boolean
+  /** Package name of the app the steps and sleep are read from; '' = any source */
+  watchSource: string
+  /** ISO time of the last successful sync ('' = never) */
+  watchLastSync: string
+  /** Ids of watch nights the user deleted: they are not imported again */
+  dismissedSleepIds: string[]
 }
 
 export interface RoutineStep {
@@ -330,6 +344,8 @@ export interface DayRecord {
   surprised?: string[]
   /** The day was closed in the evening: how it went (1-5, null = not said) and a note */
   closed?: { mood: 1 | 2 | 3 | 4 | 5 | null; note: string }
+  /** Steps counted for this day (from the watch) */
+  steps?: number
   /** The one main thing chosen the evening before */
   mainThing?: string
 }

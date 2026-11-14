@@ -10,7 +10,7 @@ const SCREENS: [string, string][] = [
   ['today', '/'],
   ['study', '/study'],
   ['planner', '/planer'],
-  ['workout', '/workout'],
+  ['workout', '/health'],
   ['overview', '/pregled'],
 ]
 // Every language gets its own fresh start (the browser language decides the app language),

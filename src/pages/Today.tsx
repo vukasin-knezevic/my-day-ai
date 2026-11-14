@@ -39,6 +39,7 @@ import CalendarButton from '../components/CalendarButton'
 import MorningRoutine from '../components/MorningRoutine'
 import DailyChallenge from '../components/DailyChallenge'
 import WeekRing from '../components/WeekRing'
+import TodaySteps from '../components/TodaySteps'
 import CloseDay from '../components/CloseDay'
 import { useSwipe } from '../lib/useSwipe'
 import { useBackHandler } from '../lib/back'
@@ -491,6 +492,7 @@ export default function Today() {
 
         <div className="mt-4">
           {isToday && <WeekRing today={today} />}
+          {isToday && <TodaySteps today={today} />}
           <ProgressCard />
         </div>
       </div>

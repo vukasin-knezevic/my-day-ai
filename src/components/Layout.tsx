@@ -13,7 +13,7 @@ import type { BaseKey } from '../i18n'
 export const SECTIONS: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/', label: 'nav.today', icon: '🌅' },
   { to: '/study', label: 'nav.study', icon: '📚' },
-  { to: '/workout', label: 'nav.workout', icon: '🏋️' },
+  { to: '/health', label: 'nav.workout', icon: '❤️' },
   { to: '/zivot', label: 'nav.life', icon: '💰' },
   { to: '/planer', label: 'nav.planner', icon: '🧠' },
   { to: '/pregled', label: 'nav.overview', icon: '📊' },

@@ -2,6 +2,16 @@
 
 Version 0.1 (formerly "1.0") finished on 2026-11-06, version **0.2** (formerly "1.1") on 2026-11-07, version **0.3** on 2026-11-07, version **0.4** on 2026-11-10 (phases A–G; phase H was not done). All versions are 0.x until the official release; 1.0 is reserved for the first official release. Repository: https://github.com/vukasin-knezevic/my-day-ai · Live app: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Version 0.5.0 (2026-11-14): Android app, watch steps and sleep, Health
+
+- **"Workout" is now "Health"** (heart icon, route `/health`; `/workout` and `/trening` redirect). One screen with Training, Plan, Steps (Android), Sleep (moved from Life) and Food. Life keeps Money and Habits.
+- **Capacitor / Android:** application id `com.vukasinknezevic.mydayai`; `VITE_TARGET=android` builds with relative paths and no service worker; scripts `build:android`, `cap:sync`, `cap:open`, `cap:run`; adaptive icon, splash, status bar that follows the theme, portrait only, hardware Back goes through the smart Back.
+- **Health layer** `src/lib/health/`: `HealthSource` (`noop` on the web, `mock` in tests, `healthConnect` on Android), our own small Kotlin plugin (read only: Steps and Sleep), steps from the Health Connect aggregate, sleep sessions merged into nights (a night belongs to the wake-up day, naps under 30 min ignored), manual entry always wins, no duplicates on re-sync, deleted nights are remembered.
+- **Steps:** goal 10 000 (1 000 - 50 000), ring on Today and in Health, 7-day chart, XP once per day, optional reminders at 12:00 / 16:00 / 20:00 (replanned when the goal is reached).
+- **Notifications on Android:** `@capacitor/local-notifications`, three channels (Reminders, Routine, Alarm), planned two days ahead and replanned on start, return and data change, "Done ✓" button on the routine, wake-up alarm with a hold-to-stop screen, no full-screen intent, exact alarms only through the system switch.
+- **Data:** `DATA_VERSION` 6 (new settings only, `days[date].steps`); old exports still import. Privacy screen in all languages.
+- **Not verified on the phone in this session:** the Android build needs a JDK 21 (see `docs/ANDROID.md`), so the native code (Kotlin plugin, notifications) was written and type-checked on the web side but not compiled or run on the phone yet.
+
 ## Version 0.4.3 (2026-11-14): scrollable bottom navigation, automatic name grammar
 
 - Bottom bar: one horizontal strip with all sections (Today, Study, Workout, Life, Planner, Overview, Achievements, AI), 4 visible at once, smooth CSS swipe with snap and edge fades. Settings is a static button in the right corner, outside the strip. The old "More" screen is gone (`/vise` redirects to Today).

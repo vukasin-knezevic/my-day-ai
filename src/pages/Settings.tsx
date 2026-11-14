@@ -13,6 +13,14 @@ import { rewardNameOf, themeLabel } from '../lib/labels'
 import type { Settings as SettingsT } from '../types'
 import { routineGoal, routineSteps } from '../lib/routine'
 import { useTour } from '../lib/tour'
+import WatchCard from '../components/WatchCard'
+import { isNative } from '../lib/platform'
+import {
+  exactAlarmsAllowed,
+  notificationsGranted,
+  openExactAlarmSettings,
+} from '../lib/nativeNotify'
+import { clampGoal } from '../lib/health/steps'
 
 export default function Settings() {
   const { t, lang } = useT()
@@ -23,6 +31,8 @@ export default function Settings() {
   const hasDemo = useStore((s) => s.hasDemo())
   const support = notificationSupport(currentEnv())
   const [notifMsg, setNotifMsg] = useState('')
+  const [explain, setExplain] = useState(false)
+  const [exactAsk, setExactAsk] = useState(false)
   const steps = routineSteps(settings)
   const setSteps = (list: SettingsT['routineSteps']) => setSettings({ routineSteps: list })
   const aiUsage = useStore((s) => s.aiUsage)
@@ -274,6 +284,14 @@ export default function Settings() {
           ))}
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.effects.note')}</p>
         </Card>
+        <Card>
+          <a
+            href="#/privacy"
+            className="inline-flex min-h-11 items-center font-medium text-blue-700 underline dark:text-blue-300"
+          >
+            {t('privacy.link')}
+          </a>
+        </Card>
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.tour.title')}</h2>
           <Button
@@ -299,6 +317,35 @@ export default function Settings() {
           </label>
           <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.autoUpdateNote')}</p>
         </Card>
+        {isNative() && <WatchCard />}
+        {isNative() && (
+          <Card className="space-y-3">
+            <h2 className="font-semibold">{t('steps.title')}</h2>
+            <Field label={`${t('steps.goal')} (${t('steps.goalHint')})`}>
+              <NumberInput
+                value={settings.stepGoal}
+                min={1000}
+                max={50000}
+                step={500}
+                onChange={(n) => setSettings({ stepGoal: clampGoal(n) })}
+              />
+            </Field>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-5 shrink-0"
+                checked={settings.stepReminders}
+                onChange={(e) => setSettings({ stepReminders: e.target.checked })}
+              />
+              <span>
+                {t('steps.reminders')}
+                <span className="block text-xs text-slate-600 dark:text-slate-400">
+                  {t('steps.remindersHint')}
+                </span>
+              </span>
+            </label>
+          </Card>
+        )}
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.reminders')}</h2>
           {support === 'ok' ? (
@@ -309,7 +356,10 @@ export default function Settings() {
                   className="size-5 shrink-0"
                   checked={settings.reminders}
                   onChange={async (e) => {
-                    if (e.target.checked) {
+                    if (e.target.checked && isNative() && !(await notificationsGranted())) {
+                      // Android 13+: explain first, the system question comes after "Continue"
+                      setExplain(true)
+                    } else if (e.target.checked) {
                       const ok = await requestNotifications()
                       setNotifMsg(ok ? '' : t('set.notifDenied'))
                       setSettings({ reminders: ok })
@@ -318,6 +368,60 @@ export default function Settings() {
                 />
                 {t('set.notif')}
               </label>
+              {explain && (
+                <div
+                  role="note"
+                  className="space-y-2 rounded-xl bg-blue-50 p-3 text-sm dark:bg-blue-950"
+                >
+                  <p>{t('notif.explain')}</p>
+                  <Button
+                    onClick={async () => {
+                      setExplain(false)
+                      const ok = await requestNotifications()
+                      setNotifMsg(ok ? '' : t('notif.deniedNative'))
+                      setSettings({ reminders: ok })
+                    }}
+                  >
+                    {t('notif.allow')}
+                  </Button>
+                </div>
+              )}
+              {isNative() && settings.reminders && (
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-5 shrink-0"
+                    checked={settings.wakeAlarm}
+                    onChange={async (e) => {
+                      setSettings({ wakeAlarm: e.target.checked })
+                      if (e.target.checked && !(await exactAlarmsAllowed())) setExactAsk(true)
+                    }}
+                  />
+                  <span>
+                    {t('set.wakeAlarm')}
+                    <span className="block text-xs text-slate-600 dark:text-slate-400">
+                      {t('set.wakeAlarmHint')}
+                    </span>
+                  </span>
+                </label>
+              )}
+              {exactAsk && (
+                <div
+                  role="note"
+                  className="space-y-2 rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950"
+                >
+                  <p>{t('notif.exactNote')}</p>
+                  <Button
+                    variant="soft"
+                    onClick={async () => {
+                      await openExactAlarmSettings()
+                      setExactAsk(false)
+                    }}
+                  >
+                    {t('notif.exactOpen')}
+                  </Button>
+                </div>
+              )}
               {notifMsg && (
                 <p role="alert" className="text-sm text-red-700">
                   {notifMsg}

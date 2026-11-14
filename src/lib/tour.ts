@@ -25,7 +25,7 @@ export const TOUR_STEPS: TourStep[] = [
     text: 'tour.study.text',
     action: 'addSubject',
   },
-  { id: 'workout', route: '/workout', title: 'tour.workout.title', text: 'tour.workout.text' },
+  { id: 'workout', route: '/health', title: 'tour.workout.title', text: 'tour.workout.text' },
   { id: 'life', route: '/zivot', title: 'tour.life.title', text: 'tour.life.text' },
   { id: 'routine', route: '/', title: 'tour.routine.title', text: 'tour.routine.text' },
   { id: 'ai', route: '/ai', title: 'tour.ai.title', text: 'tour.ai.text' },

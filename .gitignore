@@ -22,3 +22,9 @@ MY_DAY_AI_REZIME.md
 MY_DAY_AI_V03_ZADATAK.md
 MY_DAY_AI_V031_ZADATAK.md
 My Day AI.txt
+
+# Android: never commit signing keys
+*.jks
+*.keystore
+android/local.properties
+android/keystore.properties

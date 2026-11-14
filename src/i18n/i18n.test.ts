@@ -75,7 +75,7 @@ describe('translation files', () => {
   it('Cyrillic UI texts contain no leftover Latin words (except brands and exercise names)', () => {
     const cyr = LANGUAGES.find((l) => l.code === 'sr-Cyrl')!
     const allowed =
-      /\{\w+\}|XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Enter|Esc|Ctrl|Cmd|HH:mm|\.ics|sk-ant-…|https?:\/\/\S+|Bench press|Overhead press|Face pull|Leg press|Plank|Push|Pull|Full body|claude\.ai|YYYY-MM-DD|My Day AI|OS|kg|min|d|h|g|L/g
+      /\{\w+\}|XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Health Connect|Huawei Health|Enter|Esc|Ctrl|Cmd|HH:mm|\.ics|sk-ant-…|https?:\/\/\S+|Bench press|Overhead press|Face pull|Leg press|Plank|Push|Pull|Full body|claude\.ai|YYYY-MM-DD|My Day AI|OS|kg|min|d|h|g|L/g
     const bad: string[] = []
     for (const [key, text] of Object.entries(cyr.messages)) {
       if (/^(prompt|schema|zod|date)\./.test(key)) continue

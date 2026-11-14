@@ -6,7 +6,8 @@ import { onboard } from './helpers'
 const ROUTES = [
   '/',
   '/study',
-  '/workout',
+  '/health',
+  '/privacy',
   '/zivot',
   '/pregled',
   '/planer',

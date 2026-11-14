@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Workout from './Workout'
+import Health from './Health'
 import { useStore } from '../store'
 import { emptyData } from '../lib/defaults'
 import { pick } from '../test/pick'
@@ -25,7 +25,7 @@ async function finish(user: ReturnType<typeof userEvent.setup>, index: number) {
 
 test('trening se zakaže, pa se označi urađenim; drugi sa većom kilažom javlja rekord', async () => {
   const user = userEvent.setup()
-  render(<Workout />)
+  render(<Health />)
   await schedule(user, '60')
   expect(screen.getByRole('status')).toHaveTextContent('Trening je zakazan')
   let st = useStore.getState()
@@ -51,7 +51,7 @@ test('trening se zakaže, pa se označi urađenim; drugi sa većom kilažom javl
 
 test('trening bez vežbi se zakaže, a XP daje tek kad je urađen (jednom)', async () => {
   const user = userEvent.setup()
-  render(<Workout />)
+  render(<Health />)
   await user.click(screen.getByRole('button', { name: '+ Dodaj trening' }))
   await user.click(screen.getByRole('button', { name: 'Zakaži trening' }))
   expect(useStore.getState().workouts).toHaveLength(0)
@@ -65,7 +65,7 @@ test('trening bez vežbi se zakaže, a XP daje tek kad je urađen (jednom)', asy
 
 test('obrok povećava protein', async () => {
   const user = userEvent.setup()
-  render(<Workout />)
+  render(<Health />)
   await user.click(screen.getByRole('tab', { name: 'Ishrana' }))
   await user.type(screen.getByLabelText('Obrok'), 'Jaja')
   await user.click(screen.getByRole('button', { name: 'Dodaj obrok' }))
@@ -74,7 +74,7 @@ test('obrok povećava protein', async () => {
 
 test('sopstveni šablon treninga: sačuvaj i učitaj', async () => {
   const user = userEvent.setup()
-  render(<Workout />)
+  render(<Health />)
   const open = () => user.click(screen.getByRole('button', { name: '+ Dodaj trening' }))
   await open()
   await user.type(screen.getByLabelText('Naziv'), 'Push dan')
@@ -97,7 +97,7 @@ test('sopstveni šablon treninga: sačuvaj i učitaj', async () => {
 
 test('gotov split: "Koristi ovaj plan" pravi nedeljne treninge, "Prekini plan" ih zaustavlja', async () => {
   const user = userEvent.setup()
-  render(<Workout />)
+  render(<Health />)
   await user.click(screen.getByRole('tab', { name: 'Plan' }))
   await user.click(screen.getByRole('button', { name: '4× Gornji / donji' }))
   expect(useStore.getState().activities).toHaveLength(0)

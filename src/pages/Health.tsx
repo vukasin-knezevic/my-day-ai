@@ -15,6 +15,9 @@ import { Button, Card, Field, Input, PageTitle, Select, Tabs } from '../componen
 import { DateField } from '../components/Pickers'
 import NumberInput from '../components/NumberInput'
 import Sheet from '../components/Sheet'
+import SleepSection from '../components/SleepSection'
+import StepsSection from '../components/StepsSection'
+import { isNative } from '../lib/platform'
 import type { Weekday, Workout as WorkoutT, WorkoutExercise, WorkoutPlan } from '../types'
 import {
   addDaysStr,
@@ -54,14 +57,21 @@ import { useT } from '../i18n'
 import { useToday } from '../lib/useToday'
 import Rich from '../i18n/Rich'
 
-type Tab = 'trening' | 'plan' | 'ishrana'
+type Tab = 'trening' | 'plan' | 'koraci' | 'san' | 'ishrana'
 
-export default function Workout() {
+/** Health: everything about the body in one screen (training, plan, sleep, food; steps and watch come later). */
+export default function Health() {
   const { t } = useT()
-  const [tab, setTab] = useState<Tab>('trening')
+  // /health?tab=koraci (from the Today card); read from the address, so the page needs no router
+  const wanted = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('tab')
+  const [tab, setTab] = useState<Tab>(
+    wanted === 'koraci' || wanted === 'san' || wanted === 'ishrana' ? wanted : 'trening',
+  )
   const tabs: [Tab, string][] = [
     ['trening', t('wo.tab.training')],
     ['plan', t('wo.tab.plan')],
+    ...(isNative() ? ([['koraci', t('health.tab.steps')]] as [Tab, string][]) : []),
+    ['san', t('life.tab.sleep')],
     ['ishrana', t('wo.tab.food')],
   ]
   return (
@@ -70,6 +80,8 @@ export default function Workout() {
       <Tabs tabs={tabs} active={tab} activeClass="bg-orange-700" onChange={setTab} />
       {tab === 'trening' && <Training />}
       {tab === 'plan' && <Plan />}
+      {tab === 'koraci' && <StepsSection />}
+      {tab === 'san' && <SleepSection />}
       {tab === 'ishrana' && <Food />}
     </>
   )

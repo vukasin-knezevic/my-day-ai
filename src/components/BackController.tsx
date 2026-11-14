@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { handleBack, isEdgeBackSwipe, useBackPrompt } from '../lib/back'
 import { currentEnv, isIos } from '../lib/ios'
+import { isNative } from '../lib/platform'
+import { App as CapApp } from '@capacitor/app'
 import KeyScope from './KeyScope'
 import { Button } from './ui'
 import { useT } from '../i18n'
@@ -47,7 +49,28 @@ export default function BackController() {
   here.current = location
   const leaving = useRef(false)
 
+  // Android app: the hardware / gesture Back is handed to the same smart Back (no spare history step needed)
   useEffect(() => {
+    if (!isNative()) return
+    const handle = CapApp.addListener('backButton', () => void back(true))
+    return () => {
+      void handle.then((h) => h.remove())
+    }
+  }, [back])
+
+  // mydayai://privacy: Health Connect asks to see the privacy text
+  useEffect(() => {
+    if (!isNative()) return
+    const handle = CapApp.addListener('appUrlOpen', (e) => {
+      if (e.url.includes('privacy')) navigate('/privacy')
+    })
+    return () => {
+      void handle.then((h) => h.remove())
+    }
+  }, [navigate])
+
+  useEffect(() => {
+    if (isNative()) return
     // the spare step: the same address once more
     window.history.pushState(window.history.state, '', window.location.href)
     const onPop = () => {
@@ -92,6 +115,7 @@ export default function BackController() {
   const yes = () => {
     close()
     if (prompt.kind === 'discard') return prompt.discard()
+    if (isNative()) return void CapApp.exitApp()
     // out of the app: past the spare step and the first one
     leaving.current = true
     window.history.back()

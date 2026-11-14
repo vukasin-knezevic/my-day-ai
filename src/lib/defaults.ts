@@ -38,6 +38,13 @@ export const DEFAULT_SETTINGS: Settings = {
   streakSavesSeen: -1,
   backupReminder: true,
   backupNudgeAt: '',
+  stepGoal: 10000,
+  stepReminders: false,
+  wakeAlarm: false,
+  watchConnected: false,
+  watchSource: '',
+  watchLastSync: '',
+  dismissedSleepIds: [],
 }
 
 export function emptyData(): AppData {
@@ -64,9 +71,10 @@ export function emptyData(): AppData {
 /**
  * Version of the saved data format. 2 = the reward replaced the fixed "PS5 time", 3 = homework and
  * lab became kinds the user names, 4 = update 0.4 (new fields only; all of them have defaults),
- * 5 = update 0.4.3 (the separate vocative field `addressName` is gone; it is worked out from the name).
+ * 5 = update 0.4.3 (the separate vocative field `addressName` is gone; it is worked out from the name),
+ * 6 = update 0.5 (the watch: step goal, source, dismissed nights, steps per day; new fields only).
  */
-export const DATA_VERSION = 5
+export const DATA_VERSION = 6
 
 /**
  * Migration of older saved data / backups to the current format (pure, safe to run twice).
@@ -158,8 +166,9 @@ function repairSettings(raw: unknown): Settings {
   for (const [k, allowed] of Object.entries(SETTING_CHOICES))
     if (!allowed.includes(s[k] as string)) s[k] = DEFAULT_SETTINGS[k as keyof Settings]
   for (const k of ['wakeTime', 'bedTime'] as const) if (!TIME.test(s[k])) s[k] = DEFAULT_SETTINGS[k]
-  for (const k of ['customAssessmentKinds', 'customSlotKinds'] as const)
+  for (const k of ['customAssessmentKinds', 'customSlotKinds', 'dismissedSleepIds'] as const)
     s[k] = s[k].filter(isString)
+  s.stepGoal = Math.min(50000, Math.max(1000, Math.round(s.stepGoal)))
   s.routineSteps = s.routineSteps.filter(
     (x) => isRecord(x) && isString(x.emoji) && isString(x.text),
   )

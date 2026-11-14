@@ -71,7 +71,7 @@ export function Tabs<T extends string>({
   const first = tabs[0]?.[0]
   useBackHandler('tab', first !== undefined && active !== first, () => onChange(first))
   return (
-    <div role="tablist" className="mb-4 flex gap-2">
+    <div role="tablist" className="mb-4 flex flex-wrap gap-2">
       {tabs.map(([key, label]) => (
         <button
           key={key}

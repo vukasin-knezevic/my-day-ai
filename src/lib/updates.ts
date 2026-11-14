@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { registerSW } from 'virtual:pwa-register'
 import { flushStorage } from './storage'
+import { isNative } from './platform'
 
 export type UpdatePhase = 'idle' | 'downloading' | 'ready'
 
@@ -43,7 +44,7 @@ export const updateEvents = { startProgress, setReady }
 
 /** Registers the service worker and watches for new versions. Call once at start. */
 export function initUpdates(autoUpdate: () => boolean) {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || isNative()) return
   const update = registerSW({
     immediate: true,
     onNeedRefresh: setReady,

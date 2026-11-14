@@ -7,69 +7,78 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 
 // On GitHub Pages the app lives under /my-day-ai/ (the deploy workflow sets VITE_BASE). Locally it is '/'.
-const base = process.env.VITE_BASE ?? '/'
+// The Android app (Capacitor) is built with VITE_TARGET=android: relative paths, no service worker.
+const native = process.env.VITE_TARGET === 'android'
+const base = native ? './' : (process.env.VITE_BASE ?? '/')
+const pwaStub = fileURLToPath(new URL('./src/test/pwa-register.ts', import.meta.url))
 // the version shown in the settings comes from package.json
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8')) as { version: string }
 
 export default defineConfig({
   base,
   define: { __APP_VERSION__: JSON.stringify(version) },
+  // without the PWA plugin the virtual module does not exist: the native app uses the empty stand-in
+  resolve: native ? { alias: { 'virtual:pwa-register': pwaStub } } : undefined,
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
-      // a new version is downloaded in the background, the app shows "New update" and restarts when the user agrees
-      registerType: 'prompt',
-      // our own service worker (src/sw.ts): the same offline cache, plus what a generated one cannot
-      // do: a tap on a notification opens the app, and buttons inside a notification
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
-      manifest: {
-        name: 'My Day AI',
-        short_name: 'My Day',
-        description: 'A daily planner for students',
-        // the same dark colour as the app background: no blue bars, dark splash screen
-        theme_color: '#020617',
-        background_color: '#020617',
-        display: 'standalone',
-        // a stable identity of the installed app, and the part of the site it covers
-        id: base,
-        scope: base,
-        start_url: base,
-        lang: 'en',
-        categories: ['education', 'productivity', 'lifestyle'],
-        shortcuts: [
-          { name: 'Today', url: base, icons: [{ src: 'icon-192.png', sizes: '192x192' }] },
-          {
-            name: 'University',
-            url: `${base}#/study`,
-            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
-          },
-          {
-            name: 'Workout',
-            url: `${base}#/workout`,
-            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
-          },
-        ],
-        icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          {
-            src: 'icon-maskable-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-        ],
-      },
-      injectManifest: {
-        // the icons are needed offline too (notifications, the install screen); the big iPhone start
-        // screens are not
-        globPatterns: ['**/*.{js,css,html,svg}', '*.png'],
-      },
-    }),
+    ...(native
+      ? []
+      : [
+          VitePWA({
+            // a new version is downloaded in the background, the app shows "New update" and restarts when the user agrees
+            registerType: 'prompt',
+            // our own service worker (src/sw.ts): the same offline cache, plus what a generated one cannot
+            // do: a tap on a notification opens the app, and buttons inside a notification
+            strategies: 'injectManifest',
+            srcDir: 'src',
+            filename: 'sw.ts',
+            manifest: {
+              name: 'My Day AI',
+              short_name: 'My Day',
+              description: 'A daily planner for students',
+              // the same dark colour as the app background: no blue bars, dark splash screen
+              theme_color: '#020617',
+              background_color: '#020617',
+              display: 'standalone',
+              // a stable identity of the installed app, and the part of the site it covers
+              id: base,
+              scope: base,
+              start_url: base,
+              lang: 'en',
+              categories: ['education', 'productivity', 'lifestyle'],
+              shortcuts: [
+                { name: 'Today', url: base, icons: [{ src: 'icon-192.png', sizes: '192x192' }] },
+                {
+                  name: 'University',
+                  url: `${base}#/study`,
+                  icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+                },
+                {
+                  name: 'Health',
+                  url: `${base}#/health`,
+                  icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+                },
+              ],
+              icons: [
+                { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+                { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+                {
+                  src: 'icon-maskable-512.png',
+                  sizes: '512x512',
+                  type: 'image/png',
+                  purpose: 'maskable',
+                },
+                { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+              ],
+            },
+            injectManifest: {
+              // the icons are needed offline too (notifications, the install screen); the big iPhone start
+              // screens are not
+              globPatterns: ['**/*.{js,css,html,svg}', '*.png'],
+            },
+          }),
+        ]),
   ],
   test: {
     // the virtual module of vite-plugin-pwa does not exist in tests

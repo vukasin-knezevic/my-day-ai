@@ -15,6 +15,9 @@ import Today from './pages/Today'
 import Splash from './components/Splash'
 import { BootScreen } from './components/SunLogo'
 import { useNotificationActions } from './lib/routineNotify'
+import { useWatchSync } from './lib/health/useWatchSync'
+import NativeNotifications from './components/NativeNotifications'
+import { hideSplash, syncStatusBar } from './lib/nativeChrome'
 
 // Pages with charts are loaded on demand, so the chart library is not in the first download.
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -22,7 +25,9 @@ const Planner = lazy(() => import('./pages/Planner'))
 const Ai = lazy(() => import('./pages/Ai'))
 const Study = lazy(() => import('./pages/Study'))
 const Settings = lazy(() => import('./pages/Settings'))
-const Workout = lazy(() => import('./pages/Workout'))
+const Health = lazy(() => import('./pages/Health'))
+const Alarm = lazy(() => import('./pages/Alarm'))
+const Privacy = lazy(() => import('./pages/Privacy'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
 const Achievements = lazy(() => import('./pages/Achievements'))
@@ -41,15 +46,24 @@ export default function App() {
 
   useReminders()
   useNotificationActions()
+  useWatchSync()
   useEffect(() => {
     if (import.meta.env.PROD) initUpdates(() => useStore.getState().settings.autoUpdate)
   }, [])
 
   useEffect(() => {
-    applyTheme(theme)
+    const apply = () => {
+      applyTheme(theme)
+      void syncStatusBar(document.documentElement.classList.contains('dark'))
+    }
+    apply()
     if (theme !== 'system') return
-    return watchSystemTheme(() => applyTheme('system'))
+    return watchSystemTheme(apply)
   }, [theme])
+
+  useEffect(() => {
+    if (hydrated) void hideSplash()
+  }, [hydrated])
 
   if (hydrationError) return <LoadError />
   if (!hydrated) return <BootScreen />
@@ -70,21 +84,25 @@ export default function App() {
       <Shortcuts />
       <Splash />
       <BackController />
+      <NativeNotifications />
       <Suspense fallback={null}>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Today />} />
             <Route path="study" element={<Study />} />
             <Route path="planer" element={<Planner />} />
-            <Route path="workout" element={<Workout />} />
+            <Route path="health" element={<Health />} />
             <Route path="zivot" element={<Life />} />
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
+            <Route path="alarm" element={<Alarm />} />
+            <Route path="privacy" element={<Privacy />} />
             <Route path="settings" element={<Settings />} />
             {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}
             <Route path="faks" element={<Navigate to="/study" replace />} />
-            <Route path="trening" element={<Navigate to="/workout" replace />} />
+            <Route path="workout" element={<Navigate to="/health" replace />} />
+            <Route path="trening" element={<Navigate to="/health" replace />} />
             <Route path="vise" element={<Navigate to="/" replace />} />
             <Route path="podesavanja" element={<Navigate to="/settings" replace />} />
           </Route>
