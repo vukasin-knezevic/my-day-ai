@@ -61,6 +61,15 @@ Saved data has a version (`DATA_VERSION`). `migrateData()` in `lib/defaults.ts` 
 
 Version 5 (0.4.3) dropped the separate vocative field (`addressName`): `migrateData()` deletes it and never touches `name`.
 
+Version 6 (0.5) only adds settings (`stepGoal`, `stepReminders`, `wakeAlarm`, `watchConnected`, `watchSource`, `watchLastSync`, `dismissedSleepIds`) and `days[date].steps`; everything has a default.
+
+## Android app and the health layer
+
+- The Android app is the same React app in a Capacitor shell (`android/`). `VITE_TARGET=android` builds with relative paths and without the service worker; `lib/platform.ts` (`isNative()`) is the only place that asks "web or Android?".
+- `lib/health/` hides the plugin behind `HealthSource` (`noop` on the web, `mock` in tests, `healthConnect` on Android). Pure logic (nights, merge, dedupe, goal, reminder plan) is unit-tested with the mock; `sync.ts` is the only code that writes health data into the store, and a failed read writes nothing.
+- **Plugin choice:** maintained community plugins exist (for example `@capgo/capacitor-health`), but their manifest declares about 40 read and write permissions. The app must read only Steps and Sleep (and Google Play reviews every Health Connect permission), so I wrote a small local Kotlin plugin (`HealthConnectPlugin.kt`, ~150 lines): read only, steps through the aggregate query (de-duplicated between apps), sleep sessions, data origins, a rationale activity for the privacy screen.
+- Notifications: `lib/nativePlan.ts` (pure) plans the next two days (max 6 a day); `lib/nativeNotify.ts` hands the plan to `@capacitor/local-notifications`. The system fires them with the app closed. Steps reminders cannot know the count when they fire, so they are replanned on every start, return and sync. A native background worker is a possible future step.
+
 ## Addressing the user and the bottom bar
 
 - `lib/greetingName.ts` is the one place that decides how the user is addressed: only `settings.name` is stored (nominative). `greetingName(name, locale)` returns the Serbian vocative (`lib/vocative.ts`, rules + small exception lists, Latin and Cyrillic) for `sr*` and the name unchanged for every other language. Greetings, the splash, notifications and the subtitle on Today all call it.

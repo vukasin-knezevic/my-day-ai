@@ -23,7 +23,11 @@ I started building it as a student, for my own day: so that classes, exams, work
 
 ### Versions
 
-Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_), **0.4.3** (a swipeable bottom bar with Settings pinned on the right; the app asks only for your name and works out Serbian grammar by itself). **1.0** is reserved for the first official release (colleagues + Google Play).
+Until the official release every version is **0.x**: **0.1** (the first complete app), **0.2** (the general version, overnight fixes and a code review), **0.3** (fixes after the first real use on a phone, new settings, iPhone), **0.4** (data safety, “Back” and calendar on the phone, a workout as one thing, a guided tour, a morning routine, a daily challenge and “Close the day”; built with Claude Code from a task file I wrote, model: _[author fills in]_), **0.4.3** (a swipeable bottom bar with Settings pinned on the right; the app asks only for your name and works out Serbian grammar by itself), **0.5** (an Android app with Capacitor: steps and sleep from the watch through Health Connect, notifications with the app closed, “Workout” became “Health”). **1.0** is reserved for the first official release (colleagues + Google Play).
+
+### Android app (0.5)
+
+The same app is also packaged as an Android app (Capacitor). It differs from the PWA in four ways: it reads **steps and sleep** from Health Connect (where your watch app saves them; nothing else is read and nothing leaves the phone), it shows notifications through the system even when the app is closed, the hardware Back button follows the app's own smart Back, and it has its own storage (move data once with Settings → Export in the web app and the file picker in the Android app). The web version on GitHub Pages is unchanged. A beginner's guide for the build and the phone is in [`docs/ANDROID.md`](docs/ANDROID.md).
 
 ### User testing
 

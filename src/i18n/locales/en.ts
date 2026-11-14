@@ -1021,6 +1021,9 @@ const messages: Record<MessageKey, string> = {
   'notif.channel.reminders': 'Reminders',
   'notif.channel.routine': 'Morning routine',
   'notif.channel.alarm': 'Alarm',
+  'move.title': 'Move from the web version',
+  'move.body':
+    'Used My Day AI in the browser? The data does not carry over by itself. 1) In the web app: Settings → Export. 2) Here: choose that file below.',
 }
 
 const locale: LocaleModule = {

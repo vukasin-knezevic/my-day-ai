@@ -1,3 +1,5 @@
+import { isNative } from '../lib/platform'
+import DataCard from './DataCard'
 import { isSerbian } from '../lib/greetingName'
 import { useState } from 'react'
 import { useStore } from '../store'
@@ -46,6 +48,13 @@ export default function Onboarding() {
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         {t('ob.step', { n: step + 1, total: STEPS.length, name: t(STEPS[step]) })}
       </p>
+      {isNative() && step === 0 && (
+        <Card className="mb-4 space-y-2" data-testid="move-from-web">
+          <h2 className="font-semibold">{t('move.title')}</h2>
+          <p className="text-sm">{t('move.body')}</p>
+          <DataCard />
+        </Card>
+      )}
       <KeyScope onEnter={next} onEscape={back} focusKey={step}>
         <Card className="space-y-4">
           {step === 0 && (

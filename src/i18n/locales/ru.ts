@@ -926,6 +926,8 @@ const messages = fromEnglish({
   'notif.channel.reminders': `Напоминания`,
   'notif.channel.routine': `Утренняя рутина`,
   'notif.channel.alarm': `Будильник`,
+  'move.title': `Перенос из веб-версии`,
+  'move.body': `Пользовался My Day AI в браузере? Данные сами не переносятся. 1) В веб-приложении: Настройки → Экспорт. 2) Здесь: выбери этот файл ниже.`,
 })
 
 const locale: LocaleModule = {

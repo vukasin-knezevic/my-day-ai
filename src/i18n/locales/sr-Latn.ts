@@ -1014,6 +1014,9 @@ const messages = {
   'notif.channel.reminders': 'Podsetnici',
   'notif.channel.routine': 'Jutarnja rutina',
   'notif.channel.alarm': 'Alarm',
+  'move.title': 'Prenesi iz veb verzije',
+  'move.body':
+    'Koristio/la si My Day AI u pregledaču? Podaci se ne prenose sami. 1) U veb aplikaciji: Podešavanja → Izvoz. 2) Ovde: izaberi taj fajl ispod.',
 }
 
 export type MessageKey = keyof typeof messages

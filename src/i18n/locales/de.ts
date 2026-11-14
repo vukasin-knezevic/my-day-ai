@@ -927,6 +927,8 @@ const messages = fromEnglish({
   'notif.channel.reminders': `Erinnerungen`,
   'notif.channel.routine': `Morgenroutine`,
   'notif.channel.alarm': `Wecker`,
+  'move.title': `Aus der Web-Version übernehmen`,
+  'move.body': `My Day AI im Browser benutzt? Die Daten werden nicht automatisch übernommen. 1) In der Web-App: Einstellungen → Export. 2) Hier: unten diese Datei wählen.`,
 })
 
 const locale: LocaleModule = {
