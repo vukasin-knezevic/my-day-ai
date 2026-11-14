@@ -46,7 +46,6 @@ const OBJECT_SCHEMAS = {
   }),
   settings: z.looseObject({
     name: z.string().optional(),
-    addressName: z.string().optional(),
     gender: z.enum(['m', 'f']).optional(),
     wakeTime: time.optional(),
     bedTime: time.optional(),

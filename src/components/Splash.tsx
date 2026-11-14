@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { selectData, useStore } from '../store'
-import { addressName } from '../lib/address'
+import { greetingName } from '../lib/greetingName'
 import { todayStr } from '../lib/dates'
 import { activeDays, mainStreak } from '../lib/streak'
 import { reducedMotion } from '../lib/effects'
 import { useToast } from '../lib/toast'
-import { useT } from '../i18n'
+import { getLanguage, useT } from '../i18n'
 import SunLogo from './SunLogo'
 
 /** Once per opening of the app: logo, a greeting and the streak, about a second. A tap skips it. */
@@ -31,7 +31,7 @@ export default function Splash({ force = false }: { force?: boolean }) {
   })
   const today = todayStr()
   const streak = mainStreak(activeDays(data), today)
-  const name = addressName(data.settings)
+  const name = greetingName(data.settings.name, getLanguage())
 
   useEffect(() => {
     if (!visible) return

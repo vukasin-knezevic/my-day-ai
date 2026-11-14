@@ -79,20 +79,16 @@ test('izbor jezika u prvom koraku odmah menja jezik i pamti se', async () => {
   expect(getLanguage()).toBe('sr-Latn')
 })
 
-test('uvod: predlog obraćanja (vokativ) se može ispraviti, rod menja rečenice', async () => {
+test('uvod: pita se samo za ime (bez vokativa), rod menja rečenice', async () => {
   const user = userEvent.setup()
   render(<Onboarding />)
   await clickNext(user)
   await user.type(screen.getByLabelText('Kako da te zovem?'), 'Petar')
-  expect(screen.getByLabelText('Kako da ti se obraćam?')).toHaveValue('Petre')
-  // the user corrects it: the suggestion stops following the name
-  await user.clear(screen.getByLabelText('Kako da ti se obraćam?'))
-  await user.type(screen.getByLabelText('Kako da ti se obraćam?'), 'Pero')
-  await user.type(screen.getByLabelText('Kako da te zovem?'), 'x')
-  expect(screen.getByLabelText('Kako da ti se obraćam?')).toHaveValue('Pero')
+  expect(screen.getByLabelText('Kako da te zovem?')).toHaveValue('Petar')
+  expect(screen.queryByLabelText(/obraćam/i)).toBeNull()
   await user.click(screen.getByRole('radio', { name: /Ženski/ }))
   expect(useStore.getState().settings.gender).toBe('f')
   await clickNext(user, 5)
   await user.click(screen.getByRole('button', { name: 'Završi' }))
-  expect(useStore.getState().settings).toMatchObject({ addressName: 'Pero', gender: 'f' })
+  expect(useStore.getState().settings).toMatchObject({ name: 'Petar', gender: 'f' })
 })

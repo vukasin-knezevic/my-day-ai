@@ -93,7 +93,7 @@ describe('export / import', () => {
       backupReminder: true,
       backupNudgeAt: '',
     })
-    expect(JSON.parse(exportJson(r.data))).toMatchObject({ version: 4 })
+    expect(JSON.parse(exportJson(r.data))).toMatchObject({ version: 5 })
   })
 })
 

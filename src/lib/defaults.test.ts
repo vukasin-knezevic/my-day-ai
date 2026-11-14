@@ -98,7 +98,17 @@ describe('normalizeData repairs damaged saved data (A-15)', () => {
     expect(normalizeData(d)).toEqual(d)
   })
 
-  it('the data version of update 0.4 is 4', () => {
-    expect(DATA_VERSION).toBe(4)
+  it('the data version of update 0.4.3 is 5', () => {
+    expect(DATA_VERSION).toBe(5)
+  })
+
+  it('0.4.3: the old vocative field is dropped, the name is kept, and running it twice changes nothing', () => {
+    const old = { settings: { name: 'Vukašin', addressName: 'Vukašine', theme: 'dark' } }
+    const once = normalizeData(old as never)
+    expect(once.settings).toMatchObject({ name: 'Vukašin', theme: 'dark' })
+    expect('addressName' in once.settings).toBe(false)
+    expect(normalizeData(once)).toEqual(once)
+    // a vocative with no name at all: nothing breaks, the name stays empty
+    expect(normalizeData({ settings: { addressName: 'Pero' } } as never).settings.name).toBe('')
   })
 })

@@ -4,9 +4,9 @@ import type { AppData } from '../types'
 import { addDaysStr, daysUntil, formatTimeOfDay, timeToMin, todayStr } from './dates'
 import { isExam, registrationDue } from './exams'
 import { occurrencesOn } from './schedule'
-import { addressName } from './address'
+import { greetingName } from './greetingName'
 import { routineGoal, routineSteps, tickedOn } from './routine'
-import { t } from '../i18n'
+import { getLanguage, t } from '../i18n'
 
 export interface Reminder {
   id: string
@@ -66,7 +66,7 @@ export function dueReminders(data: AppData, now: Date, sent: ReadonlySet<string>
     const goal = timeToMin(routineGoal(set))
     const left = routineSteps(set).length - tickedOn(data, today).length
     if (nowMin >= goal && nowMin <= goal + 30 && left > 0) {
-      const name = addressName(set)
+      const name = greetingName(set.name, getLanguage())
       const main = data.days[today]?.mainThing
       out.push({
         id: `routine-${today}`,

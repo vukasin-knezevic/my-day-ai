@@ -1,30 +1,118 @@
 import IosInstallHint from './IosInstallHint'
 import UpdateBanner from './UpdateBanner'
 import BackupNudge from './BackupNudge'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useBackHandler } from '../lib/back'
-import { useAppBack } from './BackController'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
 import UndoBar from './UndoBar'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 const Tutorial = lazy(() => import('./Tutorial'))
 import { useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
-const MAIN: { to: string; label: BaseKey; icon: string }[] = [
+/** Every section, most used first. All of them live in the one scrollable strip of the bottom bar. */
+export const SECTIONS: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/', label: 'nav.today', icon: '🌅' },
   { to: '/study', label: 'nav.study', icon: '📚' },
   { to: '/workout', label: 'nav.workout', icon: '🏋️' },
   { to: '/zivot', label: 'nav.life', icon: '💰' },
-  { to: '/vise', label: 'nav.more', icon: '☰' },
-]
-const EXTRA: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/planer', label: 'nav.planner', icon: '🧠' },
   { to: '/pregled', label: 'nav.overview', icon: '📊' },
   { to: '/dostignuca', label: 'nav.achievements', icon: '🏆' },
   { to: '/ai', label: 'nav.ai', icon: '🤖' },
-  { to: '/settings', label: 'nav.settings', icon: '⚙️' },
 ]
+/** Settings is not in the strip: it is a static button in the right corner of the bar. */
+export const SETTINGS = { to: '/settings', label: 'nav.settings' as BaseKey, icon: '⚙️' }
+
+const reducedMotion = () =>
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const tabCls = ({ isActive }: { isActive: boolean }) =>
+  `flex min-h-14 min-w-11 flex-col items-center justify-center text-xs ${
+    isActive ? 'font-bold text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'
+  }`
+
+/** The bottom bar: a swipeable strip (4 sections visible at once) + Settings pinned on the right. */
+function BottomNav() {
+  const { t } = useT()
+  const { pathname } = useLocation()
+  const strip = useRef<HTMLDivElement>(null)
+  const first = useRef(true)
+  const [edges, setEdges] = useState({ left: false, right: true })
+
+  const measure = () => {
+    const el = strip.current
+    if (!el) return
+    const left = el.scrollLeft > 2
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2
+    setEdges((e) => (e.left === left && e.right === right ? e : { left, right }))
+  }
+
+  // the active tab comes into view: instantly on the first render, smoothly after that
+  useEffect(() => {
+    const el = strip.current?.querySelector('[aria-current="page"]')
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({
+        inline: 'center',
+        block: 'nearest',
+        behavior: first.current || reducedMotion() ? 'auto' : 'smooth',
+      })
+    }
+    first.current = false
+    measure()
+  }, [pathname])
+
+  return (
+    <nav
+      aria-label={t('nav.bottom')}
+      className="fixed inset-x-0 bottom-0 z-10 flex border-t pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div className="relative min-w-0 flex-1">
+        <div
+          ref={strip}
+          data-nav-strip
+          onScroll={measure}
+          onFocusCapture={(e) => e.target.scrollIntoView?.({ inline: 'nearest', block: 'nearest' })}
+          className="nav-strip flex snap-x snap-proximity overflow-x-auto overscroll-x-contain"
+        >
+          {SECTIONS.map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.to === '/'}
+              className={(s) => `${tabCls(s)} w-1/4 flex-none snap-start`}
+            >
+              <span aria-hidden className="text-lg">
+                {n.icon}
+              </span>
+              <span className="block max-w-full truncate px-1">{t(n.label)}</span>
+            </NavLink>
+          ))}
+        </div>
+        <div
+          aria-hidden
+          data-fade="left"
+          className={`pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-white to-transparent transition-opacity dark:from-slate-900 ${edges.left ? 'opacity-100' : 'opacity-0'}`}
+        />
+        <div
+          aria-hidden
+          data-fade="right"
+          className={`pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-white to-transparent transition-opacity dark:from-slate-900 ${edges.right ? 'opacity-100' : 'opacity-0'}`}
+        />
+      </div>
+      <NavLink
+        to={SETTINGS.to}
+        className={(s) =>
+          `${tabCls(s)} w-[4.5rem] flex-none border-l border-slate-200 dark:border-slate-800`
+        }
+      >
+        <span aria-hidden className="text-lg">
+          {SETTINGS.icon}
+        </span>
+        <span className="block max-w-full truncate px-1">{t(SETTINGS.label)}</span>
+      </NavLink>
+    </nav>
+  )
+}
 
 function linkCls({ isActive }: { isActive: boolean }) {
   return `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium ${
@@ -53,12 +141,6 @@ function Toasts() {
 export default function Layout() {
   const { t } = useT()
   const { pathname } = useLocation()
-  const navigate = useNavigate()
-  const back = useAppBack()
-  // Planner, Overview, AI and Settings are opened from "More" on a phone: Back returns to that list
-  const subScreen = EXTRA.some((e) => e.to === pathname)
-  const phone = () => typeof matchMedia !== 'function' || !matchMedia('(min-width: 768px)').matches
-  useBackHandler('detail', subScreen, () => navigate(phone() ? '/vise' : '/', { replace: true }))
   return (
     <div className="min-h-screen md:flex">
       <Toasts />
@@ -66,7 +148,7 @@ export default function Layout() {
       <aside className="hidden w-56 shrink-0 border-r border-slate-200 p-3 md:block dark:border-slate-800">
         <div className="mb-4 px-3 text-lg font-bold">🌅 My Day AI</div>
         <nav aria-label={t('nav.main')} className="space-y-1">
-          {[...MAIN.filter((m) => m.to !== '/vise'), ...EXTRA].map((n) => (
+          {[...SECTIONS, SETTINGS].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'} className={linkCls}>
               <span aria-hidden>{n.icon}</span> {t(n.label)}
             </NavLink>
@@ -82,48 +164,11 @@ export default function Layout() {
           <Tutorial />
         </Suspense>
         <BackupNudge />
-        {subScreen && (
-          <button
-            type="button"
-            onClick={() => back()}
-            className="-ml-2 mb-1 flex min-h-11 items-center gap-1 rounded-xl px-2 text-sm font-medium text-blue-700 md:hidden dark:text-blue-300"
-          >
-            <span aria-hidden className="text-lg">
-              ←
-            </span>
-            {t('back.arrow')}
-          </button>
-        )}
         <div key={pathname} className="anim-page" data-tour-page>
           <Outlet />
         </div>
       </main>
-      <nav
-        aria-label={t('nav.bottom')}
-        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
-      >
-        {MAIN.map((n) => (
-          <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.to === '/'}
-            className={({ isActive }) =>
-              `flex min-h-14 flex-col items-center justify-center text-xs ${
-                isActive
-                  ? 'font-bold text-blue-700 dark:text-blue-300'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`
-            }
-          >
-            <span aria-hidden className="text-lg">
-              {n.icon}
-            </span>
-            {t(n.label)}
-          </NavLink>
-        ))}
-      </nav>
+      <BottomNav />
     </div>
   )
 }
-
-export { EXTRA }
