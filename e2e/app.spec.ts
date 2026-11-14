@@ -291,7 +291,6 @@ test.describe('accessibility (axe, WCAG A/AA)', () => {
         '/planer',
         '/pregled',
         '/ai',
-        '/vise',
         '/settings',
       ]) {
         await page.goto(`/#${route}`)
@@ -412,4 +411,37 @@ test('24. legacy Serbian addresses redirect to the English routes', async ({ pag
     await page.goto(`/#/${old}`)
     await expect(page).toHaveURL(new RegExp(`#/${now}$`))
   }
+})
+
+test('25. 0.4.3: the bottom bar swipes sideways to the last section, Settings stays pinned', async ({
+  page,
+}) => {
+  await onboard(page, { demo: true })
+  const nav = page.getByRole('navigation', { name: /donja|bottom/i })
+  const strip = nav.locator('[data-nav-strip]')
+  const settings = nav.getByRole('link', { name: 'Podešavanja' })
+  const last = nav.getByRole('link', { name: 'AI', exact: true })
+  const first = nav.getByRole('link', { name: 'Danas' })
+  await expect(first).toBeInViewport()
+  // 4 items fit at once: the 5th is not in the strip's visible part
+  const widths = await strip.evaluate((el) => ({
+    strip: el.clientWidth,
+    item: el.children[0].getBoundingClientRect().width,
+  }))
+  expect(Math.abs(widths.item * 4 - widths.strip)).toBeLessThanOrEqual(2)
+  expect(await strip.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true)
+  const before = await settings.boundingBox()
+  // swipe the strip (a real scroll, as a finger would do it)
+  await strip.evaluate((el) => el.scrollTo({ left: el.scrollWidth }))
+  await expect(last).toBeInViewport()
+  const after = await settings.boundingBox()
+  expect(after).toEqual(before)
+  await expect(settings).toBeInViewport()
+  // Settings is not a child of the strip
+  expect(await strip.getByRole('link', { name: 'Podešavanja' }).count()).toBe(0)
+  await last.click()
+  await expect(page).toHaveURL(/#\/ai$/)
+  await expect(last).toHaveAttribute('aria-current', 'page')
+  await settings.click()
+  await expect(page).toHaveURL(/#\/settings$/)
 })

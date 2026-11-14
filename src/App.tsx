@@ -21,7 +21,6 @@ const Onboarding = lazy(() => import('./pages/Onboarding'))
 const Planner = lazy(() => import('./pages/Planner'))
 const Ai = lazy(() => import('./pages/Ai'))
 const Study = lazy(() => import('./pages/Study'))
-const More = lazy(() => import('./pages/More'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Workout = lazy(() => import('./pages/Workout'))
 const Life = lazy(() => import('./pages/Life'))
@@ -82,11 +81,11 @@ export default function App() {
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
             <Route path="ai" element={<Ai />} />
-            <Route path="vise" element={<More />} />
             <Route path="settings" element={<Settings />} />
             {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}
             <Route path="faks" element={<Navigate to="/study" replace />} />
             <Route path="trening" element={<Navigate to="/workout" replace />} />
+            <Route path="vise" element={<Navigate to="/" replace />} />
             <Route path="podesavanja" element={<Navigate to="/settings" replace />} />
           </Route>
         </Routes>

@@ -42,7 +42,6 @@ const messages: Record<MessageKey, string> = {
   'nav.study': 'Study',
   'nav.workout': 'Workout',
   'nav.life': 'Life',
-  'nav.more': 'More',
   'nav.planner': 'Planner',
   'nav.overview': 'Overview',
   'nav.ai': 'AI',
@@ -229,7 +228,6 @@ const messages: Record<MessageKey, string> = {
   'set.language': 'Language',
   'set.langAuto': 'Automatic (phone language)',
   'set.rhythm': 'Daily rhythm and goals',
-  'set.address': 'How I address you',
   'set.gender': 'Gender (for Serbian sentences)',
   'set.name': 'Name',
   'set.wake': 'Wake-up',
@@ -309,9 +307,6 @@ const messages: Record<MessageKey, string> = {
   'ob.s.ai': 'AI mode',
   'ob.lang.intro': 'Choose the language of the app. You can change it later in the settings.',
   'ob.name.label': 'What should I call you?',
-  'ob.address.label': 'How should I address you?',
-  'ob.address.hint':
-    'Serbian has a special form for addressing someone. Correct the suggestion if it is wrong.',
   'ob.gender.label': 'Your gender (for correct sentences)',
   'ob.gender.m': 'Masculine (ready, done)',
   'ob.gender.f': 'Feminine (ready, done)',
@@ -788,7 +783,6 @@ const messages: Record<MessageKey, string> = {
   'back.leave': 'Leave',
   'back.discardAsk': 'Discard changes?',
   'back.discard': 'Discard',
-  'back.arrow': 'Back',
   'cal.once':
     'The calendar gets a copy of what is entered now (assessments, registration deadlines, activities for 60 days). After adding new ones, tap again.',
   'cal.onceShort': 'One-time copy: tap again after adding new ones.',
