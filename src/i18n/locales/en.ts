@@ -1001,6 +1001,7 @@ const messages: Record<MessageKey, string> = {
   'privacy.revoke':
     'You can take the permission away at any time: Health Connect → App permissions → My Day AI.',
   'privacy.link': 'Privacy',
+  'privacy.web': 'Full privacy policy (web)',
   'alarm.title': 'Wake up ⏰',
   'alarm.body': 'Open the app and hold the button to stop the alarm.',
   'alarm.hold': 'Hold to stop',

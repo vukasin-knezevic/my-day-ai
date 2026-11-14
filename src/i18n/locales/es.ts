@@ -907,6 +907,7 @@ const messages = fromEnglish({
   'privacy.local': `Se quedan en este teléfono, en el almacenamiento de la app. No se envía nada a ningún sitio.`,
   'privacy.revoke': `Puedes quitar el permiso en cualquier momento: Health Connect → Permisos de apps → My Day AI.`,
   'privacy.link': `Privacidad`,
+  'privacy.web': `Política de privacidad completa (web)`,
   'alarm.title': `Despierta ⏰`,
   'alarm.body': `Abre la app y mantén pulsado el botón para detener la alarma.`,
   'alarm.hold': `Mantén para detener`,
