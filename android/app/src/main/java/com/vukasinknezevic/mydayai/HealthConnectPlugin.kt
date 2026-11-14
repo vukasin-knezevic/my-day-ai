@@ -75,7 +75,7 @@ class HealthConnectPlugin : Plugin() {
     fun getPermissions(call: PluginCall) = run(call) { call.resolve(state(it)) }
 
     @PluginMethod
-    fun requestPermissions(call: PluginCall) {
+    fun requestHealthPermissions(call: PluginCall) {
         if (!available()) return call.reject("Health Connect is not available", "UNAVAILABLE")
         val intent = PermissionController.createRequestPermissionResultContract()
             .createIntent(context, needed)
