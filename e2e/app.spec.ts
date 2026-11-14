@@ -55,7 +55,7 @@ test('5. registering a midterm removes the warning and gives XP', async ({ page 
 
 test('6. trening sa rekordom', async ({ page }) => {
   await onboard(page)
-  await page.goto('/#/workout')
+  await page.goto('/#/health')
   // a workout is scheduled (day and time), then marked done; the second one is heavier
   const log = async (kg: string) => {
     await page.getByRole('button', { name: '+ Dodaj trening' }).click()
@@ -189,7 +189,7 @@ test('14. no horizontal scroll at 390 / 800 / 1920 px', async ({ page }) => {
     for (const route of [
       '/',
       '/study',
-      '/workout',
+      '/health',
       '/zivot',
       '/planer',
       '/pregled',
@@ -241,7 +241,7 @@ test('23. tour: walks through the screens, trial things are deleted, the routine
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dodaj probni predmet' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click() // workout
-  await expect(page).toHaveURL(/workout/)
+  await expect(page).toHaveURL(/health/)
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
@@ -286,7 +286,7 @@ test.describe('accessibility (axe, WCAG A/AA)', () => {
       for (const route of [
         '/',
         '/study',
-        '/workout',
+        '/health',
         '/zivot',
         '/planer',
         '/pregled',
@@ -344,7 +344,7 @@ test.describe('jezici', () => {
       for (const route of [
         '/',
         '/study',
-        '/workout',
+        '/health',
         '/zivot',
         '/planer',
         '/pregled',
@@ -371,7 +371,7 @@ test('22. A-13 smart "Back": panel → first tab → top → Today → exit ques
 
   // 4. a sub-tab goes back to the first tab, the section stays
   await page.goBack()
-  await expect(page.getByRole('tab', { name: /San/ })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('tab', { name: /Novac/ })).toHaveAttribute('aria-selected', 'true')
   await expect(page).toHaveURL(/#\/zivot/)
 
   // 6. another section goes to Today
@@ -405,7 +405,8 @@ test('24. legacy Serbian addresses redirect to the English routes', async ({ pag
   await onboard(page)
   for (const [old, now] of [
     ['faks', 'study'],
-    ['trening', 'workout'],
+    ['trening', 'health'],
+    ['workout', 'health'],
     ['podesavanja', 'settings'],
   ]) {
     await page.goto(`/#/${old}`)

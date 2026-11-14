@@ -42,7 +42,7 @@ const messages = fromEnglish({
   'subject.fallback': `Asignatura`,
   'nav.today': `Hoy`,
   'nav.study': `Estudios`,
-  'nav.workout': `Entreno`,
+  'nav.workout': `Salud`,
   'nav.life': `Vida`,
   'nav.planner': `Planificador`,
   'nav.overview': `Resumen`,
@@ -444,7 +444,7 @@ const messages = fromEnglish({
   'study.points.gradeNote': ` (con {n} puntos; escala 51–60 = 6 … 91–100 = 10)`,
   'study.points.passMark': `Nota de aprobado`,
   'study.points.to10': `Faltan {n} puntos para la nota máxima, 10 (91 puntos).`,
-  'wo.title': `🏋️ Entreno y 🍗 comida`,
+  'wo.title': `❤️ Salud`,
   'wo.tab.training': `Entreno`,
   'wo.tab.plan': `Plan`,
   'wo.tab.food': `Comida`,
@@ -817,12 +817,12 @@ const messages = fromEnglish({
   'tour.study.title': 'Universidad',
   'tour.study.text':
     'Aquí están las asignaturas, los horarios, parciales y exámenes, puntos y plazos de inscripción. «Añadir al calendario» envía los plazos al calendario del móvil (copia única). Añade una asignatura de prueba.',
-  'tour.workout.title': 'Entrenamiento',
+  'tour.workout.title': 'Salud',
   'tour.workout.text':
-    'Programa un entrenamiento con día y hora, anota los ejercicios y sigue tu progreso. Los planes listos se reparten por la semana con un toque.',
+    'Todo sobre tu cuerpo en un solo lugar: entrenos y planes, sueño y comida. Programa un entrenamiento, anota los ejercicios y sigue tu progreso.',
   'tour.life.title': 'Vida y hábitos',
   'tour.life.text':
-    'Sueño, comida, dinero y hábitos. Cumplir la meta de un hábito da XP, y el tiempo ganado lo gastas en tu recompensa.',
+    'Dinero y hábitos. Cumplir la meta de un hábito da XP, y el tiempo ganado lo gastas en tu recompensa.',
   'tour.routine.title': 'Rutina de la mañana',
   'tour.routine.text':
     'Por la mañana te espera una rutina corta arriba en la pantalla de hoy. La cambias en Ajustes. Si la mañana no sale como esperabas, se ofrece una versión corta.',

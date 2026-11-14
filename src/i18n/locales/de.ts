@@ -42,7 +42,7 @@ const messages = fromEnglish({
   'subject.fallback': `Fach`,
   'nav.today': `Heute`,
   'nav.study': `Studium`,
-  'nav.workout': `Training`,
+  'nav.workout': `Gesundheit`,
   'nav.life': `Leben`,
   'nav.planner': `Planer`,
   'nav.overview': `Übersicht`,
@@ -445,7 +445,7 @@ const messages = fromEnglish({
   'study.points.gradeNote': ` (mit {n} Punkten; Skala 51–60 = 6 … 91–100 = 10)`,
   'study.points.passMark': `Bestehensgrenze`,
   'study.points.to10': `Es fehlen {n} Punkte zur Bestnote 10 (91 Punkte).`,
-  'wo.title': `🏋️ Training und 🍗 Ernährung`,
+  'wo.title': `❤️ Gesundheit`,
   'wo.tab.training': `Training`,
   'wo.tab.plan': `Plan`,
   'wo.tab.food': `Ernährung`,
@@ -820,12 +820,12 @@ const messages = fromEnglish({
   'tour.study.title': 'Studium',
   'tour.study.text':
     'Hier findest du Fächer, Vorlesungszeiten, Klausuren und Prüfungen, Punkte und Anmeldefristen. „Zum Kalender hinzufügen“ schickt die Fristen in den Handykalender (einmalige Kopie). Füge ein Beispielfach hinzu.',
-  'tour.workout.title': 'Training',
+  'tour.workout.title': 'Gesundheit',
   'tour.workout.text':
-    'Plane ein Training mit Tag und Uhrzeit, trage Übungen ein und verfolge deinen Fortschritt. Fertige Pläne verteilen sich mit einem Tipp auf die Woche.',
+    'Alles rund um den Körper an einem Ort: Training und Pläne, Schlaf und Ernährung. Plane ein Training, trage Übungen ein und verfolge deinen Fortschritt.',
   'tour.life.title': 'Leben und Gewohnheiten',
   'tour.life.text':
-    'Schlaf, Essen, Geld und Gewohnheiten. Erreichst du ein Gewohnheitsziel, gibt es XP, und die verdiente Zeit kannst du für deine Belohnung ausgeben.',
+    'Geld und Gewohnheiten. Erreichst du ein Gewohnheitsziel, gibt es XP, und die verdiente Zeit kannst du für deine Belohnung ausgeben.',
   'tour.routine.title': 'Morgenroutine',
   'tour.routine.text':
     'Morgens wartet oben auf dem Heute-Bildschirm eine kurze Routine. Du änderst sie in den Einstellungen. Läuft der Morgen nicht nach Plan, gibt es eine Kurzversion.',

@@ -47,8 +47,8 @@ export default defineConfig({
             icons: [{ src: 'icon-192.png', sizes: '192x192' }],
           },
           {
-            name: 'Workout',
-            url: `${base}#/workout`,
+            name: 'Health',
+            url: `${base}#/health`,
             icons: [{ src: 'icon-192.png', sizes: '192x192' }],
           },
         ],

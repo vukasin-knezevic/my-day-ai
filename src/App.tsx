@@ -22,7 +22,7 @@ const Planner = lazy(() => import('./pages/Planner'))
 const Ai = lazy(() => import('./pages/Ai'))
 const Study = lazy(() => import('./pages/Study'))
 const Settings = lazy(() => import('./pages/Settings'))
-const Workout = lazy(() => import('./pages/Workout'))
+const Health = lazy(() => import('./pages/Health'))
 const Life = lazy(() => import('./pages/Life'))
 const Overview = lazy(() => import('./pages/Overview'))
 const Achievements = lazy(() => import('./pages/Achievements'))
@@ -76,7 +76,7 @@ export default function App() {
             <Route index element={<Today />} />
             <Route path="study" element={<Study />} />
             <Route path="planer" element={<Planner />} />
-            <Route path="workout" element={<Workout />} />
+            <Route path="health" element={<Health />} />
             <Route path="zivot" element={<Life />} />
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
@@ -84,7 +84,8 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             {/* Legacy Serbian addresses (bookmarks, installed shortcuts, old notifications) */}
             <Route path="faks" element={<Navigate to="/study" replace />} />
-            <Route path="trening" element={<Navigate to="/workout" replace />} />
+            <Route path="workout" element={<Navigate to="/health" replace />} />
+            <Route path="trening" element={<Navigate to="/health" replace />} />
             <Route path="vise" element={<Navigate to="/" replace />} />
             <Route path="podesavanja" element={<Navigate to="/settings" replace />} />
           </Route>

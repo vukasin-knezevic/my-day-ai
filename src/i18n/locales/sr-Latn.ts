@@ -41,7 +41,7 @@ const messages = {
   'subject.fallback': 'Predmet',
   'nav.today': 'Danas',
   'nav.study': 'Faks',
-  'nav.workout': 'Trening',
+  'nav.workout': 'Zdravlje',
   'nav.life': 'Život',
   'nav.planner': 'Planer',
   'nav.overview': 'Pregled',
@@ -527,7 +527,7 @@ const messages = {
   'study.points.gradeNote': ' (sa {n} poena; skala 51–60 = 6 … 91–100 = 10)',
   'study.points.passMark': 'Granica prolaza',
   'study.points.to10': 'Do ocene 10 (91 poen) fali {n} poena.',
-  'wo.title': '🏋️ Trening i 🍗 ishrana',
+  'wo.title': '❤️ Zdravlje',
   'wo.tab.training': 'Trening',
   'wo.tab.plan': 'Plan',
   'wo.tab.food': 'Ishrana',
@@ -901,12 +901,12 @@ const messages = {
   'tour.study.title': 'Faks',
   'tour.study.text':
     'Ovde su predmeti, termini časova, kolokvijumi i ispiti, poeni i rokovi za prijavu. Dugme „Dodaj u kalendar“ šalje rokove u kalendar telefona (jednokratna kopija). Dodaj probni predmet.',
-  'tour.workout.title': 'Trening',
+  'tour.workout.title': 'Zdravlje',
   'tour.workout.text':
-    'Zakaži trening sa danom i vremenom, upiši vežbe i prati napredak. Gotovi planovi se jednim dodirom raspoređuju po nedelji.',
+    'Sve o telu na jednom mestu: trening i planovi, san i ishrana. Zakaži trening, upiši vežbe i prati napredak.',
   'tour.life.title': 'Život i navike',
   'tour.life.text':
-    'San, ishrana, novac i navike. Kad dostigneš cilj navike, dobijaš XP, a zarađeno vreme možeš da potrošiš na svoju nagradu.',
+    'Novac i navike. Kad dostigneš cilj navike, dobijaš XP, a zarađeno vreme možeš da potrošiš na svoju nagradu.',
   'tour.routine.title': 'Jutarnja rutina',
   'tour.routine.text':
     'Ujutru te na vrhu ekrana Danas čeka kratka rutina od nekoliko koraka. Menjaš je u Podešavanjima. Ako ti jutro ne prođe po planu, nudi se kratka verzija.',

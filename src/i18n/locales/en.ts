@@ -40,7 +40,7 @@ const messages: Record<MessageKey, string> = {
   'subject.fallback': 'Subject',
   'nav.today': 'Today',
   'nav.study': 'Study',
-  'nav.workout': 'Workout',
+  'nav.workout': 'Health',
   'nav.life': 'Life',
   'nav.planner': 'Planner',
   'nav.overview': 'Overview',
@@ -530,7 +530,7 @@ const messages: Record<MessageKey, string> = {
   'study.points.gradeNote': ' (with {n} points; scale 51–60 = 6 … 91–100 = 10)',
   'study.points.passMark': 'Pass mark',
   'study.points.to10': '{n} points missing for the top grade 10 (91 points).',
-  'wo.title': '🏋️ Workout & 🍗 food',
+  'wo.title': '❤️ Health',
   'wo.tab.training': 'Workout',
   'wo.tab.plan': 'Plan',
   'wo.tab.food': 'Food',
@@ -908,12 +908,12 @@ const messages: Record<MessageKey, string> = {
   'tour.study.title': 'University',
   'tour.study.text':
     'Here are subjects, class times, midterms and exams, points and registration deadlines. “Add to calendar” sends the deadlines to your phone calendar (a one-time copy). Add a sample subject.',
-  'tour.workout.title': 'Workout',
+  'tour.workout.title': 'Health',
   'tour.workout.text':
-    'Schedule a workout with a day and time, log exercises and follow your progress. Ready plans spread over the week with one tap.',
+    'Everything about your body in one place: workouts and plans, sleep and food. Schedule a workout, log exercises and follow your progress.',
   'tour.life.title': 'Life and habits',
   'tour.life.text':
-    'Sleep, food, money and habits. Reaching a habit goal gives XP, and the time you earn can be spent on your reward.',
+    'Money and habits. Reaching a habit goal gives XP, and the time you earn can be spent on your reward.',
   'tour.routine.title': 'Morning routine',
   'tour.routine.text':
     'In the morning a short routine waits at the top of the Today screen. Change it in Settings. If the morning does not go to plan, a short version is offered.',

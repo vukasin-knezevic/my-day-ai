@@ -42,7 +42,7 @@ const messages = fromEnglish({
   'subject.fallback': `Matière`,
   'nav.today': `Aujourd'hui`,
   'nav.study': `Études`,
-  'nav.workout': `Sport`,
+  'nav.workout': `Santé`,
   'nav.life': `Vie`,
   'nav.planner': `Planificateur`,
   'nav.overview': `Aperçu`,
@@ -444,7 +444,7 @@ const messages = fromEnglish({
   'study.points.gradeNote': ` (avec {n} points ; échelle 51–60 = 6 … 91–100 = 10)`,
   'study.points.passMark': `Note de passage`,
   'study.points.to10': `Il manque {n} points pour la meilleure note, 10 (91 points).`,
-  'wo.title': `🏋️ Sport et 🍗 alimentation`,
+  'wo.title': `❤️ Santé`,
   'wo.tab.training': `Sport`,
   'wo.tab.plan': `Programme`,
   'wo.tab.food': `Alimentation`,
@@ -819,12 +819,12 @@ const messages = fromEnglish({
   'tour.study.title': 'Fac',
   'tour.study.text':
     'Ici : matières, horaires de cours, partiels et examens, points et délais d’inscription. « Ajouter au calendrier » envoie les échéances dans l’agenda du téléphone (copie unique). Ajoute une matière d’essai.',
-  'tour.workout.title': 'Entraînement',
+  'tour.workout.title': 'Santé',
   'tour.workout.text':
-    'Planifie une séance avec un jour et une heure, note les exercices et suis tes progrès. Les plans prêts se répartissent sur la semaine d’un seul geste.',
+    'Tout ce qui touche au corps au même endroit : entraînement et plans, sommeil et alimentation. Planifie une séance, note les exercices et suis tes progrès.',
   'tour.life.title': 'Vie et habitudes',
   'tour.life.text':
-    'Sommeil, repas, argent et habitudes. Atteindre l’objectif d’une habitude donne des XP, et le temps gagné se dépense pour ta récompense.',
+    'Argent et habitudes. Atteindre l’objectif d’une habitude donne des XP, et le temps gagné se dépense pour ta récompense.',
   'tour.routine.title': 'Routine du matin',
   'tour.routine.text':
     'Le matin, une courte routine t’attend en haut de l’écran du jour. Tu la modifies dans les réglages. Si le matin ne se passe pas comme prévu, une version courte est proposée.',

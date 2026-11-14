@@ -38,7 +38,7 @@ test('2. the main screens open without errors and without horizontal scroll', as
     '/',
     '/study',
     '/planer',
-    '/workout',
+    '/health',
     '/zivot',
     '/pregled',
     '/ai',

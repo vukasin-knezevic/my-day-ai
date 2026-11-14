@@ -8,7 +8,14 @@
       "Read(./.idea/**)",
       "Read(./test-results/**)",
       "Read(./graphify-out/cache/**)",
-      "Read(./**/*.log)"
+      "Read(./**/*.log)",
+      "Read(./android/build/**)",
+      "Read(./android/app/build/**)",
+      "Read(./android/.gradle/**)",
+      "Read(./.gradle/**)",
+      "Read(./**/*.apk)",
+      "Read(./package-lock.json)",
+      "Read(./docs/screenshots/**)"
     ]
   },
   "hooks": {
