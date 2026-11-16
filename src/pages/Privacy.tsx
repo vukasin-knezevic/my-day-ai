@@ -12,6 +12,7 @@ export default function Privacy() {
       <Card className="space-y-3 text-sm">
         <p>{t('privacy.read')}</p>
         <p>{t('privacy.local')}</p>
+        <p>{t('privacy.ai')}</p>
         <p>{t('privacy.revoke')}</p>
         <a
           href={POLICY_URL}
