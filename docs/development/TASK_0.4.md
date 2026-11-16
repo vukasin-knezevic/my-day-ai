@@ -1,7 +1,7 @@
 # My Day AI — task for update 0.4
 
-> Made on 10 Nov 2026 from the QA audit (`docs/development/AUDIT_0.4.md`, labels **A-xx**), the remarks after the 0.3 test on a phone (Vukašin, Android) and the remarks of the tester Andrea Jovović (iPhone), labels **R-xx**.
-> Each item says the file and line in the audit; here is what should come out of it.
+> Made on 10 Nov 2026 from the QA review (labels **A-xx**), the remarks after the 0.3 test on a phone (Vukašin, Android) and the remarks of the tester Andrea Jovović (iPhone), labels **R-xx**.
+> Each item says the file and line in the review; here is what should come out of it.
 
 ## How to work (rules)
 
@@ -11,7 +11,7 @@
 4. Every new text goes into **all 7 languages** (`src/i18n/locales/`), with the feminine form for Serbian where it depends on gender. At the end of the phase run the `i18n-checker` agent.
 5. New data: add the fields to `src/types.ts`, the default values and the migration to `src/lib/defaults.ts` (`DATA_VERSION` goes to 4, see A-33), with a test that old data and an old export still work.
 6. At the end of every phase write briefly into `REPORT.md` (the section "Update 0.4"): what was done, what was not and what must be checked on a real phone.
-7. **Two pull requests:** PR 1 = phases A–G (version `0.4.0`). PR 2 = phase H (Android), only when the manual steps from audit 5.2 are done; if Android Studio is not installed, skip phase H and write that at the top of the report.
+7. **Two pull requests:** PR 1 = phases A–G (version `0.4.0`). PR 2 = phase H (Android), only when the manual setup steps are done; if Android Studio is not installed, skip phase H and write that at the top of the report.
 8. A rule for every PR: the title and description in **English**, in the style of PR #2 (a short intro, then groups **Fixes / UX / …**), the last sentence "Implemented with Claude Code from a task file I wrote; PR opened and merged automatically via gh." Then `gh pr merge --auto --merge`.
 9. Ask nothing, work until you finish. If something cannot be done as written, do the closest good variant and write down why in `REPORT.md`.
 
@@ -119,7 +119,7 @@ The goal: that the user wants to open the app every day, and that their day is b
 
 ## Phase H — Android (Capacitor), the watch and steps (PR 2)
 
-A precondition: manual steps 1–5 from `AUDIT_0.4.md`, part 5.2 (the phone model, Android Studio, USB debugging, Health Connect, a bridge for Huawei Health). If `adb devices` does not see the phone, stop and write big what is missing.
+A precondition: the manual setup steps 1–5 (the phone model, Android Studio, USB debugging, Health Connect, a bridge for Huawei Health). If `adb devices` does not see the phone, stop and write big what is missing.
 
 42. Capacitor: `capacitor.config.ts` (id `io.github.vukasinknezevic.mydayai`), the `android/` project, a build without the PWA service worker, icons and a splash screen. The PWA and publishing on GitHub Pages work as before.
 43. A layer `src/lib/health/` (one interface, "not available" in the PWA), a Health Connect plugin that reads **steps and sleep** on Android (check the plugin's documentation before choosing), permissions and a screen with an explanation.
@@ -132,5 +132,5 @@ A precondition: manual steps 1–5 from `AUDIT_0.4.md`, part 5.2 (the phone mode
 
 ## Check at the end
 
-- Copy everything from the table "What must be on a real device" (`AUDIT_0.4.md`, part 4) into `REPORT.md` as a list for Vukašin (Android) and Andrea (iPhone).
+- Copy everything from the table "What must be on a real device" into `REPORT.md` as a list for Vukašin (Android) and Andrea (iPhone).
 - `npm run lint`, `npm run typecheck`, `npm run test:coverage`, `npm run build`, `npm run e2e` green; the coverage of `src/lib` does not fall below 90%.
