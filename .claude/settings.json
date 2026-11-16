@@ -15,19 +15,35 @@
       "Read(./.gradle/**)",
       "Read(./**/*.apk)",
       "Read(./package-lock.json)",
-      "Read(./docs/screenshots/**)"
+      "Read(./docs/screenshots/**)",
+      "Read(./coverage/**)",
+      "Read(./graphify-out/**)",
+      "Read(./android/.kotlin/**)",
+      "Read(./**/*.tsbuildinfo)"
     ]
   },
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": "node .claude/hooks/format.mjs", "timeout": 60 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/format.mjs",
+            "timeout": 60
+          }
+        ]
       }
     ],
     "Stop": [
       {
-        "hooks": [{ "type": "command", "command": "node .claude/hooks/check.mjs", "timeout": 180 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check.mjs",
+            "timeout": 180
+          }
+        ]
       }
     ]
   }
