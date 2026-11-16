@@ -930,6 +930,25 @@ const messages = fromEnglish({
   'notif.channel.reminders': `Напоминания`,
   'notif.channel.routine': `Утренняя рутина`,
   'notif.channel.alarm': `Будильник`,
+  'focus.left': 'Осталось {d}',
+  'focus.startsIn': 'Начнётся через {d}',
+  'focus.empty': 'Ничего не ждёт. День твой.',
+  'focus.add': 'Добавить что-нибудь',
+  'ring.dayTitle': 'Сделано сегодня',
+  'ring.dayCount': '{done} из {total}',
+  'ring.dayNone': 'Ничего не запланировано',
+  'ring.dayAria': 'Сделано сегодня: {done} из {total}',
+  'streak.cardTitle': 'Серия',
+  'streak.fresh': 'Сегодня начинается новая серия',
+  'streak.saveNote':
+    'Каждый 7-й день подряд даёт защиту: пропущенный день тогда не прерывает серию.',
+  'today.moveNext': 'Перенести на следующий свободный слот',
+  'today.swipeMove': 'Следующий свободный слот',
+  'today.moved': 'Перенесено: {when}',
+  'today.movedNone': 'Нет свободного слота сегодня и завтра',
+  'today.whenToday': 'сегодня {time}',
+  'today.whenTomorrow': 'завтра {time}',
+  'today.whenOn': '{date} {time}',
 })
 
 const locale: LocaleModule = {

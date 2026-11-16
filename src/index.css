@@ -230,3 +230,45 @@ select,
 .nav-strip::-webkit-scrollbar {
   display: none;
 }
+
+/* Today: the Focus Now card is the ONLY frosted-glass element. Solid colours first (browsers without
+   backdrop blur, slow phones, high contrast), the glass only where it is supported. */
+.focus-bg {
+  background: linear-gradient(135deg, #bfdbfe, #c7d2fe);
+}
+.dark .focus-bg {
+  background: linear-gradient(135deg, #1e3a8a, #312e81);
+}
+.glass-panel {
+  background: #ffffff;
+  color: #0f172a;
+}
+.dark .glass-panel {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .glass-panel {
+    background: rgb(255 255 255 / 0.82);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .dark .glass-panel {
+    background: rgb(15 23 42 / 0.82);
+  }
+}
+@media (prefers-contrast: more) {
+  .glass-panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #ffffff;
+  }
+  .dark .glass-panel {
+    background: #0f172a;
+  }
+}
+
+/* Dark mode: a deeper page and softer borders (cards stay readable, nothing glows). */
+.dark .border-slate-800 {
+  border-color: rgb(51 65 85 / 0.55);
+}

@@ -2,6 +2,15 @@
 
 Version 0.1 (formerly "1.0") finished on 2026-11-06, version **0.2** (formerly "1.1") on 2026-11-07, version **0.3** on 2026-11-07, version **0.4** on 2026-11-10 (phases A–G; phase H was not done). All versions are 0.x until the official release; 1.0 is reserved for the first official release. Repository: https://github.com/vukasin-knezevic/my-day-ai · Live app: https://vukasin-knezevic.github.io/my-day-ai/
 
+## Version 0.6.0 (2026-11-16): simple start, haptics, notification icon, a better Today
+
+- **AI behind a switch:** new setting `aiEnabled` (default off). Existing data with an API key or the API mode keeps AI on (migration in `migrateData`, safe to run twice, old backups import). Off: no AI tab, `/ai` redirects to Today, no Sunday link, no AI step in onboarding or in the tour, no AI card in Settings. On: **Settings → Advanced → AI tools (advanced)**. Nothing was deleted.
+- **Haptics:** `src/lib/haptics.ts` (`haptic(kind)`, `useHaptics()`), `@capacitor/haptics` on Android, `navigator.vibrate` elsewhere, respects the `vibration` setting and reduced motion; `cue()` goes through it.
+- **Notification icon:** `ic_stat_notification` (white sun) set in `capacitor.config.ts` and in every `schedule(...)`.
+- **Today:** Focus Now card with a countdown (the only frosted-glass element), daily ring, gentle streak, swipe right = done, swipe left = next free slot (`src/lib/freeSlot.ts`, plain code) with undo; the page-level day swipe ignores gestures that start on a row.
+- **Token saving:** `.claudeignore` plus `permissions.deny` (Claude Code reads `permissions.deny`; `.claudeignore` is not a documented Claude Code feature), a permanent rule in `CLAUDE.md`.
+- **Tests:** a date-dependent test in `Rewards.test.tsx` (the daily challenge could add +15 XP) was made independent of the date.
+
 ## Version 0.5.0 (2026-11-14): Android app, watch steps and sleep, Health
 
 - **"Workout" is now "Health"** (heart icon, route `/health`; `/workout` and `/trening` redirect). One screen with Training, Plan, Steps (Android), Sleep (moved from Life) and Food. Life keeps Money and Habits.

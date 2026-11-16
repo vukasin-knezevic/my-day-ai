@@ -35,5 +35,5 @@ test('0.6: ruta /ai vodi na početnu dok su AI alati isključeni', async () => {
 
 test('verzija iz package.json je 0.x do zvanične objave', () => {
   expect(__APP_VERSION__).toMatch(/^0\.\d+\.\d+$/)
-  expect(__APP_VERSION__).toBe('0.5.2')
+  expect(__APP_VERSION__).toBe('0.6.0')
 })

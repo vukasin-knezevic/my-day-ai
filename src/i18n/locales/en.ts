@@ -1025,6 +1025,25 @@ const messages: Record<MessageKey, string> = {
   'notif.channel.reminders': 'Reminders',
   'notif.channel.routine': 'Morning routine',
   'notif.channel.alarm': 'Alarm',
+  'focus.left': '{d} left',
+  'focus.startsIn': 'Starts in {d}',
+  'focus.empty': 'Nothing is waiting. The day is yours.',
+  'focus.add': 'Add something',
+  'ring.dayTitle': 'Done today',
+  'ring.dayCount': '{done} of {total}',
+  'ring.dayNone': 'Nothing planned',
+  'ring.dayAria': 'Done today: {done} of {total}',
+  'streak.cardTitle': 'Streak',
+  'streak.fresh': 'A new streak starts today',
+  'streak.saveNote':
+    'Every 7th day in a row earns a save: a missed day then does not break the streak.',
+  'today.moveNext': 'Move to the next free slot',
+  'today.swipeMove': 'Next free slot',
+  'today.moved': 'Moved to {when}',
+  'today.movedNone': 'No free slot today or tomorrow',
+  'today.whenToday': 'today {time}',
+  'today.whenTomorrow': 'tomorrow {time}',
+  'today.whenOn': '{date} {time}',
 }
 
 const locale: LocaleModule = {

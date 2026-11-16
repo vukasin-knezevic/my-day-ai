@@ -930,6 +930,25 @@ const messages = fromEnglish({
   'notif.channel.reminders': `Rappels`,
   'notif.channel.routine': `Routine du matin`,
   'notif.channel.alarm': `Alarme`,
+  'focus.left': 'Encore {d}',
+  'focus.startsIn': 'Commence dans {d}',
+  'focus.empty': "Rien ne t'attend. La journée est à toi.",
+  'focus.add': 'Ajouter quelque chose',
+  'ring.dayTitle': "Fait aujourd'hui",
+  'ring.dayCount': '{done} sur {total}',
+  'ring.dayNone': 'Rien de prévu',
+  'ring.dayAria': "Fait aujourd'hui : {done} sur {total}",
+  'streak.cardTitle': 'Série',
+  'streak.fresh': "Une nouvelle série commence aujourd'hui",
+  'streak.saveNote':
+    "Chaque 7e jour d'affilée donne une protection : un jour manqué ne casse alors pas la série.",
+  'today.moveNext': 'Déplacer au prochain créneau libre',
+  'today.swipeMove': 'Prochain créneau libre',
+  'today.moved': 'Déplacé : {when}',
+  'today.movedNone': "Aucun créneau libre aujourd'hui ou demain",
+  'today.whenToday': "aujourd'hui {time}",
+  'today.whenTomorrow': 'demain {time}',
+  'today.whenOn': '{date} {time}',
 })
 
 const locale: LocaleModule = {

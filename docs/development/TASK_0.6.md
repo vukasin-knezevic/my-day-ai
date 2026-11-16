@@ -104,6 +104,7 @@ day, right = previous day), `UndoBar`, `lib/streak.ts` (`mainStreak`, with saves
 Do NOT rebuild these from scratch: restyle and extend them.
 
 **Keep and build (high value):**
+
 - **Focus Now card** at the very top: the current or next item, with a live countdown (time until it starts / time left).
   Built from the existing now/next logic; if nothing is planned, a calm empty state with one button to add something.
 - **Daily progress ring** (done / planned for today) at the top, next to a small **streak** counter (`mainStreak.current`).
@@ -116,6 +117,7 @@ Do NOT rebuild these from scratch: restyle and extend them.
   row (it stays for the empty area).
 
 **Careful (constraints, from the review):**
+
 - **Glassmorphism only on the Focus Now card**, with a solid-colour fallback; no `backdrop-filter` on lists, scrolling areas or
   more than one card (slow phones, readability). Text contrast stays AA in light and dark (axe test stays green).
 - **Bento layout must stay simple on a small screen:** at 360 px wide it is a clean 2-column grid at most (Focus Now full width,
