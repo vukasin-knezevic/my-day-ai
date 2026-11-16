@@ -167,7 +167,7 @@ test('12. keyboard shortcuts', async ({ page }) => {
 })
 
 test('13. manual AI mode: a pasted answer becomes a suggestion', async ({ page }) => {
-  await onboard(page)
+  await onboard(page, { ai: true })
   await page.goto('/#/ai')
   const json = JSON.stringify({
     summary: 'Fokus',
@@ -183,7 +183,7 @@ test('13. manual AI mode: a pasted answer becomes a suggestion', async ({ page }
 })
 
 test('14. no horizontal scroll at 390 / 800 / 1920 px', async ({ page }) => {
-  await onboard(page, { demo: true })
+  await onboard(page, { demo: true, ai: true })
   for (const w of [390, 800, 1920]) {
     await page.setViewportSize({ width: w, height: 900 })
     for (const route of [
@@ -211,10 +211,10 @@ test('17. onboarding samo tastaturom (Enter = Dalje, Esc = Nazad)', async ({ pag
   await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
   await page.keyboard.press('Enter') // the language field is focused automatically
   await page.getByLabel('Kako da te zovem?').fill('Tasta')
-  for (let i = 0; i < 5; i++) await page.keyboard.press('Enter')
-  await expect(page.getByText(/Korak 7 od 7/)).toBeVisible()
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Enter')
+  await expect(page.getByText(/Korak 6 od 6/)).toBeVisible()
   await page.keyboard.press('Escape')
-  await expect(page.getByText(/Korak 6 od 7/)).toBeVisible()
+  await expect(page.getByText(/Korak 5 od 6/)).toBeVisible()
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
   await skipTour(page)
@@ -228,11 +228,11 @@ test('23. tour: walks through the screens, trial things are deleted, the routine
   await page.getByRole('heading', { name: /Dobrodošao/ }).waitFor()
   await page.keyboard.press('Enter')
   await page.getByLabel('Kako da te zovem?').fill('Tura')
-  for (let i = 0; i < 6; i++) await page.keyboard.press('Enter')
+  for (let i = 0; i < 5; i++) await page.keyboard.press('Enter')
   const ask = page.getByRole('dialog', { name: /provedemo kroz aplikaciju/ })
   await ask.getByRole('button', { name: 'Kreni' }).click()
   const tour = page.getByRole('dialog', { name: 'Obilazak aplikacije' })
-  await expect(tour.getByText('Korak 1 od 9')).toBeVisible()
+  await expect(tour.getByText('Korak 1 od 8')).toBeVisible()
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dodaj probnu obavezu' }).click()
   await expect(page.getByText('Probna obaveza (briše se na kraju)').first()).toBeVisible()
@@ -242,7 +242,6 @@ test('23. tour: walks through the screens, trial things are deleted, the routine
   await tour.getByRole('button', { name: 'Dodaj probni predmet' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click() // workout
   await expect(page).toHaveURL(/health/)
-  await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
   await tour.getByRole('button', { name: 'Dalje' }).click()
@@ -280,7 +279,7 @@ test('19. editing and repeating an activity', async ({ page }) => {
 test.describe('accessibility (axe, WCAG A/AA)', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`15. bez povreda na svim ekranima, ${theme} tema`, async ({ page }) => {
-      await onboard(page, { demo: true })
+      await onboard(page, { demo: true, ai: true })
       await page.goto('/#/settings')
       await choose(page, 'Tema', theme)
       for (const route of [
@@ -313,7 +312,7 @@ test.describe('jezici', () => {
     await expect(page.getByRole('heading', { name: /Welcome to My Day AI/ })).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByLabel('What should I call you?').fill('Alex')
-    for (let i = 0; i < 5; i++) await page.getByRole('button', { name: 'Next' }).click()
+    for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Finish' }).click()
     await page
       .getByRole('dialog', { name: /let us walk you through/ })
@@ -337,7 +336,7 @@ test.describe('jezici', () => {
     page,
   }) => {
     test.setTimeout(150_000) // 6 languages x 8 screens, each with an axe scan
-    await onboard(page, { demo: true })
+    await onboard(page, { demo: true, ai: true })
     for (const lang of ['en', 'sr-Cyrl', 'de', 'ru', 'fr', 'es']) {
       await page.goto('/#/settings')
       await choose(page, /Jezik|Language|Језик|Sprache|Язык|Langue|Idioma/, lang)
@@ -417,7 +416,7 @@ test('24. legacy Serbian addresses redirect to the English routes', async ({ pag
 test('25. 0.4.3: the bottom bar swipes sideways to the last section, Settings stays pinned', async ({
   page,
 }) => {
-  await onboard(page, { demo: true })
+  await onboard(page, { demo: true, ai: true })
   const nav = page.getByRole('navigation', { name: /donja|bottom/i })
   const strip = nav.locator('[data-nav-strip]')
   const settings = nav.getByRole('link', { name: 'Podešavanja' })
@@ -445,4 +444,20 @@ test('25. 0.4.3: the bottom bar swipes sideways to the last section, Settings st
   await expect(last).toHaveAttribute('aria-current', 'page')
   await settings.click()
   await expect(page).toHaveURL(/#\/settings$/)
+})
+
+test('26. 0.6: a new user sees no AI: no tab, no route, the switch in Settings shows it', async ({
+  page,
+}) => {
+  await onboard(page)
+  const nav = page.getByRole('navigation', { name: /donja|bottom/i })
+  await expect(nav.getByRole('link', { name: 'AI', exact: true })).toHaveCount(0)
+  await page.goto('/#/ai')
+  await expect(page).toHaveURL(/#\/$/)
+  await page.goto('/#/settings')
+  await expect(page.getByPlaceholder('sk-ant-…')).toHaveCount(0)
+  await page.getByLabel('AI alati (napredno)').check()
+  await expect(nav.getByRole('link', { name: 'AI', exact: true })).toHaveCount(1)
+  await page.goto('/#/ai')
+  await expect(page).toHaveURL(/#\/ai$/)
 })

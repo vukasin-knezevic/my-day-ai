@@ -33,7 +33,7 @@ test('1. onboarding and the Today screen on the iPhone profile; the install card
 test('2. the main screens open without errors and without horizontal scroll', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
-  await onboard(page, { demo: true })
+  await onboard(page, { demo: true, ai: true })
   for (const route of [
     '/',
     '/study',
@@ -122,7 +122,7 @@ test('5. the bottom panel follows the drag: past the threshold it closes, below 
 test('6. 0.4.3: the bottom bar swipes sideways to the last section, Settings stays pinned', async ({
   page,
 }) => {
-  await onboard(page, { demo: true })
+  await onboard(page, { demo: true, ai: true })
   const nav = page.getByRole('navigation', { name: /donja|bottom/i })
   const strip = nav.locator('[data-nav-strip]')
   const settings = nav.getByRole('link', { name: 'Podešavanja' })

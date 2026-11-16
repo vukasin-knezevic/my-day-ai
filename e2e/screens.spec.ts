@@ -20,7 +20,7 @@ test('all screens open without errors and without horizontal scroll', async ({ p
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
-  await onboard(page, { demo: true })
+  await onboard(page, { demo: true, ai: true })
   for (const route of ROUTES) {
     await page.goto(`/#${route}`)
     await page.getByRole('heading', { level: 1 }).first().waitFor()

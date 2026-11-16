@@ -8,7 +8,7 @@ beforeEach(() => {
   const d = emptyData()
   useStore.setState({
     ...d,
-    settings: { ...d.settings, onboarded: true, tutorialDone: true },
+    settings: { ...d.settings, onboarded: true, tutorialDone: true, aiEnabled: true },
     hydrated: true,
   })
 })
@@ -37,6 +37,16 @@ describe('bottom navigation', () => {
     // each item is a quarter of the strip: four fit at once
     expect(strip.firstElementChild).toHaveClass('w-1/4', 'flex-none', 'snap-start')
     expect(strip).toHaveClass('overflow-x-auto', 'snap-x', 'snap-proximity', 'overscroll-x-contain')
+  })
+
+  test('without the AI tools there is no AI tab (the default)', () => {
+    const s = useStore.getState().settings
+    useStore.setState({ settings: { ...s, aiEnabled: false } })
+    show()
+    const bar = screen.getByRole('navigation', { name: 'Donja navigacija' })
+    const strip = bar.querySelector('[data-nav-strip]') as HTMLElement
+    expect(within(strip).getAllByRole('link')).toHaveLength(SECTIONS.length - 1)
+    expect(strip.querySelector('a[href="#/ai"], a[href="/ai"]')).toBeNull()
   })
 
   test('Settings is outside the scroll container, and not inside the strip', () => {

@@ -198,6 +198,7 @@ export default function Today() {
   }
 
   const summary = daySummary(occ)
+  const aiEnabled = data.settings.aiEnabled
   const callName = greetingName(data.settings.name, getLanguage())
   const subtitle = callName
     ? `${callName}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
@@ -227,7 +228,7 @@ export default function Today() {
         )}
         {isToday && <DailyChallenge today={today} />}
 
-        {isToday && now.getDay() === 0 && now.getHours() >= 18 && (
+        {isToday && aiEnabled && now.getDay() === 0 && now.getHours() >= 18 && (
           <Card className="mb-4">
             <p className="text-sm">
               {t('today.sunday')}{' '}

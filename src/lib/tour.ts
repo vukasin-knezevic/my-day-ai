@@ -37,6 +37,10 @@ export const TOUR_STEPS: TourStep[] = [
   },
 ]
 
+/** The tour steps; the AI step only when the AI tools are switched on. */
+export const tourSteps = (aiEnabled: boolean) =>
+  aiEnabled ? TOUR_STEPS : TOUR_STEPS.filter((s) => s.id !== 'ai')
+
 interface TourState {
   started: boolean
   step: number

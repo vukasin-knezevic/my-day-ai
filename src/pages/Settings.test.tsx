@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Settings from './Settings'
 import { useStore } from '../store'
@@ -24,4 +25,19 @@ test('0.4.3: Podešavanja pitaju samo za ime, bez polja za vokativ', () => {
   expect(screen.getByDisplayValue('Vukašin')).toBeInTheDocument()
   expect(screen.queryByDisplayValue('Vukašine')).toBeNull()
   expect(screen.queryByLabelText(/obraćam/i)).toBeNull()
+})
+
+test('0.6: AI alati su podrazumevano sakriveni, prekidač ih prikazuje', async () => {
+  const user = userEvent.setup()
+  show()
+  expect(screen.queryByText('🤖 AI')).toBeNull()
+  expect(screen.queryByPlaceholderText('sk-ant-…')).toBeNull()
+  expect(screen.queryByTestId('ai-usage')).toBeNull()
+  await user.click(screen.getByLabelText('AI alati (napredno)'))
+  expect(useStore.getState().settings.aiEnabled).toBe(true)
+  expect(screen.getByText('🤖 AI')).toBeInTheDocument()
+  // the key field is only for the API mode
+  expect(screen.queryByPlaceholderText('sk-ant-…')).toBeNull()
+  useStore.getState().setSettings({ aiMode: 'api' })
+  expect(await screen.findByPlaceholderText('sk-ant-…')).toBeInTheDocument()
 })

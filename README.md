@@ -45,7 +45,7 @@ A student juggles lectures, exams with registration deadlines, workouts, fun and
 - 🌅 **Today**: day timeline from wake-up to bedtime, one-click done/skip, **add and edit activities** (also repeating ones: daily, weekdays, weekly), alerts (unregistered exam, deadline tomorrow, low sleep) and a **one-line quick entry** ("tomorrow study math 2h", "coffee 200", "slept 1:30"), works without AI.
 - 📚 **Study**: subjects, weekly timetable with a **going / skipping / sometimes** question per slot (skipped slots become free time), exams with colored countdown, a **registration checklist** for the current month, points and grade estimate.
 - 🧠 **Rule-based planner** (`planWeek`): study blocks before exams (harder and closer = earlier and more), breaks, nothing before wake-up or after bedtime, at least one easy day, a shortened workout on the exam eve (with an explanation), your reward after studying. Suggestions have a dashed border until accepted.
-- 🤖 **AI (Claude)**: day/week plan, chat, weekly summary, smart entry, exam schedule import from pasted text, workout plan. Every answer is **validated with `zod`** before it is shown; the assistant's tone adapts (friendly / strict / supportive). Prompts and answers use the selected language.
+- 🤖 **AI (Claude)**: day/week plan, chat, weekly summary, smart entry, exam schedule import from pasted text, workout plan. The AI tools are optional and off by default: turn them on under **Settings → Advanced → AI tools**. Every answer is **validated with `zod`** before it is shown; the assistant's tone adapts (friendly / strict / supportive). Prompts and answers use the selected language.
 - 🏋️ **Workouts & nutrition**: sets × reps × weight, progress chart, automatic **personal records**, ready-made splits and **your own workout templates**, daily protein goal.
 - 😴💰✅ **Sleep, money, habits**: bed/wake with two clicks, 7-day average, bedtime suggestion; budget per category with an 80% warning (your currency); habits with day streaks.
 - ☀️ **Morning routine, daily challenge, “Close the day”**: 3–5 small steps in the morning (with a notification and, on Android, a “Done” button), one small challenge a day chosen from your own data, and three short steps in the evening that close the day (review, mood, the main thing for tomorrow). No blame: a missed day offers a short version, and the streak has saves ❄️.
@@ -77,7 +77,7 @@ One new file, no code changes:
 
 ### Two AI modes
 
-**Manual (free):** "Copy for Claude" builds a prompt with your week's data → paste it into claude.ai → answer 3–5 questions → paste the JSON reply back. **API (pay per use):** one click, called directly from the browser. You choose the mode during onboarding and can change it in the settings. Both modes use the **same** prompt builder, **same** `zod` validation and **same** preview. The API key is stored **only on your device** (visible in the browser's developer tools; never share it and set a spending limit in the Anthropic console).
+**Manual (free):** "Copy for Claude" builds a prompt with your week's data → paste it into claude.ai → answer 3–5 questions → paste the JSON reply back. **API (pay per use):** one click, called directly from the browser. You choose the mode in the settings, after switching on **Settings → Advanced → AI tools (advanced)**. Both modes use the **same** prompt builder, **same** `zod` validation and **same** preview. The API key is stored **only on your device** (visible in the browser's developer tools; never share it and set a spending limit in the Anthropic console).
 
 ### How to get an Anthropic API key (API mode only)
 
@@ -86,7 +86,7 @@ Manual mode needs no key. For API mode:
 1. Create an account at [console.anthropic.com](https://console.anthropic.com) and sign in.
 2. Under **Billing** add a payment method and set a monthly spending limit.
 3. Open **API Keys** → **Create Key**, name it (e.g. "My Day AI") and **copy the key** (it starts with `sk-ant-`). It is shown only once.
-4. In the app: **Settings → AI**: choose API mode and paste the key into **API key**. The key stays on that device only.
+4. In the app: **Settings → Advanced → AI tools**, then **Settings → AI**: choose API mode and paste the key into **API key**. The key stays on that device only.
 
 ### Reminders: honest limits
 

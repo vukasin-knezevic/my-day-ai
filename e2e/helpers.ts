@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 
-/** Walks through the 7-step onboarding. `demo` = load example data. */
-export async function onboard(page: Page, opts: { demo?: boolean } = {}) {
+/** Walks through the 6-step onboarding. `demo` = load example data, `ai` = switch on the AI tools (off by default). */
+export async function onboard(page: Page, opts: { demo?: boolean; ai?: boolean } = {}) {
   await page.goto('/')
   // iPhone in Safari sees "install first" before the setup; the tests carry on in the browser
   const welcome = page.getByRole('heading', { name: /Dobrodošao/ })
@@ -14,11 +14,16 @@ export async function onboard(page: Page, opts: { demo?: boolean } = {}) {
   for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Dalje' }).click()
   const demo = page.getByLabel(/Učitaj demo podatke/)
   if ((await demo.isChecked()) !== !!opts.demo) await demo.click()
-  await page.getByRole('button', { name: 'Dalje' }).click()
   await page.getByRole('button', { name: 'Završi' }).click()
   await page.getByRole('heading', { level: 1 }).first().waitFor()
   // the guided tour is offered after the setup; the tests carry on without it
   await skipTour(page)
+  if (opts.ai) {
+    await page.goto('/#/settings')
+    await page.getByLabel('AI alati (napredno)').check()
+    await page.goto('/#/')
+    await page.getByRole('heading', { level: 1 }).first().waitFor()
+  }
 }
 
 /** Answers "Skip" to the offer of the guided tour. */

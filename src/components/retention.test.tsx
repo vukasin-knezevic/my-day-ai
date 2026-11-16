@@ -188,7 +188,7 @@ describe('guided tour', () => {
     st().setSettings({ tutorialDone: false })
     renderTour()
     await user.click(screen.getByRole('button', { name: 'Kreni' }))
-    expect(screen.getByText('Korak 1 od 9')).toBeInTheDocument()
+    expect(screen.getByText('Korak 1 od 8')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Dalje' }))
     // "Next" waits for the sample task
     expect(screen.getByRole('button', { name: 'Dalje' })).toBeDisabled()
@@ -200,7 +200,7 @@ describe('guided tour', () => {
     await user.click(screen.getByRole('button', { name: 'Dalje' }))
     await user.click(screen.getByRole('button', { name: 'Dodaj probni predmet' }))
     expect(st().subjects).toHaveLength(1)
-    for (let i = 0; i < 5; i++) await user.click(screen.getByRole('button', { name: 'Dalje' }))
+    for (let i = 0; i < 4; i++) await user.click(screen.getByRole('button', { name: 'Dalje' }))
     await user.click(screen.getByRole('button', { name: 'Gotovo' }))
     expect(st().activities).toHaveLength(0)
     expect(st().subjects).toHaveLength(0)
