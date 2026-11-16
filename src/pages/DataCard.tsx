@@ -10,7 +10,7 @@ import {
   lastBackupLabel,
   shareBackup,
 } from '../lib/backup'
-import { canShareFile, readFileText } from '../lib/files'
+import { canDownloadFile, canShareFile, readFileText, wasSaved } from '../lib/files'
 import type { AppData } from '../types'
 import { useT } from '../i18n'
 import Rich from '../i18n/Rich'
@@ -45,7 +45,7 @@ export default function DataCard() {
   }
   async function share() {
     // closing the share sheet is not a backup
-    if ((await shareBackup(current())) !== 'cancelled') backedUp()
+    if (wasSaved(await shareBackup(current()))) backedUp()
   }
   /** The picked file goes through the same check and the same confirmation as pasted text. */
   async function pickFile(file: File | undefined) {
@@ -88,15 +88,17 @@ export default function DataCard() {
         <Button variant="soft" onClick={copy}>
           {t('data.copy')}
         </Button>
-        <Button
-          variant="soft"
-          onClick={() => {
-            downloadBackup(current())
-            backedUp()
-          }}
-        >
-          {t('data.download')}
-        </Button>
+        {canDownloadFile() && (
+          <Button
+            variant="soft"
+            onClick={() => {
+              downloadBackup(current())
+              backedUp()
+            }}
+          >
+            {t('data.download')}
+          </Button>
+        )}
         {canShare && (
           <Button variant="soft" onClick={() => void share()}>
             {t('data.share')}

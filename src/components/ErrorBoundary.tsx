@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { selectData, useStore } from '../store'
 import { shareBackup } from '../lib/backup'
+import { wasSaved } from '../lib/files'
 import { flushStorage } from '../lib/storage'
 import { t } from '../i18n'
 import { Button, Card } from './ui'
@@ -29,7 +30,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, St
 
   save = async () => {
     const result = await shareBackup(selectData(useStore.getState()))
-    if (result !== 'cancelled') this.setState({ saved: true })
+    if (wasSaved(result)) this.setState({ saved: true })
   }
 
   wipe = async () => {

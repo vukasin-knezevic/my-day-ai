@@ -39,12 +39,18 @@ test('„Sačuvaj kopiju“ deli ili preuzima fajl i pamti datum; zatvoren meni 
   render(<BackupNudge />)
   await user.click(screen.getByRole('button', { name: 'Sačuvaj kopiju' }))
   expect(useStore.getState().settings.lastBackupAt).toBe('')
+  // nothing left the app (the Android app, when copying fails too): no backup is recorded
+  share.mockResolvedValue('failed')
+  await user.click(screen.getByRole('button', { name: 'Sačuvaj kopiju' }))
+  expect(useStore.getState().settings.lastBackupAt).toBe('')
+
   share.mockResolvedValue('downloaded')
   await user.click(screen.getByRole('button', { name: 'Sačuvaj kopiju' }))
   expect(share).toHaveBeenCalledWith(
     'my-day-ai-backup.json',
     expect.any(String),
     'application/json',
+    { copyFallback: true },
   )
   expect(useStore.getState().settings.lastBackupAt).not.toBe('')
   expect(screen.queryByRole('button', { name: 'Sačuvaj kopiju' })).not.toBeInTheDocument()
