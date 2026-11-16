@@ -59,7 +59,10 @@ export function downloadBackup(data: AppData) {
   downloadText(BACKUP_FILE, exportJson(data), 'application/json')
 }
 
-/** Hands the backup to the share sheet (Files, Drive, mail); downloads it where that is not possible. */
+/**
+ * Hands the backup to the share sheet (Files, Drive, mail); downloads it where that is not possible,
+ * and copies it as text where a file cannot leave the app at all (the Android app).
+ */
 export function shareBackup(data: AppData): Promise<ShareResult> {
-  return shareOrDownload(BACKUP_FILE, exportJson(data), 'application/json')
+  return shareOrDownload(BACKUP_FILE, exportJson(data), 'application/json', { copyFallback: true })
 }

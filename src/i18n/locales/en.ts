@@ -1001,6 +1001,7 @@ const messages: Record<MessageKey, string> = {
   'privacy.read':
     'The app reads two things from Health Connect: your steps and your sleep. Nothing else.',
   'privacy.local': 'They stay on this phone, in the app storage. Nothing is sent anywhere.',
+  'privacy.ai': `If you turn on the AI coach and enter your own API key, a short summary of your day, which may include your average sleep, is sent to the AI provider you chose. Steps are never sent. Without the AI feature nothing leaves the phone.`,
   'privacy.revoke':
     'You can take the permission away at any time: Health Connect → App permissions → My Day AI.',
   'privacy.link': 'Privacy',

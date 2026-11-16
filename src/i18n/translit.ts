@@ -40,7 +40,7 @@ const KEEP = new RegExp(
     String.raw`https?://\S+`,
     String.raw`\.ics`,
     String.raw`sk-ant-…`,
-    String.raw`\b(?:XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Health Connect|Huawei Health|Enter|Esc|Ctrl|Cmd|HH:mm|My Day AI)\b`,
+    String.raw`\b(?:XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Health Connect|Huawei Health|Enter|Esc|Ctrl|Cmd|HH:mm|My Day AI|iPhone|iPad|iOS)\b`,
     // words with letters that do not exist in Serbian (q, w, x, y) are foreign: keep them as they are
     String.raw`\b\w*[qwxyQWXY]\w*\b`,
     String.raw`\b(?:Bench press|Overhead press|Face pull|Leg press|Plank|Push|Pull|Full body)\b`,

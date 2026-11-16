@@ -994,6 +994,7 @@ const messages = {
   'privacy.read':
     'Aplikacija iz Health Connect-a čita dve stvari: tvoje korake i tvoj san. Ništa drugo.',
   'privacy.local': 'Ostaju na ovom telefonu, u memoriji aplikacije. Ništa se nigde ne šalje.',
+  'privacy.ai': `Ako uključiš AI trenera i uneseš sopstveni API ključ, kratak sažetak tvog dana, koji može sadržati prosek sna, šalje se AI provajderu koji si izabrao. Koraci se nikad ne šalju. Bez AI funkcije ništa ne napušta telefon.`,
   'privacy.revoke':
     'Dozvolu možeš da povučeš u svakom trenutku: Health Connect → Dozvole aplikacija → My Day AI.',
   'privacy.link': 'Privatnost',

@@ -147,4 +147,54 @@ describe('store', () => {
       expect(useStore.getState().settings.routineOn).toBe(true)
     }
   })
+  it('a saved text that cannot be read is never overwritten; a later good read works again', async () => {
+    const { get: idbGet, set: idbSet } = await import('idb-keyval')
+    const { allowWrites, flushStorage } = await import('./lib/storage')
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await useStore.persist.rehydrate()
+    allowWrites(false)
+    await flushStorage() // writes of the earlier tests that are still on their way
+    await idbSet('my-day-ai', '{"state":{"meals":[{"id":"m1"') // cut in the middle
+    useStore.setState({ ...emptyData(), hydrated: false, hydrationError: false })
+    await useStore.persist.rehydrate()
+    expect(useStore.getState().hydrationError).toBe(true)
+    expect(useStore.getState().hydrated).toBe(false)
+    // whatever the app does in this state, the damaged copy stays as it was (it may still be rescued)
+    useStore.getState().add('meals', { date: '2026-11-06', description: 'x', protein: 1 })
+    await flushStorage()
+    expect(await idbGet('my-day-ai')).toBe('{"state":{"meals":[{"id":"m1"')
+    quiet.mockRestore()
+    await idbSet('my-day-ai', JSON.stringify({ state: { meals: [] }, version: 6 }))
+    await useStore.persist.rehydrate()
+    expect(useStore.getState().hydrationError).toBe(false)
+    expect(useStore.getState().hydrated).toBe(true)
+  })
+
+  it('data saved by a NEWER version is read, and fields this version does not know are kept in items and settings', async () => {
+    const { get: idbGet, set: idbSet } = await import('idb-keyval')
+    const { allowWrites, flushStorage } = await import('./lib/storage')
+    const { DATA_VERSION } = await import('./lib/defaults')
+    await useStore.persist.rehydrate()
+    allowWrites(false)
+    await flushStorage() // writes of the earlier tests that are still on their way
+    await idbSet(
+      'my-day-ai',
+      JSON.stringify({
+        state: {
+          meals: [{ id: 'm1', date: '2026-11-06', description: 'Jaja', protein: 20, future: 1 }],
+          settings: { name: 'V', futureSetting: 'x' },
+        },
+        version: DATA_VERSION + 1,
+      }),
+    )
+    useStore.setState({ ...emptyData() })
+    await useStore.persist.rehydrate()
+    useStore.getState().setSettings({ sound: true })
+    await flushStorage()
+    const saved = JSON.parse((await idbGet<string>('my-day-ai')) ?? '{}') as {
+      state: { meals: Record<string, unknown>[]; settings: Record<string, unknown> }
+    }
+    expect(saved.state.meals[0]).toMatchObject({ id: 'm1', future: 1 })
+    expect(saved.state.settings).toMatchObject({ name: 'V', futureSetting: 'x', sound: true })
+  })
 })

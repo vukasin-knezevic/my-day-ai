@@ -25,6 +25,12 @@ export function stripLeadingZeros(s: string): string {
   return s.replace(/^(-?)0+(?=\d)/, '$1')
 }
 
+/** The number in the text; a text that is not a number yet ("-", ".", "-.") counts as nothing typed. */
+const parse = (s: string): number | null => {
+  const n = s === '' ? NaN : Number(s)
+  return Number.isFinite(n) ? n : null
+}
+
 const fmt = (v: number | null | undefined) => (v === null || v === undefined ? '' : String(v))
 
 /**
@@ -87,13 +93,13 @@ export default function NumberInput({
   }
 
   function stepBy(dir: 1 | -1) {
-    const base = text === '' ? (min ?? 0) - (dir === 1 ? step : 0) : Number(text)
+    const base = parse(text) ?? (min ?? 0) - (dir === 1 ? step : 0)
     const n = clamp(Number((base + dir * step).toFixed(6)), min, max)
     setText(String(n))
     emit(n)
   }
 
-  const numeric = text === '' ? undefined : Number(text)
+  const numeric = parse(text) ?? undefined
   return (
     <Input
       {...rest}
@@ -119,14 +125,12 @@ export default function NumberInput({
       onBlur={(e) => {
         // validate on leaving the field: show the (clamped) stored value, or keep empty if allowed
         if (text === '' && onEmpty) setText('')
-        else if (text === '' || text === '-' || text === '.') {
-          const n = clamp(0, min, max)
+        else {
+          // the parent never gets NaN: it would be saved as `null` and make a backup unreadable
+          const typed = parse(text)
+          const n = clamp(typed ?? 0, min, max)
           setText(String(n))
-          emit(n)
-        } else {
-          const n = clamp(Number(text), min, max)
-          setText(String(n))
-          if (n !== Number(text) || emitted.current !== n) emit(n)
+          if (n !== typed || emitted.current !== n) emit(n)
         }
         onBlur?.(e)
       }}

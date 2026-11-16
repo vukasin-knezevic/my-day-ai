@@ -9,6 +9,7 @@ import {
   shareBackup,
 } from '../lib/backup'
 import { todayStr } from '../lib/dates'
+import { wasSaved } from '../lib/files'
 import { useToast } from '../lib/toast'
 import { useT } from '../i18n'
 import { Button } from './ui'
@@ -30,9 +31,9 @@ export default function BackupNudge({ today = todayStr() }: { today?: string }) 
 
   async function save() {
     const result = await shareBackup(selectData(useStore.getState()))
-    if (result === 'cancelled') return
+    if (!wasSaved(result)) return
     setSettings(backupStamp())
-    useToast.getState().push([t('backup.saved')])
+    useToast.getState().push([t(result === 'copied' ? 'data.copied' : 'backup.saved')])
   }
 
   return (

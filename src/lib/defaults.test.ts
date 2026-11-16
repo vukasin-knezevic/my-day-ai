@@ -132,3 +132,35 @@ describe('normalizeData repairs damaged saved data (A-15)', () => {
     expect(normalizeData({ settings: { addressName: 'Pero' } } as never).settings.name).toBe('')
   })
 })
+
+describe('normalizeData: what the screens walk through is always walkable', () => {
+  it('day records that are not records are dropped, the good ones stay as they are', () => {
+    const good = { '2026-01-01': { steps: 5, surprised: ['a'] } }
+    expect(normalizeData({ days: good } as never).days).toBe(good)
+    const d = normalizeData({ days: { ...good, '2026-01-02': 'x', '2026-01-03': null } } as never)
+    expect(d.days).toEqual(good)
+  })
+
+  it('a budget keeps only numbers', () => {
+    const d = normalizeData({ budget: { hrana: 100, prevoz: 'abc', igre: null } } as never)
+    expect(d.budget).toEqual({ hrana: 100 })
+  })
+
+  it('a workout plan without days or exercises is no plan', () => {
+    const plan = { name: 'A', source: 'manual', days: [{ day: 1, title: 'x', exercises: [] }] }
+    expect(normalizeData({ workoutPlan: plan } as never).workoutPlan).toBe(plan)
+    expect(normalizeData({ workoutPlan: { name: 'A', days: 'x' } } as never).workoutPlan).toBeNull()
+    expect(
+      normalizeData({ workoutPlan: { name: 'A', days: [{ day: 1 }] } } as never).workoutPlan,
+    ).toBeNull()
+  })
+
+  it('an XP event that is kept is complete, so its backup can be imported again', async () => {
+    const { exportJson, importJson } = await import('./dataIO')
+    const d = normalizeData({
+      progress: { xp: 5, events: [{ id: 'a', date: '2026-01-01', xp: 5 }] },
+    } as never)
+    expect(d.progress.events[0]).toMatchObject({ id: 'a', xp: 5, reason: '', category: 'habits' })
+    expect(importJson(exportJson(d)).ok).toBe(true)
+  })
+})

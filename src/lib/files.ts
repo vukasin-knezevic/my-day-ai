@@ -1,4 +1,11 @@
 // Getting a file out of the app (download, or the phone's share sheet) and reading one back in.
+import { isNative } from './platform'
+
+/**
+ * A browser can download a file. The web view of the Android app drops a download without a word
+ * (and has no share sheet), so there a file must never be reported as saved.
+ */
+export const canDownloadFile = (): boolean => !isNative()
 
 /** Downloads a text file. The address is released later: Safari cancels the download if it goes at once. */
 export function downloadText(filename: string, text: string, mime = 'text/calendar') {
@@ -27,16 +34,22 @@ export function canShareFile(filename: string, mime: string): boolean {
   }
 }
 
-export type ShareResult = 'shared' | 'downloaded' | 'cancelled'
+/** "copied" = the text went to the clipboard; "failed" = nothing left the app. */
+export type ShareResult = 'shared' | 'downloaded' | 'copied' | 'cancelled' | 'failed'
+
+/** Did the content really leave the app? Only then may a backup be counted as made. */
+export const wasSaved = (r: ShareResult): boolean => r !== 'cancelled' && r !== 'failed'
 
 /**
  * Offers the file through the share sheet (Files, Drive, mail, Calendar...). Where files cannot be
  * shared, or sharing fails, the file is downloaded instead. Closing the share sheet is "cancelled".
+ * Where neither works (the Android app), the text is copied if `copyFallback` is set; else "failed".
  */
 export async function shareOrDownload(
   filename: string,
   text: string,
   mime: string,
+  { copyFallback = false } = {},
 ): Promise<ShareResult> {
   if (canShareFile(filename, mime)) {
     try {
@@ -45,6 +58,15 @@ export async function shareOrDownload(
     } catch (e) {
       // the user closed the share sheet: that is an answer, not an error
       if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled'
+    }
+  }
+  if (!canDownloadFile()) {
+    if (!copyFallback) return 'failed'
+    try {
+      await navigator.clipboard.writeText(text)
+      return 'copied'
+    } catch {
+      return 'failed'
     }
   }
   downloadText(filename, text, mime)

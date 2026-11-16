@@ -908,6 +908,7 @@ const messages = fromEnglish({
   'privacy.title': `Privacidad`,
   'privacy.read': `La app lee dos cosas de Health Connect: tus pasos y tu sueño. Nada más.`,
   'privacy.local': `Se quedan en este teléfono, en el almacenamiento de la app. No se envía nada a ningún sitio.`,
+  'privacy.ai': `Si activas el entrenador de IA e introduces tu propia clave API, un breve resumen de tu día, que puede incluir tu sueño medio, se envía al proveedor de IA que elegiste. Los pasos nunca se envían. Sin la función de IA nada sale del teléfono.`,
   'privacy.revoke': `Puedes quitar el permiso en cualquier momento: Health Connect → Permisos de apps → My Day AI.`,
   'privacy.link': `Privacidad`,
   'privacy.web': `Política de privacidad completa (web)`,

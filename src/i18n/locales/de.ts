@@ -911,6 +911,7 @@ const messages = fromEnglish({
   'privacy.title': `Datenschutz`,
   'privacy.read': `Die App liest zwei Dinge aus Health Connect: deine Schritte und deinen Schlaf. Sonst nichts.`,
   'privacy.local': `Sie bleiben auf diesem Handy, im Speicher der App. Nichts wird irgendwohin gesendet.`,
+  'privacy.ai': `Wenn du den KI-Coach einschaltest und deinen eigenen API-Schlüssel eingibst, wird eine kurze Zusammenfassung deines Tages, die deinen durchschnittlichen Schlaf enthalten kann, an den von dir gewählten KI-Anbieter gesendet. Schritte werden nie gesendet. Ohne die KI-Funktion verlässt nichts das Handy.`,
   'privacy.revoke': `Du kannst die Berechtigung jederzeit entziehen: Health Connect → App-Berechtigungen → My Day AI.`,
   'privacy.link': `Datenschutz`,
   'privacy.web': `Vollständige Datenschutzerklärung (Web)`,

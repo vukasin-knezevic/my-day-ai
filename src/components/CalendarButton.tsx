@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from './ui'
 import { selectData, useStore } from '../store'
 import { buildIcsWithProgress, openCalendarFile, shareCalendar } from '../lib/ics'
+import { wasSaved } from '../lib/files'
 import { currentEnv, isIos } from '../lib/ios'
 import { useT } from '../i18n'
 
@@ -24,7 +25,7 @@ export default function CalendarButton({ compact = false }: { compact?: boolean 
     )
     const result = how === 'open' ? openCalendarFile(text) : await shareCalendar(text)
     setProgress(1)
-    setMsg(result === 'cancelled' ? '' : t('set.calDone'))
+    setMsg(wasSaved(result) ? t('set.calDone') : '')
     setTimeout(() => setProgress(null), 600)
   }
 

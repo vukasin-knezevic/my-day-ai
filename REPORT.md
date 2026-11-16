@@ -44,7 +44,7 @@ Version 0.1 (formerly "1.0") finished on 2026-11-06, version **0.2** (formerly "
 
 ## Update 0.4
 
-Made from `docs/development/TASK_0.4.md` on the branch `update-0.4` (phases A–G, version 0.4.0). **Phase H (Android, watch, steps) was not done**: it waits for the manual steps from `AUDIT_0.4.md`, part 5.2 (see the section "Phase H" below).
+Made from `docs/development/TASK_0.4.md` on the branch `update-0.4` (phases A–G, version 0.4.0). **Phase H (Android, watch, steps) was not done**: it waits for the manual setup steps (see the section "Phase H" below).
 
 ### Phase A: the data is safe and the first impression is clean
 
@@ -92,9 +92,9 @@ Made from `docs/development/TASK_0.4.md` on the branch `update-0.4` (phases A–
 
 ### Phase H (Android, watch, steps): not done
 
-`adb` is not installed on this computer (Android Studio and a connected phone are not available), and the task says to skip phase H when the manual steps from `AUDIT_0.4.md`, part 5.2, are not done. **Missing:** the Capacitor project and `android/`, `src/lib/health/` and Health Connect, "Connect a watch", sleep from the watch, steps (a ring, reminders, the 10,000 steps challenge), `@capacitor/local-notifications` (an alarm, a persistent notification), the guide `ANDROID.md`. What is needed from Vukašin: the phone model and the Android version, Android Studio, USB debugging, Health Connect and a bridge for Huawei Health (part 5.2 of the audit). PR 2 is made after that.
+`adb` is not installed on this computer (Android Studio and a connected phone are not available), and the task says to skip phase H when the manual setup steps are not done. **Missing:** the Capacitor project and `android/`, `src/lib/health/` and Health Connect, "Connect a watch", sleep from the watch, steps (a ring, reminders, the 10,000 steps challenge), `@capacitor/local-notifications` (an alarm, a persistent notification), the guide `ANDROID.md`. What is needed from Vukašin: the phone model and the Android version, Android Studio, USB debugging, Health Connect and a bridge for Huawei Health (part 5.2 of the audit). PR 2 is made after that.
 
-## Checks on a real device (from `AUDIT_0.4.md`, part 4)
+## Checks on a real device
 
 **Andrea (iPhone):**
 
