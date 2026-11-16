@@ -12,6 +12,7 @@ import {
   t,
 } from './index'
 import { latinToCyrillic } from './translit'
+import srCyrlLocale from './locales/sr-Cyrl'
 import { formatLong, formatShort, weekdayName, monthName } from '../lib/dates'
 import { planWeek } from '../lib/planner'
 import { parseQuick } from '../lib/quickParse'
@@ -75,7 +76,7 @@ describe('translation files', () => {
   it('Cyrillic UI texts contain no leftover Latin words (except brands and exercise names)', () => {
     const cyr = LANGUAGES.find((l) => l.code === 'sr-Cyrl')!
     const allowed =
-      /\{\w+\}|XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Health Connect|Huawei Health|Enter|Esc|Ctrl|Cmd|HH:mm|\.ics|sk-ant-…|https?:\/\/\S+|Bench press|Overhead press|Face pull|Leg press|Plank|Push|Pull|Full body|claude\.ai|YYYY-MM-DD|My Day AI|OS|kg|min|d|h|g|L/g
+      /\{\w+\}|iPhone|iPad|iOS|XP|AI|API|JSON|ICS|PR|Claude|Anthropic|Health Connect|Huawei Health|Enter|Esc|Ctrl|Cmd|HH:mm|\.ics|sk-ant-…|https?:\/\/\S+|Bench press|Overhead press|Face pull|Leg press|Plank|Push|Pull|Full body|claude\.ai|YYYY-MM-DD|My Day AI|OS|kg|min|d|h|g|L/g
     const bad: string[] = []
     for (const [key, text] of Object.entries(cyr.messages)) {
       if (/^(prompt|schema|zod|date)\./.test(key)) continue
@@ -171,6 +172,10 @@ describe('transliteration', () => {
     expect(latinToCyrillic('Još {n} XP do **nivoa** za Claude')).toBe(
       'Још {n} XP до **нивоа** за Claude',
     )
+  })
+  it('device names stay in Latin (not "иПхоне")', () => {
+    expect(latinToCyrillic('Na iPhone-u (iOS) i na iPad-u')).toBe('На iPhone-у (iOS) и на iPad-у')
+    expect(srCyrlLocale.messages['ios.title']).toContain('iPhone')
   })
 })
 
