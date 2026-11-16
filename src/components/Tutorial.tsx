@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store'
 import { Button, Card } from './ui'
 import {
-  TOUR_STEPS,
+  tourSteps,
   addSampleSubject,
   addSampleTask,
   cleanUpTour,
@@ -24,6 +24,7 @@ export default function Tutorial() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const done = useStore((s) => s.settings.tutorialDone)
+  const aiEnabled = useStore((s) => s.settings.aiEnabled)
   const setSettings = useStore((s) => s.setSettings)
   const { started, step, start, go, stop } = useTour()
   // re-render when the sample things change (the "Next" button waits for them)
@@ -35,7 +36,8 @@ export default function Tutorial() {
     s.subjects.some((x) => x.demo && x.name === t('tour.sampleSubject')),
   )
 
-  const cur = TOUR_STEPS[step]
+  const steps = tourSteps(aiEnabled)
+  const cur = steps[step]
   useEffect(() => {
     if (started && cur && pathname !== cur.route) navigate(cur.route)
   }, [started, cur, pathname, navigate])
@@ -87,7 +89,7 @@ export default function Tutorial() {
     )
   }
 
-  const last = step === TOUR_STEPS.length - 1
+  const last = step === steps.length - 1
   const waiting =
     (cur.action === 'addTask' && !taskThere) ||
     (cur.action === 'tickTask' && !taskDone) ||
@@ -100,7 +102,7 @@ export default function Tutorial() {
     >
       <Card className="anim-pop space-y-2 border-amber-400 shadow-lg">
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-400" aria-live="polite">
-          {t('tour.step', { n: step + 1, total: TOUR_STEPS.length })}
+          {t('tour.step', { n: step + 1, total: steps.length })}
         </p>
         <h2 className="font-bold">{t(cur.title)}</h2>
         <p className="text-sm">{t(cur.text)}</p>
@@ -124,7 +126,7 @@ export default function Tutorial() {
             {t('tour.skip')}
           </Button>
           <span className="flex gap-1" aria-hidden>
-            {TOUR_STEPS.map((s, i) => (
+            {steps.map((s, i) => (
               <span
                 key={s.id}
                 className={`size-2 rounded-full ${i === step ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}

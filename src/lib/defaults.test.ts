@@ -98,6 +98,26 @@ describe('normalizeData repairs damaged saved data (A-15)', () => {
     expect(normalizeData(d)).toEqual(d)
   })
 
+  it('0.6: the AI tools are off for a new user and for data without a key', () => {
+    expect(DEFAULT_SETTINGS.aiEnabled).toBe(false)
+    expect(normalizeData(null).settings.aiEnabled).toBe(false)
+    expect(normalizeData({ settings: { name: 'Mila' } } as never).settings.aiEnabled).toBe(false)
+    expect(
+      normalizeData({ settings: { aiMode: 'manual', apiKey: '  ' } } as never).settings.aiEnabled,
+    ).toBe(false)
+  })
+
+  it('0.6: an existing user with a key or the API mode keeps the AI tools, nothing is lost', () => {
+    const key = normalizeData({ settings: { apiKey: 'sk-ant-x' } } as never)
+    expect(key.settings).toMatchObject({ aiEnabled: true, apiKey: 'sk-ant-x' })
+    const api = normalizeData({ settings: { aiMode: 'api' } } as never)
+    expect(api.settings.aiEnabled).toBe(true)
+    // an explicit choice is never overwritten, and running it twice changes nothing
+    const off = normalizeData({ settings: { apiKey: 'sk-ant-x', aiEnabled: false } } as never)
+    expect(off.settings.aiEnabled).toBe(false)
+    expect(normalizeData(key)).toEqual(key)
+  })
+
   it('the data version of update 0.5 is 6', () => {
     expect(DATA_VERSION).toBe(6)
   })

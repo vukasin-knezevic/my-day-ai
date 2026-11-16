@@ -61,6 +61,7 @@ const OBJECT_SCHEMAS = {
     customSlotKinds: z.array(z.string()).optional(),
     language: z.string().optional(),
     currency: z.string().optional(),
+    aiEnabled: z.boolean().optional(),
     aiMode: z.enum(['api', 'manual']).optional(),
     apiKey: z.string().optional(),
     modelFast: z.string().optional(),

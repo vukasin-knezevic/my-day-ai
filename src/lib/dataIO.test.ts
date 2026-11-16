@@ -21,6 +21,19 @@ describe('export / import', () => {
     expect(exportJson(d)).not.toContain('sk-secret')
     expect(exportJson(d, true)).toContain('sk-secret')
   })
+  it('0.6: aiEnabled round-trips, and an old backup without it still imports', () => {
+    const d = full()
+    d.settings.aiEnabled = true
+    const back = importJson(exportJson(d))
+    expect(back.ok && back.data.settings.aiEnabled).toBe(true)
+    const old = JSON.parse(exportJson(full())) as { data?: { settings: Record<string, unknown> } }
+    const settings =
+      old.data?.settings ?? (old as unknown as { settings: Record<string, unknown> }).settings
+    delete settings.aiEnabled
+    settings.aiMode = 'api'
+    const res = importJson(JSON.stringify(old))
+    expect(res.ok && res.data.settings.aiEnabled).toBe(true)
+  })
   it('refuses a damaged item, which would crash the screens later', () => {
     const noTimes = { id: 'a', title: 'x', date: '2026-11-06' }
     const r = importJson(JSON.stringify({ activities: [noTimes] }))

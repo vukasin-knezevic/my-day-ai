@@ -4,6 +4,7 @@ import UpdateBanner from './UpdateBanner'
 import BackupNudge from './BackupNudge'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useToast } from '../lib/toast'
+import { useStore } from '../store'
 import UndoBar from './UndoBar'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 const Tutorial = lazy(() => import('./Tutorial'))
@@ -21,6 +22,9 @@ export const SECTIONS: { to: string; label: BaseKey; icon: string }[] = [
   { to: '/dostignuca', label: 'nav.achievements', icon: '🏆' },
   { to: '/ai', label: 'nav.ai', icon: '🤖' },
 ]
+/** The sections shown: the AI tab only when the AI tools are switched on in Settings. */
+export const visibleSections = (aiEnabled: boolean) =>
+  aiEnabled ? SECTIONS : SECTIONS.filter((n) => n.to !== '/ai')
 /** Settings is not in the strip: it is a static button in the right corner of the bar. */
 export const SETTINGS = { to: '/settings', label: 'nav.settings' as BaseKey, icon: '⚙️' }
 
@@ -35,6 +39,7 @@ const tabCls = ({ isActive }: { isActive: boolean }) =>
 /** The bottom bar: a swipeable strip (4 sections visible at once) + Settings pinned on the right. */
 function BottomNav() {
   const { t } = useT()
+  const aiEnabled = useStore((s) => s.settings.aiEnabled)
   const { pathname } = useLocation()
   const strip = useRef<HTMLDivElement>(null)
   const first = useRef(true)
@@ -75,7 +80,7 @@ function BottomNav() {
           onFocusCapture={(e) => e.target.scrollIntoView?.({ inline: 'nearest', block: 'nearest' })}
           className="nav-strip flex snap-x snap-proximity overflow-x-auto overscroll-x-contain"
         >
-          {SECTIONS.map((n) => (
+          {visibleSections(aiEnabled).map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -141,6 +146,7 @@ function Toasts() {
 
 export default function Layout() {
   const { t } = useT()
+  const aiEnabled = useStore((s) => s.settings.aiEnabled)
   const { pathname } = useLocation()
   return (
     <div className="min-h-screen md:flex">
@@ -152,7 +158,7 @@ export default function Layout() {
           My Day AI
         </div>
         <nav aria-label={t('nav.main')} className="space-y-1">
-          {[...SECTIONS, SETTINGS].map((n) => (
+          {[...visibleSections(aiEnabled), SETTINGS].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'} className={linkCls}>
               <span aria-hidden>{n.icon}</span> {t(n.label)}
             </NavLink>

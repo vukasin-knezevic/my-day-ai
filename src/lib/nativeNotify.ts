@@ -7,6 +7,8 @@ import type { AppData } from '../types'
 import { t } from '../i18n'
 
 const ROUTINE_ACTIONS = 'ROUTINE'
+/** The small status-bar icon (a white sun, res/drawable/ic_stat_notification.xml). Without it Android shows a "!" in a circle. */
+export const NOTIFICATION_ICON = 'ic_stat_notification'
 
 export async function ensureChannels(): Promise<void> {
   if (!isNative()) return
@@ -85,6 +87,7 @@ export async function rescheduleAll(data: AppData, now = new Date()): Promise<nu
         title: n.title,
         body: n.body,
         channelId: n.channel,
+        smallIcon: NOTIFICATION_ICON,
         schedule: { at: n.at, allowWhileIdle: true },
         actionTypeId: n.actions?.length ? ROUTINE_ACTIONS : undefined,
         // the alarm stays until it is stopped on purpose (hold the button in the app)
@@ -114,6 +117,7 @@ export async function showNow(
           title,
           body,
           channelId: opts.actions?.length ? 'routine' : 'reminders',
+          smallIcon: NOTIFICATION_ICON,
           actionTypeId: opts.actions?.length ? ROUTINE_ACTIONS : undefined,
           extra: { key: opts.tag ?? '', route: '/' },
         },

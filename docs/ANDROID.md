@@ -60,6 +60,8 @@ Xiaomi closes background apps aggressively. For reminders and the alarm to arriv
 5. Open the **recent apps** screen and **lock** the app (long press on its card → lock icon).
 6. Do not "clean" the app with the phone's cleaner after that.
 
+**Notification icon.** The small icon in the status bar and in the notification header is `ic_stat_notification` (`android/app/src/main/res/drawable/ic_stat_notification.xml`): a white sun on a transparent background, because Android only uses the shape and tints it. It is set in `capacitor.config.ts` (`plugins.LocalNotifications.smallIcon`) and in every `schedule(...)` call in `src/lib/nativeNotify.ts`. Without it Android shows a circle with an exclamation mark. Xiaomi (MIUI/HyperOS) may tint it a different colour; that is fine. Check it with the test notification button in Settings.
+
 ## 6. Move your data from the web version
 
 The web app and the Android app store data separately.

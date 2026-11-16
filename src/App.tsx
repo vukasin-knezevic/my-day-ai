@@ -37,6 +37,7 @@ export default function App() {
   const hydrationError = useStore((s) => s.hydrationError)
   const onboarded = useStore((s) => s.settings.onboarded)
   const theme = useStore((s) => s.settings.theme)
+  const aiEnabled = useStore((s) => s.settings.aiEnabled)
   const [stayInSafari, setStayInSafari] = useState(false)
 
   // once the app is in use, ask the browser to keep the data even when the device runs low on space
@@ -95,7 +96,7 @@ export default function App() {
             <Route path="zivot" element={<Life />} />
             <Route path="pregled" element={<Overview />} />
             <Route path="dostignuca" element={<Achievements />} />
-            <Route path="ai" element={<Ai />} />
+            <Route path="ai" element={aiEnabled ? <Ai /> : <Navigate to="/" replace />} />
             <Route path="alarm" element={<Alarm />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="settings" element={<Settings />} />

@@ -9,15 +9,15 @@ import Rich from '../i18n/Rich'
 import { LANGUAGE_LIST, getLanguage, useT } from '../i18n'
 import type { BaseKey } from '../i18n'
 
-const STEPS: BaseKey[] = [
+const BASE_STEPS: BaseKey[] = [
   'ob.s.language',
   'ob.s.name',
   'ob.s.rhythm',
   'ob.s.goals',
   'ob.s.reward',
   'ob.s.subjects',
-  'ob.s.ai',
 ]
+const AI_STEP: BaseKey = 'ob.s.ai'
 
 export default function Onboarding() {
   const { t, lang } = useT()
@@ -28,6 +28,8 @@ export default function Onboarding() {
   const [draft, setDraft] = useState({ ...settings })
   const [demo, setDemo] = useState(true)
   const serbian = isSerbian(lang)
+  // the AI step exists only when the AI tools are switched on (Settings, or an existing user's data)
+  const STEPS = settings.aiEnabled ? [...BASE_STEPS, AI_STEP] : BASE_STEPS
 
   const set = <K extends keyof typeof draft>(k: K, v: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [k]: v }))
@@ -210,10 +212,6 @@ export default function Onboarding() {
                 />
                 {t('ob.demo')}
               </label>
-            </>
-          )}
-          {step === 6 && (
-            <>
               <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -223,6 +221,10 @@ export default function Onboarding() {
                 />
                 {t('set.autoUpdate')}
               </label>
+            </>
+          )}
+          {step === 6 && (
+            <>
               <p className="text-sm">{t('ob.ai.intro')}</p>
               <fieldset className="space-y-2">
                 <legend className="sr-only">{t('ob.ai.legend')}</legend>

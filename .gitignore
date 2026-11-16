@@ -28,3 +28,6 @@ My Day AI.txt
 *.keystore
 android/local.properties
 android/keystore.properties
+
+# Private task notes (not published)
+docs/private/

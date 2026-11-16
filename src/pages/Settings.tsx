@@ -447,51 +447,72 @@ export default function Settings() {
           )}
           <CalendarButton />
         </Card>
-        <Card className="space-y-3">
-          <h2 className="font-semibold">{t('set.ai')}</h2>
-          <Field label={t('set.aiMode')}>
-            <Select
-              value={settings.aiMode}
-              onChange={(e) => setSettings({ aiMode: e.target.value as SettingsT['aiMode'] })}
-            >
-              <option value="manual">{t('set.aiManual')}</option>
-              <option value="api">{t('set.aiApi')}</option>
-            </Select>
-          </Field>
-          <Field label={t('set.apiKey')} optional>
-            <Input
-              type="password"
-              autoComplete="off"
-              placeholder="sk-ant-…"
-              value={settings.apiKey}
-              onChange={(e) => setSettings({ apiKey: e.target.value })}
+        <Card className="space-y-2">
+          <h2 className="font-semibold">{t('set.advanced')}</h2>
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-5 shrink-0"
+              checked={settings.aiEnabled}
+              onChange={(e) => setSettings({ aiEnabled: e.target.checked })}
             />
-          </Field>
-          <p className="rounded-xl bg-amber-100 p-3 text-xs text-amber-900">{t('set.keyWarn')}</p>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t('set.modelFast')}>
-              <Input
-                value={settings.modelFast}
-                onChange={(e) => setSettings({ modelFast: e.target.value })}
-              />
-            </Field>
-            <Field label={t('set.modelStrong')}>
-              <Input
-                value={settings.modelStrong}
-                onChange={(e) => setSettings({ modelStrong: e.target.value })}
-              />
-            </Field>
-          </div>
-          <p className="text-sm" data-testid="ai-usage">
-            {t('set.usage', {
-              month: aiUsage.month || '—',
-              calls: aiUsage.calls,
-              input: aiUsage.inputTokens,
-              output: aiUsage.outputTokens,
-              cost: cost !== null ? ` ≈ $${cost.toFixed(4)}` : '',
-            })}
-          </p>
+            {t('set.aiEnabled')}
+          </label>
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('set.aiEnabledNote')}</p>
         </Card>
+        {settings.aiEnabled && (
+          <Card className="space-y-3">
+            <h2 className="font-semibold">{t('set.ai')}</h2>
+            <Field label={t('set.aiMode')}>
+              <Select
+                value={settings.aiMode}
+                onChange={(e) => setSettings({ aiMode: e.target.value as SettingsT['aiMode'] })}
+              >
+                <option value="manual">{t('set.aiManual')}</option>
+                <option value="api">{t('set.aiApi')}</option>
+              </Select>
+            </Field>
+            {settings.aiMode === 'api' && (
+              <>
+                <Field label={t('set.apiKey')} optional>
+                  <Input
+                    type="password"
+                    autoComplete="off"
+                    placeholder="sk-ant-…"
+                    value={settings.apiKey}
+                    onChange={(e) => setSettings({ apiKey: e.target.value })}
+                  />
+                </Field>
+                <p className="rounded-xl bg-amber-100 p-3 text-xs text-amber-900">
+                  {t('set.keyWarn')}
+                </p>
+              </>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t('set.modelFast')}>
+                <Input
+                  value={settings.modelFast}
+                  onChange={(e) => setSettings({ modelFast: e.target.value })}
+                />
+              </Field>
+              <Field label={t('set.modelStrong')}>
+                <Input
+                  value={settings.modelStrong}
+                  onChange={(e) => setSettings({ modelStrong: e.target.value })}
+                />
+              </Field>
+            </div>
+            <p className="text-sm" data-testid="ai-usage">
+              {t('set.usage', {
+                month: aiUsage.month || '—',
+                calls: aiUsage.calls,
+                input: aiUsage.inputTokens,
+                output: aiUsage.outputTokens,
+                cost: cost !== null ? ` ≈ $${cost.toFixed(4)}` : '',
+              })}
+            </p>
+          </Card>
+        )}
         <DataCard />
         <Card className="space-y-3">
           <h2 className="font-semibold">{t('set.demo.title')}</h2>

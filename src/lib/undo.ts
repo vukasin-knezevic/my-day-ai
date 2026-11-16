@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import type { AppData } from '../types'
 import { selectData, useStore, type CollectionKey } from '../store'
+import { haptic } from './haptics'
 
 export const UNDO_MS = 6000
 
@@ -32,6 +33,8 @@ export interface Removal {
   events: XpEvent[]
   /** Award ids that were freed (so the same thing could pay again). */
   awarded: string[]
+  /** Activities a move made (the one-off copy of a repeating thing): undo removes them again. */
+  added?: string[]
 }
 
 export function removedBetween(before: AppData, after: AppData): Removal {
@@ -84,6 +87,11 @@ export function restoreRemoval(now: AppData, removal: Removal): Partial<AppData>
     const base = (patch.activities ?? now.activities) as AppData['activities']
     patch.activities = base.map((a) => old.get(a.id) ?? a)
   }
+  if (removal.added?.length) {
+    const gone = new Set(removal.added)
+    const base = (patch.activities ?? now.activities) as AppData['activities']
+    patch.activities = base.filter((a) => !gone.has(a.id))
+  }
   const p = now.progress
   const have = new Set(p.events.map((e) => e.id))
   const events = removal.events.filter((e) => !have.has(e.id))
@@ -102,8 +110,8 @@ export function restoreRemoval(now: AppData, removal: Removal): Partial<AppData>
 
 interface UndoState {
   /** The last delete that can still be undone. */
-  pending: { id: number; removal: Removal } | null
-  offer: (removal: Removal) => void
+  pending: { id: number; removal: Removal; label?: string } | null
+  offer: (removal: Removal, label?: string) => void
   undo: () => void
   dismiss: () => void
 }
@@ -113,10 +121,11 @@ let seq = 0
 
 export const useUndo = create<UndoState>()((set, get) => ({
   pending: null,
-  offer: (removal) => {
+  offer: (removal, label) => {
     if (isEmptyRemoval(removal)) return
+    haptic('warning')
     clearTimeout(timer)
-    set({ pending: { id: ++seq, removal } })
+    set({ pending: { id: ++seq, removal, label } })
     timer = setTimeout(() => set({ pending: null }), UNDO_MS)
   },
   undo: () => {
@@ -137,4 +146,15 @@ export function deleteWithUndo(run: () => void) {
   const before = selectData(useStore.getState())
   run()
   useUndo.getState().offer(removedBetween(before, selectData(useStore.getState())))
+}
+
+/** Runs a move (a thing gets a new time) and offers "Undo" with a message such as "Moved to tomorrow, 09:00". */
+export function moveWithUndo(run: () => void, label: string) {
+  const before = selectData(useStore.getState())
+  run()
+  const after = selectData(useStore.getState())
+  const known = new Set(before.activities.map((a) => a.id))
+  const added = after.activities.filter((a) => !known.has(a.id)).map((a) => a.id)
+  const removal = removedBetween(before, after)
+  useUndo.getState().offer({ ...removal, ...(added.length ? { added } : {}) }, label)
 }

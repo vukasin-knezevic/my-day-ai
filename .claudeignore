@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+graphify-out/
+test-results/
+android/.gradle/
+android/build/
+android/app/build/
+android/.kotlin/
+docs/screenshots/
+*.tsbuildinfo
+package-lock.json

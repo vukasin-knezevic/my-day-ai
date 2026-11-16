@@ -281,6 +281,8 @@ export interface Settings {
   language: string
   /** Currency shown next to amounts, e.g. RSD, EUR, $ */
   currency: string
+  /** AI tools (advanced) are shown only when this is on. Off by default for new users. */
+  aiEnabled: boolean
   aiMode: 'api' | 'manual'
   apiKey: string
   modelFast: string

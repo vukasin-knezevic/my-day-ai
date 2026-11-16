@@ -60,11 +60,13 @@ test('urađeno daje XP i vreme nagrade, samo jednom', async () => {
   )
   await user.click(screen.getByRole('button', { name: /Urađeno/ }))
   const p = useStore.getState().progress
-  expect(p.xp).toBe(40)
+  // the daily challenge may be paid by itself on some days (+15), so look at the activity's own award
+  const mine = p.events.find((e) => e.id.startsWith('act-'))
+  expect(mine?.xp).toBe(40)
   expect(p.rewardEarnedMin).toBe(60)
   // the same event can never pay twice
-  useStore.getState().award({ id: p.awarded[0], date: 'd', reason: 'x', xp: 40, category: 'study' })
-  expect(useStore.getState().progress.xp).toBe(40)
+  useStore.getState().award({ id: mine!.id, date: 'd', reason: 'x', xp: 40, category: 'study' })
+  expect(useStore.getState().progress.xp).toBe(p.xp)
 })
 
 test('iskorišćena nagrada se beleži, ali samo do zarađenog, i može da se poništi', async () => {

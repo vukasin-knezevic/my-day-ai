@@ -18,6 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   customSlotKinds: [],
   language: '',
   currency: '',
+  aiEnabled: false,
   aiMode: 'manual',
   apiKey: '',
   modelFast: 'claude-haiku-5-5',
@@ -97,6 +98,11 @@ export function migrateData(raw: unknown): Partial<AppData> {
   move(progress, 'ps5SpentMin', 'rewardSpentMin')
   move(settings, 'ps5MinPerStudyHour', 'rewardMinPerStudyHour')
   delete settings.addressName
+  // 0.6: the AI tools moved behind a switch. Whoever already uses them (a key, or the API mode) keeps them.
+  if (Object.keys(settings).length && typeof settings.aiEnabled !== 'boolean') {
+    const key = typeof settings.apiKey === 'string' && settings.apiKey.trim() !== ''
+    settings.aiEnabled = key || settings.aiMode === 'api'
+  }
   if ('progress' in r || Object.keys(progress).length) r.progress = progress
   if ('settings' in r || Object.keys(settings).length) r.settings = settings
   return r as Partial<AppData>

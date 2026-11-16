@@ -6,7 +6,6 @@ import { useStore, selectData } from '../store'
 import { Badge, Button, Card, Field, Input } from '../components/ui'
 import { CATEGORY_META } from '../types'
 import {
-  formatDuration,
   formatTimeOfDay,
   minToTime,
   timeToMin,
@@ -23,6 +22,7 @@ import {
   occurrencesOn,
   withStatus,
   type Occurrence,
+  patchOccurrence,
   withoutOccurrence,
 } from '../lib/schedule'
 import { parseQuick } from '../lib/quickParse'
@@ -42,8 +42,11 @@ import WeekRing from '../components/WeekRing'
 import TodaySteps from '../components/TodaySteps'
 import CloseDay from '../components/CloseDay'
 import { useSwipe } from '../lib/useSwipe'
+import SwipeRow from '../components/SwipeRow'
+import TodayHero from '../components/TodayHero'
+import { findFreeSlot } from '../lib/freeSlot'
 import { useBackHandler } from '../lib/back'
-import { deleteWithUndo } from '../lib/undo'
+import { deleteWithUndo, moveWithUndo } from '../lib/undo'
 import { getLanguage, useT } from '../i18n'
 import type { Activity } from '../types'
 
@@ -193,11 +196,44 @@ export default function Today() {
     const streaks = streakMessages(computeStreaks(selectData(useStore.getState()), today))
     if (streaks.length) useToast.getState().push([...useToast.getState().messages, ...streaks])
   }
+  /** Moves a thing to the next free slot (today after now, otherwise tomorrow), with the undo bar. */
+  function moveNext(o: Occurrence) {
+    const a = data.activities.find((x) => x.id === o.activityId)
+    if (!a) return
+    const slot = findFreeSlot(data, o, bounds, new Date())
+    if (!slot) {
+      setMsg(t('today.movedNone'))
+      return
+    }
+    const time = formatTimeOfDay(slot.start)
+    const when =
+      slot.date === today
+        ? t('today.whenToday', { time })
+        : slot.date === addDaysStr(today, 1)
+          ? t('today.whenTomorrow', { time })
+          : t('today.whenOn', {
+              date: slot.date.slice(5).split('-').reverse().join('.') + '.',
+              time,
+            })
+    moveWithUndo(
+      () => {
+        const { updated, single } = patchOccurrence(a, o.date, {
+          date: slot.date,
+          start: slot.start,
+          end: slot.end,
+        })
+        store.update('activities', a.id, updated)
+        if (single) store.add('activities', single)
+      },
+      t('today.moved', { when }),
+    )
+  }
   function accept(o: Occurrence) {
     if (o.activityId) store.update('activities', o.activityId, { suggested: false })
   }
 
   const summary = daySummary(occ)
+  const aiEnabled = data.settings.aiEnabled
   const callName = greetingName(data.settings.name, getLanguage())
   const subtitle = callName
     ? `${callName}, ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`
@@ -227,7 +263,7 @@ export default function Today() {
         )}
         {isToday && <DailyChallenge today={today} />}
 
-        {isToday && now.getDay() === 0 && now.getHours() >= 18 && (
+        {isToday && aiEnabled && now.getDay() === 0 && now.getHours() >= 18 && (
           <Card className="mb-4">
             <p className="text-sm">
               {t('today.sunday')}{' '}
@@ -242,38 +278,16 @@ export default function Today() {
         )}
 
         {isToday && (
-          <section aria-label={t('today.nowNext')} className="mb-4 space-y-2">
-            <Card className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-              <p className="text-xs font-semibold tracking-wide text-blue-800 uppercase dark:text-blue-200">
-                {t('today.nowLabel')}
-              </p>
-              {current ? (
-                <>
-                  <p className="user-text mt-1 text-xl font-bold">
-                    {CATEGORY_META[current.category].emoji} {current.title}
-                  </p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300">
-                    {t('today.until', { end: formatTimeOfDay(current.end) })}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-1 text-slate-700 dark:text-slate-300">{t('today.nothing')}</p>
-              )}
-            </Card>
-            {next && (
-              <div className="rounded-2xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-800">
-                <span className="text-xs font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  {t('today.nextLabel')}
-                </span>
-                <p className="user-text">
-                  {CATEGORY_META[next.category].emoji} {next.title} · {formatTimeOfDay(next.start)}{' '}
-                  <span className="text-slate-600 dark:text-slate-400">
-                    ({t('today.in', { d: formatDuration(minutesToNext!) })})
-                  </span>
-                </p>
-              </div>
-            )}
-          </section>
+          <TodayHero
+            current={current}
+            next={next}
+            minutesToNext={minutesToNext}
+            nowMin={nowMin}
+            today={today}
+            occ={occ}
+            data={data}
+            onAdd={() => setEditing('new')}
+          />
         )}
 
         {isToday && alerts.length > 0 && (
@@ -318,9 +332,18 @@ export default function Today() {
             )}
             <ul className="space-y-2">
               {occ.map((o) => (
-                <li
+                <SwipeRow
                   key={o.key}
-                  className="rounded-xl border border-slate-200 p-2 text-sm dark:border-slate-800"
+                  enabled={
+                    o.type === 'activity' &&
+                    !!o.activityId &&
+                    !o.suggested &&
+                    o.status === 'planned'
+                  }
+                  onRight={() => mark(o, 'done')}
+                  onLeft={() => moveNext(o)}
+                  rightHint={t('today.markDone')}
+                  leftHint={t('today.swipeMove')}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="w-24 shrink-0 tabular-nums">
@@ -380,7 +403,7 @@ export default function Today() {
                       </Button>
                     </div>
                   )}
-                </li>
+                </SwipeRow>
               ))}
             </ul>
           </Card>
@@ -411,6 +434,17 @@ export default function Today() {
               >
                 ✎ {t('today.editShort')}
               </Button>
+              {menu.status === 'planned' && !menu.suggested && menu.type === 'activity' && (
+                <Button
+                  variant="soft"
+                  onClick={() => {
+                    moveNext(menu)
+                    setMenu(null)
+                  }}
+                >
+                  ➜ {t('today.moveNext')}
+                </Button>
+              )}
               {menu.recurring && (
                 <Button
                   variant="soft"

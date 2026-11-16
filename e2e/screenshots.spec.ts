@@ -38,7 +38,6 @@ for (const lang of LANGS) {
     await next.click() // language step
     await page.getByRole('textbox').first().fill('Alex')
     for (let i = 0; i < 4; i++) await next.click()
-    await next.click() // demo data stays checked
     await page.getByRole('button', { name: /^(Završi|Finish|Заврши)$/ }).click()
     // the guided tour is offered after the setup: skip it for the pictures
     await page.getByRole('button', { name: /^(Preskoči|Skip|Прескочи)$/ }).click()
