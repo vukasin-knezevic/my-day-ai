@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { haptic } from '../lib/haptics'
 import { useBackHandler, useBackPrompt } from '../lib/back'
 
 const DURATION = 220 // ms, open / close / snap back
@@ -71,6 +72,7 @@ export default function Sheet({
   // keep it mounted for the exit animation
   useEffect(() => {
     if (open) {
+      haptic('tap')
       setShown(true)
       setClosing(false)
       return

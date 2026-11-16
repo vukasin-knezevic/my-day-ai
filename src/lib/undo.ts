@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import type { AppData } from '../types'
 import { selectData, useStore, type CollectionKey } from '../store'
+import { haptic } from './haptics'
 
 export const UNDO_MS = 6000
 
@@ -115,6 +116,7 @@ export const useUndo = create<UndoState>()((set, get) => ({
   pending: null,
   offer: (removal) => {
     if (isEmptyRemoval(removal)) return
+    haptic('warning')
     clearTimeout(timer)
     set({ pending: { id: ++seq, removal } })
     timer = setTimeout(() => set({ pending: null }), UNDO_MS)

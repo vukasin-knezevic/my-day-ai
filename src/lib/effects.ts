@@ -1,11 +1,13 @@
 // Little celebrations: confetti, a short sound and a vibration. All of them can be switched off in
 // the settings, and "reduce motion" turns the picture off too. Nothing here needs a file or a library.
 import type { Settings } from '../types'
+import { haptic, setHapticsEnabled } from './haptics'
 
 type Prefs = Pick<Settings, 'sound' | 'vibration' | 'animations'>
 let prefs: Prefs = { sound: false, vibration: true, animations: true }
 export const setEffectPrefs = (p: Prefs) => {
   prefs = p
+  setHapticsEnabled(p.vibration)
 }
 
 export const reducedMotion = () =>
@@ -20,13 +22,15 @@ const BEEPS: Record<Cue, number[]> = {
   streak: [440, 554, 659],
   close: [392, 330],
 }
-const BUZZ: Record<Cue, number | number[]> = {
-  tick: 15,
+const BUZZ: Record<Exclude<Cue, 'tick'>, number | number[]> = {
   surprise: [20, 40, 20],
   level: [30, 50, 30, 50, 60],
   streak: [30, 40, 30],
   close: 40,
 }
+
+/** A tick is a completed thing: the standard success pulse. The bigger moments keep their own patterns. */
+const cueHaptic = (kind: Cue) => (kind === 'tick' ? 'success' : BUZZ[kind])
 
 let audio: AudioContext | undefined
 function beep(freqs: number[]) {
@@ -55,13 +59,8 @@ function beep(freqs: number[]) {
 /** Sound and vibration for a moment (each only if switched on and supported). */
 export function cue(kind: Cue) {
   if (prefs.sound) beep(BEEPS[kind])
-  if (prefs.vibration) {
-    try {
-      navigator.vibrate?.(BUZZ[kind])
-    } catch {
-      /* iPhone has no vibration in a web app */
-    }
-  }
+  // the only place that vibrates is haptics.ts (it checks the `vibration` setting itself)
+  haptic(cueHaptic(kind))
 }
 
 const COLORS = ['#2563eb', '#f97316', '#16a34a', '#eab308', '#8b5cf6', '#dc2626']
