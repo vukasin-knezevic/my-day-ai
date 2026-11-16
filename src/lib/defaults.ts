@@ -186,9 +186,18 @@ function repairSettings(raw: unknown): Settings {
 
 function repairProgress(raw: unknown): AppData['progress'] {
   const p = repair(emptyData().progress, raw)
-  const events = p.events.filter(
-    (e) => isRecord(e) && isString(e.id) && isString(e.date) && Number.isFinite(e.xp),
-  )
+  // an event that is kept is complete, so a backup made from it passes the import check (dataIO.ts)
+  const events = p.events
+    .filter((e) => isRecord(e) && isString(e.id) && isString(e.date) && Number.isFinite(e.xp))
+    .map((e) =>
+      isString(e.reason) && isString(e.category)
+        ? e
+        : {
+            ...e,
+            reason: isString(e.reason) ? e.reason : '',
+            category: isString(e.category) ? e.category : 'habits',
+          },
+    )
   const awarded = p.awarded.filter(isString)
   return clampReward({ ...p, events, awarded })
 }
@@ -204,6 +213,28 @@ function repairLists(r: Partial<AppData>): Partial<AppData> {
   return out as Partial<AppData>
 }
 
+/** What is remembered per day: only real records are kept (a damaged one would be read as a record). */
+function repairDays(raw: unknown): AppData['days'] {
+  if (!isRecord(raw)) return {}
+  if (Object.values(raw).every(isRecord)) return raw as AppData['days']
+  return Object.fromEntries(Object.entries(raw).filter(([, v]) => isRecord(v))) as AppData['days']
+}
+
+/** A budget is a number per category; anything else in it is dropped. */
+function repairBudget(raw: unknown): AppData['budget'] {
+  if (!isRecord(raw)) return {}
+  const ok = (v: unknown) => typeof v === 'number' && Number.isFinite(v)
+  if (Object.values(raw).every(ok)) return raw as AppData['budget']
+  return Object.fromEntries(Object.entries(raw).filter(([, v]) => ok(v))) as AppData['budget']
+}
+
+/** The screens walk through the days of the plan and their exercises; a plan without them is no plan. */
+function repairPlan(raw: unknown): AppData['workoutPlan'] {
+  if (!isRecord(raw) || !Array.isArray(raw.days)) return null
+  if (!raw.days.every((d) => isRecord(d) && Array.isArray(d.exercises))) return null
+  return raw as unknown as AppData['workoutPlan']
+}
+
 /** Fills in missing fields of (older / imported) data with defaults and repairs damaged ones. */
 export function normalizeData(input: Partial<AppData> | null | undefined): AppData {
   const base = emptyData()
@@ -216,9 +247,9 @@ export function normalizeData(input: Partial<AppData> | null | undefined): AppDa
     progress: repairProgress(r.progress),
     settings: r.settings as Settings,
     aiUsage: repair(base.aiUsage, r.aiUsage),
-    days: isRecord(r.days) ? (r.days as AppData['days']) : {},
-    budget: isRecord(r.budget) ? (r.budget as AppData['budget']) : {},
-    workoutPlan: isRecord(r.workoutPlan) ? (r.workoutPlan as AppData['workoutPlan']) : null,
+    days: repairDays(r.days),
+    budget: repairBudget(r.budget),
+    workoutPlan: repairPlan(r.workoutPlan),
   }
 }
 
